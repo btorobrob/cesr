@@ -19,7 +19,7 @@ function(cesdata, early=NA,late=NA, min.visits=1, all.visits=0, exclude=list(yea
   last.visit <- max(cesdata$visit, na.rm=TRUE)
   if( all.visits == 0 )
     all.visits <- last.visit 
-  if( all.visits > last.visit, na.rm=TRUE) )
+  if( all.visits > last.visit )
     warning('all.visits is larger than highest visit number', call.=FALSE)
   
   if( is.na(early) ) # this should effectively mean no selection

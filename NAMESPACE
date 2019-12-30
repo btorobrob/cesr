@@ -11,7 +11,7 @@ export(
 	plot.trend,
 	readces,
 	readBTO,
-	selectdata,
+	select.data,
 	setceslang,
 	sitereport,
 	summary.ces,

@@ -1,0 +1,51 @@
+---
+output: 
+  word_document:
+    reference_docx: word_styles.docx
+    fig_height: 3.5
+    fig_width: 6.5
+---
+
+# `r paste('Results for CES Site', thissite, 'in', thisyr)`
+
+## How your site compares across years
+```{r, echo=FALSE, hold=TRUE}
+op <- par(no.readonly = TRUE)
+par(mar=c(2.1, 4.1, 1.1, 1.1))
+siteplot(data = yrdata, site = thissite, effort=TRUE, whisklty=1, pt.cex=1.5)
+par(op)
+```
+
+***
+
+## How your site did this year
+```{r, echo=FALSE}
+par(mfrow = c(1, 2), font.main=1)
+setceslang('English')
+no.of.species <- 12
+
+siteplot(data = sppjdata, year = thisyr, site=thissite, nspecies = no.of.species, age=3, whisklty=1, effort = TRUE,
+         margin=c(3.5,8,2.5,0), main='Juveniles', cex.axis=0.75, cex.lab=0.75, pt.cex=1, ylab='')
+siteplot(data = sppadata, year = thisyr, site=thissite, nspecies = no.of.species, age=4, whisklty=1, effort = TRUE,
+         margin=c(3.5,2,2.5,6), main='Adults', cex.axis=0.75, cex.lab=0.75, pt.cex=1, ylab='', 
+         show.names=FALSE)
+title(sub='Number caught per metre', outer=TRUE, line=-1)
+```
+
+
+***
+# Notes
+
+## Thank you for your continued support for CES
+
+#### Running a CES site helps us to better understand the causes of population change. Some summary results from your site are presented, alongside summarised data from other sites. National survival trends are published as part of the BirdTrends report (www.bto.org/birdtrends) and on the CES website (www.bto.org/ces).
+
+#### The plots show how your site (the red dot) compares in terms of catching efficiency (birds caught per metre of net). The thick black line marks the average. In the first plot your total catch is plotted for each year together with a summary of the catches on other CES sites. The lowest and highest catches by site are indicated by the whiskers, and the middle 50% by the boxes. In the second set of graphs, your catch of adults and young birds for this year is plotted against everyone else's separately for the 12 most caught species.
+
+#### CES is supported by a partnership between the BTO and the Joint Nature Conservation Committee (JNCC) on behalf of the country agencies (Natural England, Natural Resources Wales, Scottish Natural Heritage and the Department of Agriculture, Environment and Rural Affairs, Northern Ireland). It is also part of the BTO Ringing Scheme which is funded by the BTO/JNCC Partnership, The National Parks and Wildlife Service (Ireland) and the ringers themselves.
+
+### Tel: 01842 750050 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Email: ces@bto.org &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Website: www.bto.org/ces
+
+---
+
+

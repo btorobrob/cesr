@@ -1,0 +1,30 @@
+export(
+	extract.ch,
+	extract.counts,
+	extract.coverage,
+	extract.data,
+	extract.sites,
+	index,
+	map.ces,
+	mark.ces,
+	plot.ces,
+	plot.trend,
+	readces,
+	readBTO,
+	selectdata,
+	setceslang,
+	sitereport,
+	summary.ces,
+	writeces,	
+	load.boxplot,
+	save.boxplot
+)
+
+## Not exported:
+# ann.model.counts, ann.model.prod, annc.model.counts, annc.model.prod, annt.model.counts, annt.model.prod  
+# plot.ces.counts, plot.ces.data, plot.ces.glmfit, plot.ces.markfit, plot.ces.plots
+# summary.ces.ch, summary.ces.counts, summary.ces.glmfit, summary.ces.markfit, summary.ces.plots, summary.ces.sites, summary.ces.spp
+# writeces.counts, writeces.glmfit, writeces.plots, writeces.sites, writeces.spp,
+# calc.offset, plglm, prsumglm, yrsum, 
+# siteplot
+

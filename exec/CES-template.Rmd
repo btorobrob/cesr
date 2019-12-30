@@ -1,0 +1,69 @@
+---
+output: 
+  word_document:
+    reference_docx: word_styles.docx
+    fig_height: 3.5
+    fig_width: 6.5
+---
+
+# `r paste('Results for CES Site', thissite, 'in', thisyr)`
+
+## How your site compares across years
+```{r, echo=FALSE, hold=TRUE}
+op <- par(no.readonly = TRUE)
+par(mar=c(4.1, 4.1, 1.1, 1.1))
+siteplot(data = yrdata, site = thissite, effort=TRUE, whisklty=1, pt.cex=1.5)
+siten <- round(yrdata$ds[sitename==thissite & year==thisyr, N],2)
+allmedian <- round(yrdata$ds.bxp$stats[3 ,ncol(yrdata$ds.bxp$stats)],2) 
+ttext <- paste('In', thisyr, 'your site caught', siten, 'birds per metre, compared to a median of', allmedian, 'birds')
+title(sub=ttext, font.main=1, line=-1, outer=TRUE)
+par(op)
+```
+
+***
+
+## How your site did this year
+```{r, echo=FALSE}
+par(mfrow = c(1, 2), font.main=1)
+siteplot(data = sppjdatay, year = thisyr, site=thissite, splist = splist.site, whisklty=1, effort = TRUE,
+         margin=c(4.5,8,2.5,0), main='Juveniles', cex.axis=0.75, cex.lab=0.75, pt.cex=1, ylab='')
+siteplot(data = sppadatay, year = thisyr, site=thissite, splist = splist.site, whisklty=1, effort = TRUE,
+         margin=c(4.5,2,2.5,6), main='Adults', cex.axis=0.75, cex.lab=0.75, pt.cex=1, ylab='', 
+         show.names=FALSE)
+title(sub='Number caught per metre', outer=TRUE, line=-2.5)
+ncaps <- Data[sitename==thissite & year==thisyr, .N, by=age]
+ttext <- paste('There were', ncaps[age==3, N], 'juvenile captures and', ncaps[age==4, N], 'adult captures in', thisyr)
+title(sub=ttext, outer=TRUE, font.main=1, line=-1)
+```
+
+***
+
+##### How the season went
+```{r, echo=FALSE}
+par(mfrow = c(1, 2), font.main=1)
+siteplot(data = sppjdatav, year = thisyr, site=thissite, whisklty=1, effort = TRUE,
+         margin=c(4.5,2,2.5,0.5), main='Juveniles', cex.axis=0.7, cex.lab=0.75, pt.cex=1)
+siteplot(data = sppadatav, year = thisyr, site=thissite, whisklty=1, effort = TRUE,
+         margin=c(4.5,2,2.5,0.5), main='Adults', cex.axis=0.7, cex.lab=0.75, pt.cex=1, ylab='')
+title(sub='Number of birds caught on each visit', outer=TRUE, line=-2.5)
+ncaps <- Data[sitename==thissite & year==thisyr, .N, by=age]
+```
+
+***
+
+# Notes
+
+#### Running a CES site helps us to better understand the causes of population change. It does this by measuring changes in abundance survival and productivity (number of juveniles caught per adult). National trends in survival and productivity are published as part of the BirdTrends report (www.bto.org/birdtrends) and on the CES website (www.bto.org/ces). THis sheet presents some results from your site, alongside summarised data from other CES sites. 
+
+#### The plots show how your site (the red dot) compares in terms of catching efficiency (captures per metre of net). The thick black line each year marks the median across all sites. The median represents the midpoint of catches - there will be as many sites below as above this point. This includes both new and subsequent captures. The lowest and highest catches by site are indicated by the 'whiskers'. The middle 50% of sites fall within the boxes, so this represents the catch on a 'typical' site. 
+
+#### In the first plot, your total catch of all species is shown for each year together with a summary of the catches on other CES sites. If the red dot falls within the box you caught about as well as everyone else that year; if the red dot falls on the upper (or lower) whisker then you fared better (or worse) than most. In the lower pair of graphs, your catch of young and adult birds for this year is plotted against everyone else's separately for the 12 most commonly caught species at your site. The final pair of graphs (above), show how your catch of young and adult birds on each visit compared with everyone else's. 
+
+#### CES is supported by a partnership between the BTO and the Joint Nature Conservation Committee (JNCC) on behalf of the country agencies (Natural England, Natural Resources Wales, Scottish Natural Heritage and DAERA in Northern Ireland). It is part of the British and Irish Ringing Scheme which is funded by the BTO/JNCC Partnership, The National Parks and Wildlife Service (Ireland) and the ringers themselves.
+
+## Thank you for your continued support for CES
+
+### Tel: 01842 750050 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Email: ces@bto.org &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Website: www.bto.org/ces
+
+
+

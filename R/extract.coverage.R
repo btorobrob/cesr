@@ -22,9 +22,10 @@ function(cesdata, early=NA,late=NA, min.visits=1, all.visits=0, exclude=list(yea
   if( all.visits > last.visit )
     warning('all.visits is larger than highest visit number', call.=FALSE)
   
-  if( is.na(early) ) # this should effectively mean no selection
+  if( is.na(early[1]) ) # this should effectively mean no selection
+    # need to subset to avoid warning when early/late are specified
     early <- c(last.vist, 1)
-  if( is.na(late) )
+  if( is.na(late[1]) )
     late <- c(last.vist, 1)
   if( (early[1] < early[2]) | (late[1] < late[2]) )
     stop('first elements of early/late must be greater than second\n')

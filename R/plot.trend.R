@@ -6,7 +6,7 @@ function(x, type='', group=NULL, file=NULL, width=480, height=480, units='px', y
 
   select <- tolower(substr(type, 1, 1))
   
-  if( ! select %in %c('a', 'j', 'p', 's') )
+  if( ! select %in% c('a', 'j', 'p', 's') )
     stop('Invalid type: please specify A(dult), J(uvenile) abundance, P(roductivity) or adult S(urvival)')
   
   ftype <- 'stdio'

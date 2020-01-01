@@ -4,6 +4,8 @@
 extract.ch <-
 function(x, species=0, late=FALSE, group=NA, exclude=NULL, min.n=0, plots=NULL){
   
+  require(reshape)
+  
   ## creates the extra time period by using the year-1 column
   ## this works because we are only estimating adult survival, so one age group
   

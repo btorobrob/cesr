@@ -3,7 +3,6 @@ function(x, age=0, sp.order='taxon', ads=FALSE, jvs=FALSE, prod=FALSE, df=FALSE,
 
   if( !class(x)[1] == 'ces' )
     summary(x)
-  
   else {
     switch( class(x)[2],
             counts = summary.ces.counts(x),

@@ -21,7 +21,7 @@ summary.ces.glmfit(x, ads, jvs, prod)
 summary.ces.markfit(x)
 summary.ces.plots(x)    
 summary.ces.sites(x)
-summary.ces.spp(x, age=0, sp.order='alpha', df=FALSE, nrow=6, silent=TRUE)
+summary.ces.spp(x, age=0, sp.order='alpha', df=FALSE, nrow=6, silent=FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{

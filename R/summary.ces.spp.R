@@ -1,5 +1,5 @@
 summary.ces.spp <-
-function(cesdata, age=0, sp.order='alpha', df=FALSE, nrow=6, silent=TRUE){
+function(cesdata, age=0, sp.order='alpha', df=FALSE, nrow=6, silent=FALSE){
 
   if( !class(cesdata)[1] == 'ces' )
     stop("Please supply a ces data object\n")  #
@@ -7,27 +7,29 @@ function(cesdata, age=0, sp.order='alpha', df=FALSE, nrow=6, silent=TRUE){
   if( class(cesdata)[2] == 'spp.summary' ){
     
     print(head(cesdata$species[rev(order(cesdata$species$Count)), ], n = nrow))
-    return( invisible() )
+    return(invisible())
     
   } else if( !class(cesdata)[2]=='data' )
     stop("Please supply a ces data object\n")
   
   if ( df ){ # produce traditional summary output
-    print( summary.data.frame(cesdata) )
-    return( invisible() )
+    print(summary.data.frame(cesdata))
+    return(invisible())
   }
   
   x <- data.table::data.table(cesdata)
   lang <- getOption('ceslang')
   selage <- age # to avoid confusing data.table[]
 
-  if ( selage==3 | selage==4 ){
+  if( selage==3 | selage==4 ){
     x <- x[age %in% selage] 
-    if ( age == 3 ) agestr='juvenile' 
-      else agestr='adult'
+    if( age == 3 ) 
+      agestr='juvenile' 
+    else 
+      agestr='adult'
   } else
     agestr <- 'all'
- 
+
   # some simple totals
   data.table::setkeyv(x, c('ring', 'species', 'age'))
   total <- x[ , .N]

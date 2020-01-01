@@ -28,9 +28,9 @@ function(x, sites=FALSE){
     barplot(jv.num, ylab="Sites recording Juvs", xlab="", las=1)
   } else {
     barplot(ad.numc, ylab="No. Adults", xlab="", col='black', las=1)
-    barplot(ad.num, add=TRUE)
+    barplot(ad.num, yaxt='n', yaxt='n', add=TRUE)
     barplot(jv.numc, ylab="No. Juvs", xlab="", col='black', las=1)
-    barplot(jv.num, add=TRUE)
+    barplot(jv.num, yaxt='n', xaxt='n', add=TRUE)
   }
   pp <- par(mar=c(2,4,2,1))
   plot(ad.srt, ylab="Cumulative Adults", xlab="", type='l', las=1)

@@ -91,6 +91,7 @@ function(data, species=0, age=0, plots=NULL){
     }
   }
 
+  res <- res[nvisits > 0, ] # no visits so should be deleted?
   res$totcaps[is.na(res$totcaps)] <- 0 # no birds caught
   res$Nprime[res$Nprime == 0] <- res$N[res$Nprime == 0] # complete visits
   res$corrcaps <- 0

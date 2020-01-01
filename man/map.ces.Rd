@@ -9,7 +9,7 @@ Plot CES sites on a simple outline map
 }
 \usage{
 map.ces(x, type='c', xlim=c(-20,30), ylim=c(35,70), pch=21, col=c('white','red'), 
-         file=NULL, width=480, height=480, units='px')
+         file=NULL, width=640, height=480, units='px', ...)
 }
 \arguments{
   \item{x}{
@@ -39,10 +39,13 @@ size of map (normally in pixels)
   \item{units}{
 Units for the size, use 'mm' if outputting to pdf/postscript file
 }
+  \item{...}{
+Additional arguments passed to \code{map}, such as \code{border} and \code{lty} that control the color and line type of the polygon borders if \code{fill=TRUE} is specified.
+}
 
 }
 \details{
-The default is to color points by whether they are current (second element of col) or historic - the latest year present is taken to represent the 'current' year. If type='n' then the plot will depend on the number of colors, two will separate sites below/above the median number of years operated; three the bottom quartile, the middle 50 percent and the upper quartile (approximately) and four will split by quartile. Selecting 'h' will depend on what order the habitats appear, use check.habitat(x) to list them. Any expansion of 'Current', 'No Years', 'Habitat' should work (only the first letter is significant and case is not important).
+The default is to color points by whether they are current (second element of col) or historic - the latest year present is taken to represent the 'current' year. If type='n' then the plot will depend on the number of colors, two will separate sites below/above the median number of years operated; three the bottom quartile, the middle 50 percent and the upper quartile (approximately) and four will split by quartile. Any expansion of 'Current', 'No Years', 'Habitat' should work (only the first letter is significant and case is not important).
 }
 \value{
 None

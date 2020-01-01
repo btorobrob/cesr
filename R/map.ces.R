@@ -1,11 +1,9 @@
 map.ces <-
 function(x, type='c', xlim=c(-20,30), ylim=c(35,70), pch=21, col=c('white','red'), 
-         file=NULL, width=480, height=480, units='px'){
+         file=NULL, width=640, height=480, units='px', ...){
     
   # for pch: 21=circle, 22=square, 23=diamond, 24=up-triangle, 25=down-triangle
   
-  require(mapdata, quietly=T)    # loads the map outline
-
   if( class(x)[1]!='ces' )
        stop("No ces data\n")
   if( class(x)[2]=='data' ){
@@ -68,11 +66,10 @@ function(x, type='c', xlim=c(-20,30), ylim=c(35,70), pch=21, col=c('white','red'
     }
   }
 
-  par(mar=c(0,0,0,0))
-  map('worldHires', xlim=xlim, ylim=ylim)
-  points(x=x$long, y=x$lat,pch=pch,bg=x$col)
+  maps::map(xlim=xlim, ylim=ylim, mar=c(0, 0, 0, 0), ...)
+  points(x=x$long, y=x$lat, pch=pch, bg=x$col)
 
-  if  ( ftype!='stdio' )
+  if( ftype != 'stdio' )
     dev.off()
   
 }

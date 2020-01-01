@@ -1,11 +1,11 @@
 writeces.plots  <- 
 function(x, file, verbose=TRUE){
 
-  if ( !class(x)[1]=='ces' )
+  if( ! class(x)[1] == 'ces' )
     stop("Please supply a CES object\n")     
-  if ( !x$header[[1]]=='plots' )
+  if( ! x$header[[1]] == 'plots' )
     stop("Please supply a CES plots object\n")
-  if ( file == "" ) 
+  if( file == "" ) 
     file <- file.choose()
 
   # summarise plot coverage and number of visits
@@ -25,7 +25,7 @@ function(x, file, verbose=TRUE){
     tab.mv <- as.data.frame(xtabs(~sy+visit, data=mv))
     tab.mv$Freq <- -1 * (tab.mv$Freq-1)  # swaps 1 and 0, so missing is 0
     colnames(tab.mv) <-c ('sy', 'visitno', 'visit') # means cols are labelled usefully
-    mis.vis <- reshape(tab.mv, idvar='sy', v.names='visit', timevar='visitno', direction='wide')
+    mis.vis <- data.table::reshape(tab.mv, idvar='sy', v.names='visit', timevar='visitno', direction='wide')
     sites <- unique(mv[,-3])
     sites <- merge(sites, mis.vis, all.x=TRUE)
   } else { # collapse columns into string
@@ -40,7 +40,7 @@ function(x, file, verbose=TRUE){
     # ...now merge it back into the main dataset
     sites <- unique(mv[,-3])                    
     mis.vis <- as.data.frame(cbind(rownames(sum.mv),mv.str))
-	names(mis.vis) <- c('sy', 'Missing')  
+	  names(mis.vis) <- c('sy', 'Missing')  
     sites <- merge(sites, mis.vis, all.x=TRUE)
     sites$Missing <- gsub(',', ' ', sub('0','',gsub(',0','',sites$Missing)))
     # if first visit is missing no need to remove leading space

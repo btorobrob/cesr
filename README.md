@@ -2,7 +2,7 @@
 
 __Tools to analyse EuroCES data__
 
-Constant Effort Site (CES) ringing data provide a valuable way to monitor changes in abundance, productivity and survival through standardised capture and recapture of individuals.  cesr provides some facilities to produce annual trends in abundance, productivity and adult survival from these data.  cesr requires CES data organised in a plain text file according to the agreed Euring format (details of which can be found on the Euring website (http://www.euring.org/internal/ces_research_group/euro_ces_meeting_2008_notes.pdf).  
+Constant Effort Site (CES) ringing data provide a valuable way to monitor changes in abundance, productivity and survival through standardised capture and recapture of individuals.  cesr provides some facilities to produce annual trends in abundance, productivity and adult survival from these data.  cesr requires CES data organised in a plain text file according to the agreed Euring format (details of which can be found on the Euring website: http://www.euring.org/internal/ces_research_group/euro_ces_meeting_2008_notes.pdf).  
 
 The key steps are:
 (i) to read in the data, with readces(); 

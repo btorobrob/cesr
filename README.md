@@ -10,6 +10,6 @@ The key steps are:
 (iii) extract data for the species to be analysed, with extract.data(), and 
 (iv) generate the annual abundance/productivity indices, with index(). 
 
-Adult survival probabilities can be estimated by first using extract.ch() then mark.ces() and results can be plotted using plot.trend().
+Adult survival probabilities can be estimated by first using extract.ch(), then mark.ces(); results can be plotted using plot.trend().
 
-More details on how to do each of these can be found in the introductory manual (look in the vignettes folder or, in R by typing "vignette('cesr-intro')")
+More details on how to do each of these can be found in the introductory manual - look in the vignettes folder or, in R by typing "vignette('cesr-intro')"

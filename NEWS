@@ -1,13 +1,10 @@
-TO DO
-- STILL NEED TO FIX EXTRACT.CH!! (How???)
-- What to do with non-numeric visits in readces()
-
-Changes in version 0.xx
+Changes in version 0.41.2
 ==============
-- 28102019: Bugfix - fixed warning of zero length arrows when plotting index results
-- 28102019: Bugfix - amended call to summary.ces.spp so that arguments match properly (particularly silent)
-- 28102019: Fixed major bug that meant data were extracted for non-covered sites too 
-
+- 01012020: Fixed bug introduced by changes in data.table that screwed things up big time
+- 01012020: Added vignette
+- 01012020: Added some extra checking to readces and creates column for julian days
+- 01012020: Added plotting method for the 'raw' ces data objects
+- 01012020: changed the default for silent= in summary.ces.data()
 
 Changes in version 0.41.2
 ==============

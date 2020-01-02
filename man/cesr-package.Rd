@@ -26,11 +26,11 @@ The key steps are:
 
 (iii) extract data for the species to be analysed (with \code{\link{extract.data}}), and 
 
-(iv) generate the annual indices (with \code{\link{index}}). 
+(iv) generate the annual abundance/productivity indices (with \code{\link{index}}). 
 
-Adult survival probabilities can be estimated by first using \code{\link{extract.ch}} then \code{\link{mark.ces}}. Results can be plotted using \code{\link{plot.trend}}. More details can be found in the introductory manual, type  
+Adult survival probabilities can be estimated by first using \code{\link{extract.ch}} then \code{\link{mark.ces}}. Results can be plotted using \code{\link{plot.trend}}. More details on how to do each of these can be found in the introductory manual, type  
 
-vignette('cesr-vignette')
+vignette('cesr-intro')
 
 to view it.
 }

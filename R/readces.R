@@ -1,4 +1,4 @@
-readces <-
+readces1 <-
 function(file=NULL, visits='std', fill.sex=FALSE, group.race=FALSE){
   
   if( is.null(file) )
@@ -7,17 +7,17 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=FALSE){
   # get column names and work out how many
   coln <- strsplit(readLines(file, n=1), '[,;]')[[1]]
   # short form names
-  var.names <- c('countryID','siteID','coords','habitat','visit','day','month','year','NetLength',
+  var.names <- c('countryID','siteID','coords','habitat','visit','day','month','year','netlength',
                  'StartTime','EndTime','scheme','ring','species','sex','age','brood',
                  'moult','wing','weight','weighTime','p3','fat')
   # longer form ones
-  alt.names <- c('Country_Identifier',' Site_Identifier', 'coordinates', 'site_coordinates', 
+  alt.names <- c('Country_Identifier',' Site_Identifier', 'sitename', 'coordinates', 'site_coordinates', 
                  'visit_period', 'visit_start_time', 'visit_end_time',  'total_net_length',
                  'ring_scheme', 'ring_number', 'brood_patch_score', 'wing_length', 
                  'mass', 'body_mass', 'time_of_weighing', 'length_p3', 'fat_score', 
                  'moult_state', 'habitat_type')
   # map back to the main list
-  column_nos <- c(1:23, 1, 2, 3, 3, 5, 10, 11, 9, 12, 13, 17, 19, 20, 20, 21, 22, 23, 18, 4)
+  column_nos <- c(1:23, 1, 2, 2, 3, 3, 5, 10, 11, 9, 12, 13, 17, 19, 20, 20, 21, 22, 23, 18, 4)
   
   match.names <- adist(tolower(coln), tolower(c(var.names, alt.names)))
   which.names <- unlist(apply(match.names, 1, which.min))
@@ -49,16 +49,22 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=FALSE){
   
   setnames(result, col.names)
   
-  # check species are Euring codes
-  if( !is.integer(result$species) ){
-    char_spp <- result$species # create a copy
-    suppressWarnings(result[ , species := as.integer(species)]) # force them to be integer
-    result <- result[!is.na(species), ]
-    char_spp <- unique(char_spp[is.na(result$species)]) # select the rejected records
+  # check species are valid Euring codes
+  result[ , species := as.factor(species)]
+  int_spp <- suppressWarnings(as.integer(as.character(result$species)))  # force them to be integer
+  char_spp <- unique(as.character(result$species[is.na(int_spp)])) # select the rejected records
+  if( length(char_spp) > 0 ){
     wmessage <- paste('non-numeric species codes:', paste(char_spp,collapse=', '), 'will be ignored')
-    warning(wmessage, call. = FALSE)
+    warning(wmessage, call.=FALSE)
+    result <- result[!is.na(int_spp), ]
   }
-  
+  # now check if they are likely CES species
+  dodgy <- unique(int_spp[!(int_spp %in% cesnames$spp) & !is.na(int_spp)])
+  if( length(dodgy) > 0 ){
+    wmessage <- paste('surprising species codes encountered:', paste(dodgy,collapse=', '), ', consider checking these')
+    warning(wmessage, call.=FALSE)
+  }
+
   # check that ages are all 3/4 for simplicity later on...
   if( length(result$age[!result$age %in% c(3,4)]) > 0 ){
     result[ , age1 := as.character(age)]
@@ -100,22 +106,19 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=FALSE){
   # set site names
   result[ , sitename := as.character(siteID)] 
   result[ , site := as.numeric(as.factor(siteID))]
-  result$siteID <- NULL
+  result[ , siteID := NULL] # no longer needed
   
   # remove races if required
-  if( group.race ){
-    result[ , race := species]
+  result[ , race := species]  # just so we know it is there
+  if( group.race )
     result[ , species := (10 * floor(species/10))]  # concatenate races, original code now in race
-  } 
-  else 
-    result$race <- NA
-  
+
   # check for duplicated rings on different species (yes, really!)
   dup_spp <- unique(result[ , c('species','ring')], by=c('species', 'ring')) 
   dup_ndx <- duplicated(dup_spp, by=c('ring'))
   if( sum(dup_ndx) > 0 ){
     wmessage <- paste('rings associated with more than one species code:', paste(dup_spp$ring[dup_ndx],collapse=', '))
-    warning(wmessage, call. = FALSE)
+    warning(wmessage, call.=FALSE)
   }
   
   # check visits
@@ -129,6 +132,7 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=FALSE){
       result$visit <- result$visit[visits]
       ## Note this means that visit might be either numeric or character!
   } 
+  
   # and that dates are numeric
   nmissd <- nmissm <- nmissy <- 0 # just so the if lower down doesn't fail
   if( !is.integer(result$day) ){
@@ -148,7 +152,20 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=FALSE){
     wmessage <- paste('non-numeric dates detected in', count, 'records')
     warning(wmessage, call.=FALSE)
   }
-  
+  inv.days <- nrow(result[day < 1 | day > 31])
+  if( length(inv.days) > 0 ){
+    wmessage <- paste(inv.days, 'day values outside the range 1-31 detected')
+    warning(wmessage, call.=FALSE)
+  }
+  non.summer <- nrow(result[month<4 | month>9])
+  if( non.summer > 0 ){
+    wmessage <- paste(non.summer, 'records outside the period April to September, is this expected?')
+    warning(wmessage, call.=FALSE)
+  }
+  # now create a Julian day column for doing phenology things
+  result[ , julian := as.numeric(mdy.date(month, day, 2000)) - as.numeric(mdy.date(1, 1, 2000)) + 1]
+  result[year %in% c(1984, 1988, 1992, 1996, 2004, 2008, 2012, 2016, 2020, 2024, 2028, 2032), julian := julian+1]
+
   # convert co-ordinates
   if( !is.character(result$coords) )
     warning('coordinates not in Euring format', call. = FALSE)
@@ -168,17 +185,17 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=FALSE){
   result[ , coords := NULL ]
 
   # check NetLengths
-  if( !is.integer(result$NetLength) ){
-    suppressWarnings(result[ , NetLength := as.integer(NetLength) ])
-    nmiss <- sum(is.na(result$NetLength))
+  if( !is.integer(result$netlength) ){
+    suppressWarnings(result[ , netlength := as.integer(netlength) ])
+    nmiss <- sum(is.na(result$netlength))
     if( nmiss > 0 ){
       wmessage <- paste('non-numeric net lengths detected in', nmiss, 'records')
       warning(wmessage, call.=FALSE)
     }
   }
-  nzero <- result[NetLength == 0, .N]
+  nzero <- result[netlength == 0, .N]
   if( nzero > 0 ){
-    result[NetLength == 0, NetLength := NA]
+    result[netlength == 0, netlength := NA]
     wmessage <- paste('net length of zero detected in', nzero, 'records; these set to NA')
     warning(wmessage, call.=FALSE)
   }
@@ -186,9 +203,12 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=FALSE){
   # return dataframe
   result <- as.data.frame(result)
   class(result) <- c('ces','data','data.frame')
-  if ( length(unique(result$countryID)) == 1 )
-    attr(result,'country') <- unique(result$countryID)
+  country <- unique(result$countryID)
+  if ( length(country) == 1 )
+    attr(result,'country') <- country
+  else
+    warning("more than one country code detected, country attribute not set")
 
-  result
+  return(result)
 
 }

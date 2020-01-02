@@ -134,13 +134,13 @@ head(ukdata, n=4)
 ```
 shows the first _n_ lines of data, while the second:
 ```{r}
-	summary(ukdata, df=TRUE)
+summary(ukdata, df=TRUE)
 ```
 gives a summary of each variable. Note there are two ways in which variables are summarised: for numeric variables it gives, the minimum, quartile, median and maximum values; for character variables it gives a frequency count of the commonest entries.
 
 As with summary(), all CES objects can be 'plot'ted, which will give a graphical summary of the information therein, So:
 ```{r, fig.dim = c(5, 5), fig.align='center'}
-	plot(ukdata)
+plot(ukdata)
 ```	
 The top left graph shows the total number of records by species for each year. The top right graph, the mean number of captures (across the years) in each visit period, the bars give the interquartile range (i.e. encompassing 25% - 75% of the annual values). The bottom graph gives the mean number of captures by species (only 2 in our data set!) and site (note not all the site labels are printed here). 
 
@@ -175,11 +175,11 @@ sites = extract.coverage(ukdata, min.visits=8, all.visits=12)
 ```
 As before we can check this has worked by looking at a summary of the data and seeing that all is as expected:
 ```{r}
-	summary(uk_sites)
+summary(uk_sites)
 ```
 Thus we have 19 sites operated in the eight years for which we have data, of which 8 have operated for all eight years and one has only operated for two years. We can see similar summary information by using the plot() command.
 ```{r, fig.dim = c(5, 5), fig.align='center'}
-	plot(uk_sites)
+plot(uk_sites)
 ```
 The figure should have four panels, the top two illustrate the frequency of sites in each year, and the number of years that sites have run. The bottom two illustrate the evolution of sites contributing to teh scheme , that is the cumulative number of sites that have started operating by each year^[In our abbreviated example, 16 sites started in 2001, and the remaining three in 2002, the second year, so the graph is not terribly informative!] and the cumulative number of sites operated for a certain number of years. In our example, six sites have operated for six years or fewer and eight sites for all eight years. 
 
@@ -192,7 +192,7 @@ map.ces(ukdata)
 ```
 If you give a filename, R will print the map to a file for later use^[the format will be determined by the file extension; '.jpg', '.tif' or '.pdf' will also work], if not, it will simply print it to the screen. If you are using these maps in publications then you may wish to specify the size (in pixels) by also using the height= and width= arguments^[More detailed maps are possible using the maprec package, or other R map plotting packages]; the size otherwise will be 640 by 480 pixels. Unless you say otherwise, the sites will be plotted onto a map of Europe, to zoom into a smaller area use the xlim= and ylim= arguments to specify longitude and latitude bounds respectively^[if R tries to 'prettify' these too much try using lforce='e', which asks for those 'e'xact limits]. For example, this will draw a map of Britain and Ireland:
 ```{r, eval=FALSE}
-	map.ces(uk_sites, xlim=c(-10,2), ylim=c(50,60), file='sitemap.png') 
+map.ces(uk_sites, xlim=c(-10,2), ylim=c(50,60), file='sitemap.png') 
 ```
 Note the use of c() to concatenate the minimum and maximum bounds into one R object. In this case, sites are identified as current (red) or no longer operating (white), you can also colour sites by the number of years they have operated (use type='n') or habitat (type='h'), in which case you can specify up to 4 colours using the col=c(...) argument. For more details, use help(map.ces) or its shorthand ?map.ces; these, of course, work for almost all R functions.
 
@@ -202,13 +202,13 @@ robin.dat = extract.data(ukdata, species=10990, plots=uk_sites)
 ```
 Note that we use the Euring code number to tell R which species we want, and the plots argument inform it about which sites are covered and which we extracted earlier. The Robin data are now in the robin.dat object. As before we can see a summary of these data using:
 ```{r}
-	summary(robin.dat)
+summary(robin.dat)
 ```
 As you can see, when we do this R gives some basic summary information about how many individuals have been caught. It is worth checking that these are what you expected.
 
 We can also get some summary plots of the data 
 ```{r, fig.dim = c(5,5), fig.align='center'}
-	plot(robin.dat)
+plot(robin.dat)
 ```
 This will again give four graphs, the top two give the number of adult and juvenile birds caught in each year. The grey bars represent those actually caught, the black tops to the bars represent the additional number of birds that would have been caught on the missed visits. In the bottom two graphs, sites are ranked (from highest to lowest) by the number of birds caught and the total number of birds caught on sites of that rank or greater is plotted. This gives an indication of how birds are distributed across sites: if a few birds are caught at many sites, the graph will look more like a straight line (each site catches a similar number of birds so adding each site causes a roughly increase), if many birds are caught at a few sites (as might be the case for a habitat specialist like Reed Warbler _Acrocephalus scirpaceus_) the line will increase steeply before flattening out.  
 
@@ -276,7 +276,7 @@ robin.compare = index(robin.dat, compare=3, year=2005, cl=0.83)
 ```
 index() also calculates a measure of productivity from the ratio of juveniles to adults that are caught each year. To see these results, use type='p' when using plot.trend(). Note this is probably not a good measure, even relatively, of the number of young produced on a CES site since young birds can disperse some distance even at a relatively young age. For example, wetland sites typically have a higher productivity than drier sites since birds may congregate there to forage. Thus this measure of productivity is better thought of as a measure the number of young fledging from the wider area surrounding the site; how far this will be will depend on the site. Note also that, following Peach _et al._ (1996) and Robinson _et al._ (2007), the index is expressed in terms of the number of juveniles per adult, rather than simply the proportion of juveniles^[This is achieved by using a log rather than a logistic back-transform to create the annual indices, see Peach _et al._ (1996) for details.]
 
-## Calculating Indices of Survival
+## Calculating Adult Survival
 
 To estimate survival probabilities, we first need to extract capture histories for individual birds, we can do this for adult birds using:
 ```{r}

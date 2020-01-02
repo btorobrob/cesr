@@ -31,13 +31,16 @@ Aggregate records of different races (ie those where the last digit of the Eurin
 }
 }
 \details{
-For details of the file specification see the CES pages of the Euring website, the function will attempt to match column names (on the first four characters); a warning will be generated if it detects anything amiss (not guaranteed!). 
+For details of the file specification see the CES pages of the Euring website, the function will attempt to match similar column names; a warning will be generated if it detects anything amiss (not guaranteed!). 
 }
 \value{
-A dataframe with the following columns: countryID, site, habitat, visit, day, month, year, NetLength, scheme, ring, spp (species code), sex, age, race, lat, long. Latitude and longitude will be in decimal degrees. Race will usually be the same as spp (i.e. a Euring number), but may be different if a race was identified in the data file (e.g. as for Motacilla alba alba/yarrelli). The function does some basic error-checking and will try to give informative messages where it detects a problem. Where records are deleted or values set to NA (missing) this will be stated.  
+A dataframe with (at a minimum) the following columns: countryID, site, habitat, visit, day, month, year, julian, netlength, scheme, ring, species, sex, age, race, lat, long. 
+
+Latitude and longitude will be in decimal degrees. Race will usually be the same as spp (i.e. a Euring number), but may be different where particular races were identified in the data file (e.g. as for Motacilla alba alba/yarrelli). The column 'julian' gives the day of year from 1 Jan (including 29 Feb in leap years). The function does some basic error-checking and will try to give informative messages where it detects a problem. Where records are deleted or values set to NA (missing) this will be stated.  
 }
+
 \references{
-Euring CES pages: \link{https://euring.org/research/ces-europe/}
+Euring CES pages: https://euring.org/research/ces-europe/
 }
 \author{
 Rob Robinson

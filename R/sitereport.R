@@ -20,9 +20,9 @@ function(data, sitelist=NULL, year=0, template_file=NULL, no.species=12, outdir=
   if( is.null(sitelist) | sitelist[1] == 'all' )
     sitelist <- unique(subset(data, year == thisyr, select=sitename))[ , 1] # subset returns a df
   
-  DT <- data.table(data, key = 'sitename') # get Netlength per site
+  DT <- data.table(data, key = 'sitename') # get netlength per site
   DT <- DT[ , head(.SD, 1), by = key(DT)]
-  netL <- DT[sitename %in% sitelist, .(sitename, NetLength)] 
+  netL <- DT[sitename %in% sitelist, .(sitename, netlength)] 
   
   # create summary datasets for all sites 
   yrdata <- siteplot(data = data, effort=TRUE, plot=FALSE)
@@ -34,7 +34,7 @@ function(data, sitelist=NULL, year=0, template_file=NULL, no.species=12, outdir=
   for( i in 1:length(sitelist) ){
     
     thissite <- netL$sitename[i]
-    netlen <- netL$NetLength[i]
+    netlen <- netL$netlength[i]
     
     if( Data[(sitename==thissite & year==thisyr), .N] == 0 ){
       message('no data for site ', thissite, ' skipped')

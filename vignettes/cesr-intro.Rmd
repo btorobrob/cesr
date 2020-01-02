@@ -2,8 +2,8 @@
 title: "cesr - Calculating trends from CES data"
 author: "Rob Robinson"
 date: "`r format(Sys.Date(), '%d %B %Y')`"
-output: rmarkdown::html_vignette
-#output: rmarkdown::pdf_document
+#output: rmarkdown::html_vignette
+output: rmarkdown::pdf_document
 vignette: >
   %\VignetteIndexEntry{cesr-intro}
   %\VignetteEngine{knitr::rmarkdown}
@@ -52,7 +52,7 @@ library(cesr)
 ```
 You should get the brief welcome message telling you which version of the package you are using.
 
-**One important thing to remember.** You can do very little harm by getting things wrong, if you get in a mess just close R down and start again. 
+**One important thing to remember.** You can do very little harm by getting things wrong, if you get in a mess just close R down and start again. R will usually tell you what it thinks has gone wrong, but it can be quite cryptic, especially if you are unfamiliar with how it works. I've tried to translate the commonest ones, if you come across others copy and paste the error message from the R window _and_ the command you used which generated it into an email to meand I'll see if I can help.
 
 ## A sample session
 

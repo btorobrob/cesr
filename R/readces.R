@@ -1,4 +1,4 @@
-readces1 <-
+readces <-
 function(file=NULL, visits='std', fill.sex=FALSE, group.race=FALSE){
   
   if( is.null(file) )
@@ -74,7 +74,7 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=FALSE){
     adult <- c('4','5','6','7','8','9','A','B','C','D','E','F','G','H','J','K','L','M','P','N','Q','R','S','T')
     result[age1 %in% adult, age := 4] 
     result[age1 %in% c('3','3J'), age := 3] 
-    result <- result[ age %in% c(3, 4) ] # anything else we just delete
+    result <- result[ age %in% c(2, 3, 4) ] # anything else we just delete, note should keep 2s 
     result[ , age1 := NULL]
     ages <- ages[!ages %in% c('3','3J','4','5','6')] # check for non 3/4 age codes
     if( length(ages) > 0 ){
@@ -102,9 +102,10 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=FALSE){
     result[ , sex.x := NULL]
     setnames(result, 'sex.y', 'sex')
   }
+  result[ , sex := as.factor(sex)]
   
   # set site names
-  result[ , sitename := as.character(siteID)] 
+  result[ , sitename := as.factor(siteID)] 
   result[ , site := as.numeric(as.factor(siteID))]
   result[ , siteID := NULL] # no longer needed
   
@@ -153,7 +154,7 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=FALSE){
     warning(wmessage, call.=FALSE)
   }
   inv.days <- nrow(result[day < 1 | day > 31])
-  if( length(inv.days) > 0 ){
+  if( inv.days > 0 ){
     wmessage <- paste(inv.days, 'day values outside the range 1-31 detected')
     warning(wmessage, call.=FALSE)
   }
@@ -163,20 +164,38 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=FALSE){
     warning(wmessage, call.=FALSE)
   }
   # now create a Julian day column for doing phenology things
-  result[ , julian := as.numeric(mdy.date(month, day, 2000)) - as.numeric(mdy.date(1, 1, 2000)) + 1]
-  result[year %in% c(1984, 1988, 1992, 1996, 2004, 2008, 2012, 2016, 2020, 2024, 2028, 2032), julian := julian+1]
+  # create jday first to avoid an error about using $ with atomic vectors
+  jday <- function(d, m, y){ strptime(paste0(m, '/', d, '/', y), format="%m/%d/%Y")$yday }
+  result[ , julian := jday(day, month, year)]
 
   # convert co-ordinates
   if( !is.character(result$coords) )
     warning('coordinates not in Euring format', call. = FALSE)
   coords <- result$coords
-  result[ , lat := (as.integer(substr(coords,1,3)) + as.integer(substr(coords,4,5))/60 + as.integer(substr(coords,6,7))/3600)]
+  # do this to avoid a cryptic warning about NAs being coerced
+  c1 <- suppressWarnings(as.integer(substr(coords,1,3)))
+  c2 <- suppressWarnings(as.integer(substr(coords,4,5))/60)
+  c3 <- suppressWarnings(as.integer(substr(coords,6,7))/3600)
+  if( anyNA(c(c1, c2, c3)) )
+    warning("missing values generated for latitude, are all the coordinates 15 characters long?", call.=FALSE)
+  result[ , lat := c1 + c2 + c3]
   ew <- ifelse(substr(coords,8,8) == '-', -1 , 1)
   llfmt <- max(nchar(coords), na.rm  = TRUE) # does coords have 14 or 15 characters
+
   if ( llfmt == 15 ){   # Euring code specifies 15 chars, but just in case long deg is 2 digits rather than 3
-    result [ , long := (ew * (as.integer(substr(coords,9,11)) + as.integer(substr(coords,12,13))/60 + as.integer(substr(coords,14,15))/3600))]
+    if( anyNA(as.integer(substr(coords,9,11))) | anyNA(as.integer(substr(coords,12,13))) | anyNA(as.integer(substr(coords,14,15))) )
+      warning("missing values generated in longitude, check for stray non-numeric characters", call.=FALSE)
+    c1 <- suppressWarnings(as.integer(substr(coords,9,11)))
+    c2 <- suppressWarnings(as.integer(substr(coords,12,13)))/60
+    c3 <- suppressWarnings(as.integer(substr(coords,14,15)))/3600
+    result [ , long := ew * (c1 + c2 + c3)]
   } else if ( llfmt == 14 ){
-    result[ , long := (ew * (as.integer(substr(coords,9,10)) + as.integer(substr(coords,11,12))/60 + as.integer(substr(coords,13,14))/3600))]
+    if( anyNA(as.integer(substr(coords,9,10))) | anyNA(as.integer(substr(coords,11,12))) | anyNA(as.integer(substr(coords,13,14))) )
+      warning("missing values generated in longitude, check for possible stray non-numeric characters", call.=FALSE)
+    c1 <- suppressWarnings(as.integer(substr(coords,9,10)))
+    c2 <- suppressWarnings(as.integer(substr(coords,11,12))/60)
+    c3 <- suppressWarnings(as.integer(substr(coords,13,14))/3600)
+    result [ , long := ew * (c1 + c2 + c3)]
   } else {
     err <- which(nchar(coords) %in% c(14, 15))
     wmessage <- paste("Unrecognised lat-long format in row", paste(head(which(nchar(coords) < 14)), collapse=' '), '...')
@@ -200,6 +219,16 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=FALSE){
     warning(wmessage, call.=FALSE)
   }
 
+  # habitats
+  dodgy <- unique(result$habitat[!(result$habitat %in% c('DS','FA','GN','RD','WD','WS'))])
+  if( length(dodgy) > 0 ){
+    wmessage <- paste("unrecognised habitat codes:", paste(dodgy, collapse=', '))
+    warning(wmessage, call.=FALSE)
+  }
+  result[ , habitat := as.factor(habitat)]
+  
+  result[ , scheme := as.factor(scheme)]
+
   # return dataframe
   result <- as.data.frame(result)
   class(result) <- c('ces','data','data.frame')
@@ -208,7 +237,7 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=FALSE){
     attr(result,'country') <- country
   else
     warning("more than one country code detected, country attribute not set")
-
+  
   return(result)
 
 }

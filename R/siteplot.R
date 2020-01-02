@@ -28,7 +28,7 @@ function(data, site=0, year=0, visit=FALSE, splist=NULL, nspecies=20, nyears=NA,
     }
     
     if( effort ) {
-      netlen <- x[, mean(NetLength), by = sitename] 
+      netlen <- x[, mean(netlength), by = sitename] 
       names(netlen) <- c('sitename', 'netlen')
       ds <- ds
       ds <- merge(ds, netlen, by='sitename', all.x=TRUE)

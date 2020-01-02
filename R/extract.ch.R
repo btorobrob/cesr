@@ -1,6 +1,3 @@
-# INSERTING NA's - SEE SFH DATA
-# extract.ch(SFH,species=13080,plots=SFHcov)
-
 extract.ch <-
 function(x, species=0, late=FALSE, group=NA, exclude=NULL, min.n=0, plots=NULL){
   
@@ -22,11 +19,12 @@ function(x, species=0, late=FALSE, group=NA, exclude=NULL, min.n=0, plots=NULL){
       stop("please supply a Euring species code, using species=")
   } 
   
-  selspp <- species # to avoid name conflicts in x as a data.table
+  selspp <- as.character(species) # to avoid name conflicts in x as a data.table
 
   # first birds captured as adults
   x <- data.table::data.table(x, key=c('species','age'))
-  x <- x[ .(selspp, 4) ]
+  x1 <- x[(species==selspp & age==4), ]
+  #  x <- x[ .(selspp, 4) ] I originally did this which seems rather cryptic!
   
   ind <- x[ , list(ring, site, sex, year) ] # pulls out adults
   ind <- ind[ !(is.na(ring)), ] # remove species for which no adults caught

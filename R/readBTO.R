@@ -61,7 +61,7 @@ readBTO <- function (file, species=0)
   result$lat <- NA 
   result$long <- NA 
   result$habitat <- NA
-  result$NetLength <- NA
+  result$netlength <- NA
   
   class(result) <- c("ces", "data", "data.frame")
   attr(result, "country") = 'GBT'

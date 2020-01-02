@@ -6,7 +6,7 @@ function(cesdata, exclude=NULL){
   
   x <- data.table::data.table(cesdata, key = "site") 
   # get one row per site and just the needed variables
-  sites <- unique(x[ , .(site, habitat, lat, long, NetLength, sitename)], by='site')
+  sites <- unique(x[ , .(site, habitat, lat, long, netlength, sitename)], by='site')
   sites <- sites[!(as.character(sitename) %in% as.character(exclude))]
   
   cyr <- max(x$year)  # just use the last year present in the dataset

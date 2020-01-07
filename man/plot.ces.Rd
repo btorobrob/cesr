@@ -1,16 +1,11 @@
 \name{plot.ces}
 \alias{plot.ces}
-\alias{plot.ces.counts}
-\alias{plot.ces.data}
-\alias{plot.ces.glmfit}
-\alias{plot.ces.markfit}
-\alias{plot.ces.plots}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 Plot CES Objects
 }
 \description{
-Functions to quickly plot CES objects of different types.
+Methods to quickly plot CES objects of different types.
 }
 \usage{
 plot(x, sites = FALSE, graph = "X", N=20, ...)
@@ -62,7 +57,7 @@ Rob Robinson
 }
 \examples{
 data(ukdata)
-robin.dat<-extract.data(ukdata,species=10990)
+robin.dat <- extract.data(ukdata,species=10990)
 plot(robin.dat)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

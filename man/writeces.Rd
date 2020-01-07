@@ -1,10 +1,5 @@
 \name{writeces}
 \alias{writeces}
-\alias{writeces.counts}
-\alias{writeces.glmfit}
-\alias{writeces.plots}
-\alias{writeces.sites}
-\alias{writeces.spp}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 Write CES data to a file 
@@ -29,17 +24,11 @@ Character(s) to use to represent missing values in the output file
   \item{age}{
 Euring age code - 3 for juvenile or 4 for adult
 }
-  \item{ads}{
-logical, if TRUE write out data for adult abundance only.
-}
-  \item{jvs}{
-logical, if TRUE write out data for juvenile abundance only.
-}
-  \item{prod}{
-logical, if TRUE write out data for productivity only.
+  \item{ads, jvs, prod}{
+logical, if TRUE write out data for adult/juvenile abundance/productivity only.
 }
   \item{verbose}{
-logical, if TRUE write out indiidual visit data when writeces.plots.
+logical, if TRUE write out individual visit data writing plot data.
 }
 }
 \details{

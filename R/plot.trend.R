@@ -1,5 +1,5 @@
 plot.trend <-
-function(x, type='', group=NULL, file=NULL, width=480, height=480, units='px', ylab='', ylim=c(0,0), xlim=c(0,0), line=NA, lty=1, annual=FALSE, pch=19, pcol='black', ...){  
+function(x, type='', group=NULL, file=NULL, width=480, height=480, units='px', ylab='', ylim=c(0,0), xlim=c(0,0), lty=c(1,2), lcol='black', line=NA, rlty=3, rcol='black', lwd=1, annual=FALSE, pch=19, pcol='black', ...){  
     
   if( type=='' & class(x)[2]=='markfit' ) 
     type <- 'Survival' # survival objects should only be one thing, so can get way with assuming
@@ -8,6 +8,15 @@ function(x, type='', group=NULL, file=NULL, width=480, height=480, units='px', y
   
   if( ! select %in% c('a', 'j', 'p', 's') )
     stop('Invalid type: please specify A(dult), J(uvenile) abundance, P(roductivity) or adult S(urvival)')
+  
+  if( length(lty) == 1 )
+    lty <- rep(lty, 2)
+  else if( length(lty) > 2 )
+    lty <- lty[1:2]
+  if( length(lcol) == 1 )
+    lcol <- rep(lcol, 2)
+  else if( length(lcol) > 2 )
+    lcol <- lcol[1:2]
   
   ftype <- 'stdio'
   ## start the device driver
@@ -27,6 +36,8 @@ function(x, type='', group=NULL, file=NULL, width=480, height=480, units='px', y
           width <- width / 25.4
           height <- height / 25.4
         }
+        if( height < 2 | width < 2)
+          warning('figure dimensions unexpectedly small, check the units?')
         postscript(file, width=width, height=height)      
       } else if( ftype=='pdf' ){
         if( units=='px' ){
@@ -36,10 +47,23 @@ function(x, type='', group=NULL, file=NULL, width=480, height=480, units='px', y
           width <- width/25.4
           height <- height/25.4
         }
+        if( height < 2 | width < 2)
+          warning('figure dimensions unexpectedly small, check the units?')
         pdf(file, width=width, height=height)      
+      } else if( ftype=='svg' ){
+        if( units=='px' ){
+          width <- width/300  
+          height <- height/300
+        } else if( units=='mm' ) {
+          width <- width/25.4
+          height <- height/25.4
+        }
+        if( height < 2 | width < 2)
+          warning('figure dimensions unexpectedly small, check the units?')
+        svg(file, width=width, height=height)      
       } else {
         wtext <- paste('unrecognised file type:', ftype)
-        warning(wtext)
+        warning(wtext, call.=FALSE)
         ftype <- 'stdio'
       }
   }
@@ -47,11 +71,11 @@ function(x, type='', group=NULL, file=NULL, width=480, height=480, units='px', y
   ## plot the graph
   if( select == 'a' ) {
     res <- x$ad.results$parms
-    if( ylab=='')
+    if( ylab=='' )
       ylab <- "Adult Abundance"
   } else if( select == 'j' ) {
     res <- x$jv.results$parms
-    if ( ylab == '')
+    if ( ylab == '' )
       ylab <- "Juvenile Abundance"
   } else if( select == 'p' ) {
     res <- x$pr.results$parms
@@ -85,19 +109,19 @@ function(x, type='', group=NULL, file=NULL, width=480, height=480, units='px', y
     xtx <- seq(xlim[1]-(xlim[1]%%5), xlim[2]+5, 5)
   }
   
-  plot(x=res$years, y=res$index, type='l', xlab="", ylab=ylab, ylim=ylim, xlim=xlim, xaxt='n', las=1, ...)
+  plot(x=res$years, y=res$index, type='l', xlab="", ylim=ylim, xlim=xlim, xaxt='n', lty=lty[1], col=lcol[1], las=1, lwd=lwd[1], ...)
   axis(1, at=xtx) # add in the major ticks
   axis(1, at=seq(xlim[1],xlim[2],1), labels=FALSE, tcl=par("tcl")*0.5) # now the minor ones
-  lines(x=res$years, y=res$lcl, lty=2, ...)
-  lines(x=res$years, y=res$ucl, lty=2, ...)
+  lines(x=res$years, y=res$lcl, lty=lty[2], col=lcol[2], lwd=ifelse(is.na(lwd[2]), 1, lwd[2]))
+  lines(x=res$years, y=res$ucl, lty=lty[2], col=lcol[2], lwd=ifelse(is.na(lwd[2]), 1, lwd[2]))
   if( annual==TRUE ){
-    if( length(which(names(res)=='annual'))>0 )
+    if( length(which(names(res)=='annual')) > 0 )
       points(res$years, res$annual, pch=pch, col=pcol)
     else
       points(res$years, res$index, pch=pch, col=pcol)
   }
   if( !is.na(line) )
-    abline(h=line, lty=lty)
+    abline(h=line, lty=rlty, col=rcol, lwd=ifelse(is.na(lwd[3]), 1, lwd[3]))
   
   ## close the device driver
   if( ftype != 'stdio' )

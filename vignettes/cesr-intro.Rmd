@@ -63,7 +63,7 @@ The cesr package is arranged around these four tasks and provides functions to p
 library(cesr)
 setwd('d:/CESdata/')
 cesdata = readces('filename')
-ces.sites = extract.coverage(cesdata)
+ces.sites = extract.coverage(cesdata, min.visits=8)
 robin.data = extract.data(cesdata, species=10990, plots=ces.sites)
 result = index(robin.data)
 plot.trend(result, type='adult', file='robin_ad.png')
@@ -71,9 +71,9 @@ plot.trend(result, type='adult', file='robin_ad.png')
 
 The first line simply loads the cesr package into R. The second line (shorthand for 'set working directory') points R to the folder where your CES data are stored and where you can write the graph images to. The next line reads a datafile of CES captures and assigns it to an object called 'cesdata' . An object in R can be thought of as a mini-spreadsheet; normally it will contain some rows of data (an individual capture of a bird in this case) with some columns, each of which contains a particular variable (for example the date of capture, ring number, species type, sex, etc). The next two lines extract the specific data necessary for analyses, the years in which each site was covered (put into 'ces.sites'), and the data on captures for a particular species (to be found in 'robin.data'). Then we are ready to do the analysis with the function index(). Note that we need to tell index() where to find the data containing the species information (the object robin.data) and the site coverage information (the object ces.sites). This stores indices of the annual abundance and productivity in the object 'result' and provides some summary output about the model fit to the screen. The final line creates a graph of the annual trend in a form that can be used in publications. 
 
-Of course the package can do quite a bit more than this, and the rest of this document will show the range of tools available, and how to use them. If you need any more information or are just plain confused about what things do at any point, try help(function_name). Incidentally, in books about R, you will sometimes see an '=' used to assign an object and sometimes a '<-' (a left-bracket, followed by a hypen), for almost all purposes they are interchangeable, so I will continue to use the '='. Note also that R is **case sensitive**, so, for example, the variables 'netlength' and 'NetLength' are not the same; in most cases you should use only lower case for typing, since R may not recognise your commands otherwise. 
+Of course the package can do a bit more than this, and the rest of this document will show the range of tools available, and how to use them. If you need any more information or are just plain confused about what things do at any point, try typing help(function_name). The nice thing about R is that you can save these commands as a simple text file (usually with a '.R' extension) which means you can easily re-run them, or adapt them if you want to do a slightly different analysis (say for a different species, just copy the code and change the Euring number and species names). Getting into the habit of saving code files is a good one, especially if you might later want to re-run the analysis, or simply remember what you did! 
 
-The nice thing about R is that you can save these commands as a simple text file (usually with a '.R' extension) which means you can easily re-run them, or adapt them if you want to do a slightly different analysis (say for a different species, just copy the code and change the Euring number and species names). Getting into the habit of saving code files is a good one, especially if you might later want to re-run the analysis, or simply remember what you did! ON a similar note, if you start a line with a hash sign ('#') then R will ignore the rest of the line; this can be useful to add comments to your code explaining to future-you why you did things in a particular way. A good general rule is to use more comments than you think necessary - future-you will thank you as you try and figure out what you did and why in several months (or years!) time.
+Incidentally, in books about R, you will sometimes see an '=' used to assign an object and sometimes a '<-' (a left-bracket, followed by a hypen), for almost all purposes they are interchangeable, so I will continue to use the '=', feel free to substitute the '<-' in your own code. Note also that R is **case sensitive**, so, for example, the variables 'netlength' and 'NetLength' are not the same; in most cases you should use only lower case for typing, since R may not recognise your commands otherwise. On a similar note, if you start a line with a hash sign ('#') then R will ignore the rest of the line; this can be useful to add comments to your code explaining to future-you why you did things in a particular way. A good general rule is to use more comments than you think necessary - experience has taught me that future-you will thank you as you try and figure out what you did and why in several months (or years!) time.
 
 ## Data Preparation
 
@@ -88,17 +88,17 @@ Before you start, remember to load the cesr package
 library(cesr)
 ```
 
-It is likely to be simpler if you keep a particular folder (or directory) for your data file and results. The first thing to do is tell R which folder this is using the command to set the working directory:
+It is likely to be simpler if you keep a particular folder/directory for your data file and results. The first thing to do, then, is tell R which folder this is using the command to set the working directory:
 ```{r, eval=FALSE}
 setwd('d:/data/ces')
 ```
-where 'd:/data/ces' represents the path to your folder. (Note: If you are using Windows, R uses a forward slash '/' to separate directory levels rather than the usual backslash '\'.) With a datafile prepared in the correct format and copied into this folder it is easy to get the data into R, we will put it into an object called ukdata, but you can choose whatever name you like:
+where 'd:/data/ces' represents the path to your folder^[If you are using Windows, note that R uses a forward slash '/' to separate directory levels rather than the usual backslash '\'.] With a datafile prepared in the correct format and copied into this folder it is easy to get the data into R, we will put it into an object called ukdata, but you can choose whatever name you like:
 ```{r, eval=FALSE}
 ukdata = readces('ukdata.csv')
 ```
 If you have already set the working directory (above) and the file is in there, you only need to give the filename; if not, you will need to give the full path name (for example, 'd:/data/ces/ukdata.csv'). If this works correctly, R will read the data in silently and just give you the next prompt. It will do some basic checks of the data (e.g. for invalid age codes) and do it's best to warn you of any problems it finds.
 
-If you want to try things on the example data set, just type
+If you want to follow along with the example data set, just type
 ```{r}
 data(ukdata)
 ```
@@ -108,7 +108,7 @@ Note, if you do not tell it otherwise, R will use scientific names for species. 
 ```{r}
 setceslang('English')
 ```
-The allowable choices are 'Danish', 'Dutch', 'English', 'Finnish', 'French', 'German', 'Italian', 'Norwegian', 'Polish', 'Portuguese', 'Spanish' and 'Swedish'. Note the capitals and the use of quotes. In general it does not matter whether you use single '.' or double "." quotes, but avoid backquotes (`.`). For rarer species, names may not be available, in this case the EURING number will be given; it may be wise to check these EURING numbers to ensure that they have been entered into the data file correctly.
+The allowable choices currently are 'Danish', 'Dutch', 'English', 'Finnish', 'French', 'German', 'Italian', 'Norwegian', 'Polish', 'Portuguese', 'Spanish' and 'Swedish'. Note the capitals and the use of quotes. In general it does not matter whether you use single (' ') or double (" ") quotes, but do not use backquotes (` `). For rarer species, names may not be available, in this case the EURING number will be given; it may be wise to check these EURING numbers to ensure that they have been entered into the data file correctly.
 
 ## Checking the data
 
@@ -142,9 +142,9 @@ As with summary(), all CES objects can be 'plot'ted, which will give a graphical
 ```{r, fig.dim = c(5, 5), fig.align='center'}
 plot(ukdata)
 ```	
-The top left graph shows the total number of records by species for each year. The top right graph, the mean number of captures (across the years) in each visit period, the bars give the interquartile range (i.e. encompassing 25% - 75% of the annual values). The bottom graph gives the mean number of captures by species (only 2 in our data set!) and site (note not all the site labels are printed here). 
+The top left graph shows the total number of records by species for each year. The top right graph, the mean number of captures (across the years) in each visit period, the bars give the inter-quartile range (i.e. encompassing 25% - 75% of the annual values). The bottom graph gives the mean number of captures by species (only 2 in our data set!) and site (note not all the site labels are printed here). 
 
-Normally, we will want to analyse the whole dataset to produce a national trend, but sometimes we may want to look at only a single site, or a group of sites representing a particular region or habitat. There is a function select.data() to do this. To use this function we first need to create a list of sites to be selected. The best way to do this is by using the in-built R function c(), which simply creates (or collects) a list of numbers. In our sample dataset we may want to include only those sites that were operated in each of the ten years, so we might type:
+Normally, we will want to analyse the whole dataset to produce a national trend, but sometimes we may want to look at only a single site, or a group of sites representing a particular region or habitat. There is a function select.data() to do this. To use this function we first need to create a list of sites to be selected. The best way to do this is by using the in-built R function c(), which simply creates (or collects) a list of numbers. In our sample dataset we may want to include only those sites that were operated in each of the eight years, so we might type:
 ```{r, eval=FALSE}
 sitelist = c(401, 403, 405, 407, 408, 414, 417, 447, 463)
 ```
@@ -177,11 +177,11 @@ As before we can check this has worked by looking at a summary of the data and s
 ```{r}
 summary(uk_sites)
 ```
-Thus we have 19 sites operated in the eight years for which we have data, of which 8 have operated for all eight years and one has only operated for two years. We can see similar summary information by using the plot() command.
+Thus we have 19 sites operated in the eight years for which we have data, of which 8 have operated for all eight years and one has only operated for two years. Those who are paying close attention might ask why only 8, whe we listed 9 above? The answer is that only 1 visit was made to site 447 in 2007, so although birds were caught there, it doesn't count. We can see similar summary information by using the plot() command.
 ```{r, fig.dim = c(5, 5), fig.align='center'}
 plot(uk_sites)
 ```
-The figure should have four panels, the top two illustrate the frequency of sites in each year, and the number of years that sites have run. The bottom two illustrate the evolution of sites contributing to teh scheme , that is the cumulative number of sites that have started operating by each year^[In our abbreviated example, 16 sites started in 2001, and the remaining three in 2002, the second year, so the graph is not terribly informative!] and the cumulative number of sites operated for a certain number of years. In our example, six sites have operated for six years or fewer and eight sites for all eight years. 
+The figure has four panels, the top two illustrate the frequency of sites in each year, and the number of years that sites have run. The bottom two illustrate the evolution of sites contributing to teh scheme , that is the cumulative number of sites that have started operating by each year^[In our abbreviated example, 16 sites started in 2001, and the remaining three in 2002, the second year, so the graph is not terribly informative!] and the cumulative number of sites operated for a certain number of years. In our example, six sites have operated for six years or fewer and eight sites for all eight years. 
 
 Finally, we might want to plot a map of where our sites are, we can do this using the map.ces() command. To plot a map simply use:
 ```{r, echo=FALSE}
@@ -190,11 +190,11 @@ library(maps)
 ```{r, fig.dim = c(7,5), fig.align='center'}
 map.ces(ukdata) 
 ```
-If you give a filename, R will print the map to a file for later use^[the format will be determined by the file extension; '.jpg', '.tif' or '.pdf' will also work], if not, it will simply print it to the screen. If you are using these maps in publications then you may wish to specify the size (in pixels) by also using the height= and width= arguments^[More detailed maps are possible using the maprec package, or other R map plotting packages]; the size otherwise will be 640 by 480 pixels. Unless you say otherwise, the sites will be plotted onto a map of Europe, to zoom into a smaller area use the xlim= and ylim= arguments to specify longitude and latitude bounds respectively^[if R tries to 'prettify' these too much try using lforce='e', which asks for those 'e'xact limits]. For example, this will draw a map of Britain and Ireland:
+If you give a filename, R will print the map to a file for later use^[the format will be determined by the file extension; '.jpg', '.tif' or '.pdf' will also work], if not, it will simply print it to the screen. If you are using these maps in publications then you may wish to specify the size (in pixels) by also using the height= and width= arguments^[More detailed maps are possible using the maprec package, or other R map plotting packages]; the size otherwise will be 640 by 480 pixels. Unless you say otherwise, the sites will be plotted onto a map of Europe, to zoom into a smaller area use the xlim= and ylim= arguments to specify longitude and latitude bounds respectively^[if R tries to 'prettify' these too much try using lforce='e', which asks it to use those 'e'xact limits]. For example, this will draw a map of Britain and Ireland:
 ```{r, eval=FALSE}
 map.ces(uk_sites, xlim=c(-10,2), ylim=c(50,60), file='sitemap.png') 
 ```
-Note the use of c() to concatenate the minimum and maximum bounds into one R object. In this case, sites are identified as current (red) or no longer operating (white), you can also colour sites by the number of years they have operated (use type='n') or habitat (type='h'), in which case you can specify up to 4 colours using the col=c(...) argument. For more details, use help(map.ces) or its shorthand ?map.ces; these, of course, work for almost all R functions.
+Note the use of c() again to concatenate the minimum and maximum bounds into one R object. In this case, sites are identified as current (red) or no longer operating (white), you can also colour sites by the number of years they have operated (use type='n') or habitat (type='h'), in which case you can specify up to 4 colours using the col=c(...) argument. For more details, use help(map.ces) or its shorthand ?map.ces; these, of course, work for almost all R functions.
 
 Having extracted the site coverage data, we can now extract the species data using extract.data(). Normally, we will want to extract data for both adults and juveniles together, but if for some reason just one of these is needed, then you can use the age= argument (where age may be either 3 for juveniles of 4 for adults). To extract the Robin data from our ukdata object we would type:
 ```{r}
@@ -234,9 +234,7 @@ In most cases, however, we will be interested in producing a graph of a particul
 ```{r, fig.dim = c(5,5), fig.align='center'}
 plot.trend(robin.res, type='adult')
 ```
-will print a simple graph showing the annual variation in adult abundance index to the file "adults.png". To get a similar graph for the number of juveniles use graph='juvenile' and for the productivity index, use graph='productivity'; you can shorten these to just the first letter ('a', 'j', or 'p') if you wish. Use "file=" to send the graph to a file with an appropriate extension^['.jpg', '.png', '.pdf' should all work].
-
-The graph produced is quite a simple one, but you can tweak various aspects by using standard R arguments. For example, to change the colour of the lines, use add col='...' (where ... is the name of a colour, e.g. col='red'); to change the thickness use lwd=x. Change the y-axis title (perhaps to something in a non-English language) by using ylab='...'). 
+will print a simple graph showing the annual variation in adult abundance index to the file "adults.png". To get a similar graph for the number of juveniles use graph='juvenile' and for the productivity index, use graph='productivity'; you can shorten these to just the first letter ('a', 'j', or 'p') if you wish. Use "file=" to send the graph to a file with an appropriate extension^['.jpg', '.png', '.pdf', '.svg' should all work]. The graph produced is quite a simple one, but you can tweak various aspects by using standard R arguments. For example, to change the colour of the lines, use add lcol='...' (where ... is the name of a colour, e.g. lcol='red'); to change the thickness use lwd=x; to change the y-axis title (perhaps to something in a non-English language) by using ylab='...'); see the helpfile for all the options. 
 
 For those who are used to drawing graphs in R, plot.trend() returns a dataframe which can be captured into an object:
 ```{r, fig.keep='none'}
@@ -260,7 +258,7 @@ Clearly, Robin abundance varies between years, but are these differences signifi
 robin.res83 = index(robin.dat, year=2001, cl=0.83)
 robin.trend = plot.trend(robin.res83, type='a')
 ```
-and again looking at the graph, or by typing robin.trend to look at a table of the annual estimates. This suggests, for example, that numbers in 2004/05 on these sites were significantly higher than in 2001 (the lower confidence limit, lcl, for 2004/05 is greater than the upper confidence limit, ucl, for 2001), but not other years (note this is slightly sensitive to which year is set as the reference year). If you are doing multiple analyses, one can check which limits have been used by typing:
+and again looking at the graph, or by typing robin.trend to look at a table of the annual estimates. This suggests, for example, that numbers in 2007/08 on these sites were significantly higher than in 2001/02 (the lower confidence limit, lcl, for 2007/08 is greater than the upper confidence limit, ucl, for 2001/02), but not other years (note this will be slightly sensitive to which year is set as the reference year). If you are doing multiple analyses, you can check which limits have been used by typing:
 ```{r}
 robin.res83$limits
 ```
@@ -272,9 +270,9 @@ robin.trend = index(robin.dat, trend=8, year=2005)
 ```
 In this case we have asked for the trend to be calculated over our entire time-series (8 years from 2001-08), you can estimate the trend over a shorter period (working back from the current year) by entering a smaller number. Note you can still set the reference year to be any year (here we've set it to 2005, roughly halfway through the period, try plotting the adult and juvenile trends in robin.trend and see what they look like). To compare this year's results to the previous n years, use compare=n instead of trend=n.
 ```{r}
-robin.compare = index(robin.dat, compare=3, year=2005, cl=0.83)
+robin.compare = index(robin.dat, compare=3)
 ```
-index() also calculates a measure of productivity from the ratio of juveniles to adults that are caught each year. To see these results, use type='p' when using plot.trend(). Note this is probably not a good measure, even relatively, of the number of young produced on a CES site since young birds can disperse some distance even at a relatively young age. For example, wetland sites typically have a higher productivity than drier sites since birds may congregate there to forage. Thus this measure of productivity is better thought of as a measure the number of young fledging from the wider area surrounding the site; how far this will be will depend on the site. Note also that, following Peach _et al._ (1996) and Robinson _et al._ (2007), the index is expressed in terms of the number of juveniles per adult, rather than simply the proportion of juveniles^[This is achieved by using a log rather than a logistic back-transform to create the annual indices, see Peach _et al._ (1996) for details.]
+index() also calculates a measure of productivity from the ratio of juveniles to adults that are caught each year. To see these results, use type='p' when using plot.trend(). Note this is probably not a good measure, even relatively, of the number of young produced exactly on a CES site since young birds can disperse some distance even at a relatively young age. For example, wetland sites typically have a higher productivity than drier sites since birds may congregate there to forage. Thus this measure of productivity is better thought of as a measure the number of young fledging from the wider area surrounding the site; how far this will be will depend on the site. Note also that, following Peach _et al._ (1996) and Robinson _et al._ (2007), the index is expressed in terms of the number of juveniles per adult, rather than simply the proportion of juveniles^[This is achieved by using a log rather than a logistic back-transform to create the annual indices, see Peach _et al._ (1996) for details.]
 
 ## Calculating Adult Survival
 
@@ -295,57 +293,80 @@ This will estimate a number of quantities, which again we can see by using summa
 ```{r}
 summary(robin.surv)
 ```
-The probability of residency is, loosely, the proportion of birds caught on the site that is likely to be resident and breeding there. Adult survival rates are estimated annually and assumed to be the same across all sites (this could be relaxed by using the group= option when extracting the data and re-running mark.ces). The recapture probabilities are site-specific, but constant through time (reflecting constant effort!). In this case the summary of recapture probabilities isn't very informative, looking at the full output robin.surv$recapture shows us that sites 656 and 447 have recapture probabilities of (close to) 0 and 1 respectively. This is likely to mean that MARK does not have enough data to estimate recapture probabilities for these two sites, so we can exclude them, using the exclude= argument to mark.ces:
+The probability of residency is, loosely, the proportion of birds caught on the site that is likely to be resident and breeding there. Adult survival rates are estimated annually and assumed to be the same across all sites (this could be relaxed by using the group= option when extracting the data and re-running mark.ces). The recapture probabilities are site-specific, but constant through time (reflecting constant effort!). In this case the summary of recapture probabilities isn't very informative, looking at the full output robin.surv$recapture shows us that site 411 has a very low recapture probability of 0.05, so we may wish exclude it, using the exclude= argument to mark.ces:
 ```{r}
-robin.surv = mark.ces(robin.ch, exclude=c(447,656))
+robin.surv = mark.ces(robin.ch, exclude=c(411))
 ```
-which gives slightly better results, note that the other estimates also change slightly because we are excluding some data:
-```{r}
-summary(robin.surv)
-```
-It will probably be more informative to look at a graph of the annual survival estimates and site-specific recaptures, by simply :
-```{r, fig.dim = c(7,5), fig.align='center'}
+which gives similar results, excluding sites may be more worthwhile if their recapture probabilities are close to 0 or 1. It can also be informative to look at a graph of the annual survival estimates and site-specific recaptures, by simply :
+```{r, fig.dim = c(5,5), fig.align='center'}
 plot(robin.surv)
 ```
 You can also use plot.trend as before, but with type='survival' (or 's' for short), to get the survival trend  for presentation in a paper or report.
 
+## Site Reporting
+
+Providing feedback to volunteers is key, and all ringers like to know how their site is doing relative to others. By harnessing the power of the RMarkdown package, R can summarise data, format it and write it directly to a word/pdf/html file. Using R's ability to subset data it is 'simple' to run a basic report for each site that operated in a year. The example does this for just two sites, but if you don't specify 'sitelist=', it'll do it for all sites operating in the year.
+```{r, eval=FALSE}
+sitereport(ukdata, sitelist=c(401, 420), year=2007)
+```
+However. Setting up the report format does take a bit of effort and care. I've provided the template that we use at the BTO as a starting point. It will look a bit daunting initially, but once you understand how it works hopefully it is more straightforward than it looks. The first thing to do is locate the template files. There are three ("CES-template.Rmd", "word_styles.docx", and "example_site.doc"), and they are in the 'exec' subfolder of the package. You can use the .libPaths() function to find were R has installed the package on your computer (note the initial period and the capital 'P') or you can grab them from the [cesr github](https://github.com/btorobrob/cesr/tree/master/exec) pages. Save them where you can easily find them and read on for a Markdown crash course...
+
+Once you have the files, open the "example_site.doc" and familiarise yourself with its content, it contains some graphs showing how catches at this site compared to other sites, with figure captions that are specific to the site, and then some more generic explanatory text towards the end. This was all produced from "CES-template.Rmd", which is an RMarkdown file. Markdown files are simple text files that use tags to style the different elements; rather brilliantly, these tags also allow one to incorporate the output from R commands. There's a basic Markdown tutorial on the [Rstudio](https://rmarkdown.rstudio.com/lesson-1.html) site. 
+
+Open up the Markdown file ("CES-template.Rmd"), have a look and compare it with the Word file. You should see how at least some of the elements match directly to those in the Word file. But let's work through it. The first seven lines (bounded by the three dashes '---') set-up the file as Word document. It is possible to produce pdf, html, even powerpoint files, but we chose Word since it makes it easy to add a sentence or two of more personalised text in the explanatory notes at the end, before 'printing' it as pdf for sending to the ringer. 
+
+The next line (starting '#') generates the title. The '#' signifies a Level 1 Heading (two '##' a Level 2 Heading, for example the next line down, and so on); we'll come on to how these are defined in a bit. The title is actually a bit of R code that pulls in the site number and year (generated within the sitereport() function). To include one line of R code, simply preface the code (in this case the paste() function) with an 'r' and enclose the whole line in backquotes ('`'); note: these _must_ be backquotes, not single quotes (on English keyboards they are often found at the top left). The following line (starting '##') prints a second level heading.
+
+The 'chunk', or block, of lines enclosed by three backquotes (```) prints the first graph and caption. The '{r}' identifies a block of R commands, and we've indicated we don't want these commands to be printed to the file, just the output of them (that's the 'echo=FALSE' bit) and we want all the output to come together ('hold=TRUE', strictly, I suspect this may be unnecessary). The R data objects referred to in the code are generated within the sitereport() function. We then put a rule across the page (with '***'), another heading ('##'), some more R code to print the next graph, and so on.
+
+You should be able to see how you can alter the text elements to say something more pertinent, even if only because it is in a more appropriate language! The text is styled (not unsurprisingly) according to the 'word-styles.docx', this file must sit in the same directory as the Rmd file. In it you will see words that identify each of the different header levels, styled accordingly. To change these, highlight the relevant text and right-click on the appropriate 'style' button then select "Modify..." (at least in Windows 10). Save this file, but do not change its name (or, if you do, alter the entry in the top of the '.Rmd' file to match)
+
+Once you've altered the file, save it (you can give it a different name) and then you can run the sitereport command above. Use the template_file= argument to tell R where to find your new template, if it is in the working directory you can use just the filename, otherwise give the whole path.
+```{r, eval=FALSE}
+sitereport(ukdata, year=2017, template_file='new_filename')
+```
+Making small changes to the R code output (rather than simply the text) is probably possible, but major changes (i.e. if you need different summaries, or you want pdf output directly) will probably require altering the sitereport() function, which is beyond what we can do here, but feel free to create a copy of the function and have a go. If you get stuck drop me a line and I'll help if I can.
+
+Good luck!
+
+
 ## References
-Baillie, SR (1990) Integrated population monitoring of breeding birds in Britain and Ireland. _Ibis_ 132:151-161.
+**Baillie, SR** (1990) Integrated population monitoring of breeding birds in Britain and Ireland. _Ibis_ 132:151-161.
 
-Baillie, SR (2001) The contribution of ringing to the conservation and management of bird populations: a review. _Ardea_ 89:S167-184.
+**Baillie, SR** (2001) The contribution of ringing to the conservation and management of bird populations: a review. _Ardea_ 89:S167-184.
 
-Berthold, P, Fliege, G, Querner, U & Winkler, H (1986) The development of songbird populations in central Europe: analysis of trapping data. _Journal fur Ornithologie_ 127:397-437.
+**Berthold, P, Fliege, G, Querner, U & Winkler, H** (1986) The development of songbird populations in central Europe: analysis of trapping data. _Journal fur Ornithologie_ 127:397-437.
 
-Bolker, BM (2008) _Ecological models and data in R._ Princeton University Press.
+**Bolker, BM** (2008) _Ecological models and data in R._ Princeton University Press.
 
-Cave, VM, Freeman, SN, Brooks, SP, King, R & Balmer, DE (2009) On adjusting for missed visits in the indexing of abundance from 'constant effort' ringing. _Environmental and Ecological Statistics_ 3:949-963.
+**Cave, VM, Freeman, SN, Brooks, SP, King, R & Balmer, DE** (2009) On adjusting for missed visits in the indexing of abundance from 'constant effort' ringing. _Environmental and Ecological Statistics_ 3:949-963.
+ 
+**DeSante, DF, Burton, KM, Saracco, JF & Walker, BL** (1995) Productivity indices and survival rate estimates from MAPS, a continent-wide programme of constant-effort mist netting in North America. _Journal Applied Statistics_ 22:935-947.
 
-DeSante, DF, Burton, KM, Saracco, JF & Walker, BL (1995) Productivity indices and survival rate estimates from MAPS, a continent-wide programme of constant-effort mist netting in North America. _Journal Applied Statistics_ 22:935-947.
+**Julliard, R** (2004) Estimating the contribution of survival and recruitment to large scale population dynamics. _Animal Biodiversity & Conservation_ 27:417-426.
 
-Julliard, R (2004) Estimating the contribution of survival and recruitment to large scale population dynamics. _Animal Biodiversity & Conservation_ 27:417-426.
+**Laake, J. & Rexstad, E.** (2008) RMark - an alternative approach to building linear models in MARK. In Cooch, E. & White, G.C. (eds) [Mark - a gentle introduction.](www.phidot.org/software/mark/docs/book).
 
-Laake, J. & Rexstad, E. (2008) RMark - an alternative approach to building linear models in MARK. In Cooch, E. & White, G.C. (eds) [Mark - a gentle introduction.](www.phidot.org/software/mark/docs/book).
+**Miles, W, Freeman, SN, Harrison, NM & Balmer, DE** (2007) Measuring passerine productivity using constant effort sites: the effect of missed visits. _Ringing & Migration_ 23:231-237.
 
-Miles, W, Freeman, SN, Harrison, NM & Balmer, DE (2007) Measuring passerine productivity using constant effort sites: the effect of missed visits. _Ringing & Migration_ 23:231-237.
+**Payton, ME, Greenstone, MH & Schenker, N** (2003) Overlapping confidence intervals or standard error intervals: What do they mean in terms of statistical significance? _Journal of Insect Science_ 3:34.
 
-Payton, ME, Greenstone, MH & Schenker, N (2003) Overlapping confidence intervals or standard error intervals: What do they mean in terms of statistical significance? _Journal of Insect Science_ 3:34.
+**Peach, WJ, Buckland, ST & Baillie, SR** (1996) The use of constant effort mist-netting to measure between-year changes in abundance and productivity of common passerines. _Bird Study_ 43:142-156.
 
-Peach, WJ, Buckland, ST & Baillie, SR (1996) The use of constant effort mist-netting to measure between-year changes in abundance and productivity of common passerines. _Bird Study_ 43:142-156.
+**Pradel, R, Hines, JE, Lebreton, JD, & Nichols, JD** (1997) Capture-recapture survival models taking account of transients. _Biometrics_ 53:60-72. 
 
-Pradel, R., Hines, J. E., Lebreton, J. D., & Nichols, J. D. (1997) Capture-recapture survival models taking account of transients. _Biometrics_ 53:60-72. 
+**Robinson, RA, Freeman, SN, Balmer, DE & Grantham, MJ** (2007) Cetti's warbler Cettia cetti: analysis of an expanding population. _Bird Study_ 54:230-235.
 
-Robinson, RA, Freeman, SN, Balmer, DE & Grantham, MJ (2007) Cetti's warbler Cettia cetti: analysis of an expanding population. _Bird Study_ 54:230-235.
+**Robinson, RA, Julliard, R & Saracco, JF** (2009) Constant effort: studying avian population processes using standardized ringing. _Ringing & Migration_ 24:199-204.
 
-Robinson, RA, Julliard, R & Saracco, JF (2009) Constant effort: studying avian population processes using standardized ringing. _Ringing & Migration_ 24:199-204.
+**Saracco, JF, DeSante, DF & Kaschube, DR** (2008) Assessing landbird monitoring programs and demographic causes of population change. _Journal of Wildlife Management_ 72:1665-1673.
 
-Saracco, JF, DeSante, DF & Kaschube, DR (2008) Assessing landbird monitoring programs and demographic causes of population change. _Journal of Wildlife Management_ 72:1665-1673.
+**Venables, WN & Ripley, BD** (2002) _Modern applied statistics with S, 4th ed._ Springer, Berlin.
 
-Venables, WN & Ripley, BD (2002) _Modern applied statistics with S, 4th ed._ Springer, Berlin.
+**White, GC & Burnham, KP** (1999) Program MARK: survival estimation from populations of marked animals. _Bird Study_ 46:S120-S139.
 
-White, G.C. & Burnham, K.P. (1999) Program MARK: survival estimation from populations of marked animals. _Bird Study_ 46:S120-S139.
+**Wood, SN** (2006) _Generalized additive models in R._ Chapman & Hall, London.
 
-Wood, SN (2006) _Generalized additive models in R._ Chapman & Hall, London.
-
-Zuur, AF, Ieno, EN & Smith, GM (2007) _Analyzing ecological data._ Springer, Berlin.
+**Zuur, AF, Ieno, EN & Smith, GM** (2007) _Analyzing ecological data._ Springer, Berlin.
 
 

@@ -1,9 +1,9 @@
 plot.ces.plots <-
 function(x){
 
-  if ( class(x)[1] == 'ces' ){
-    if ( class(x)[2] == 'plots' ){
-      if (.Platform$OS.type == "windows") {  # /dev/null has different names, just sweeps up output from summary
+  if( class(x)[1] == 'ces' ){
+    if( class(x)[2] == 'plots' ){
+      if( .Platform$OS.type == "windows" ) {  # /dev/null has different names, just sweeps up output from summary
         sink('NUL')
       } else {
         sink('/dev/null')

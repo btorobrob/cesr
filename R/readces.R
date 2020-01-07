@@ -188,6 +188,8 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=FALSE){
     c1 <- suppressWarnings(as.integer(substr(coords,9,11)))
     c2 <- suppressWarnings(as.integer(substr(coords,12,13)))/60
     c3 <- suppressWarnings(as.integer(substr(coords,14,15)))/3600
+    if( max(c2, c3) > 60 )
+      warning("values greater than 60 detected in latitude minutes/seconds, check coordinate format", call.=FALSE)
     result [ , long := ew * (c1 + c2 + c3)]
   } else if ( llfmt == 14 ){
     if( anyNA(as.integer(substr(coords,9,10))) | anyNA(as.integer(substr(coords,11,12))) | anyNA(as.integer(substr(coords,13,14))) )
@@ -195,6 +197,8 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=FALSE){
     c1 <- suppressWarnings(as.integer(substr(coords,9,10)))
     c2 <- suppressWarnings(as.integer(substr(coords,11,12))/60)
     c3 <- suppressWarnings(as.integer(substr(coords,13,14))/3600)
+    if( max(c2, c3) > 60 )
+      warning("values greater than 60 detected in longitude minutes/seconds, check coordinate format", call.=FALSE)
     result [ , long := ew * (c1 + c2 + c3)]
   } else {
     err <- which(nchar(coords) %in% c(14, 15))
@@ -231,12 +235,12 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=FALSE){
 
   # return dataframe
   result <- as.data.frame(result)
-  class(result) <- c('ces','data','data.frame')
+  class(result) <- c('ces', 'data', 'data.frame')
   country <- unique(result$countryID)
   if ( length(country) == 1 )
     attr(result,'country') <- country
   else
-    warning("more than one country code detected, country attribute not set")
+    warning("more than one country code detected, country attribute not set", call.=FALSE)
   
   return(result)
 

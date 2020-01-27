@@ -1,21 +1,17 @@
 writeces <-
-function(x, file="", na.string='.', age=0, ads=FALSE, jvs=FALSE, prod=FALSE, verbose=TRUE){
+function(cesobj, file="", na.string='.', age=0, ads=FALSE, jvs=FALSE, prod=FALSE, verbose=TRUE){
 
-  if( !class(x)[1]=='ces' )
+  if( !class(cesobj)[1]=='ces' )
     stop('No ces data to write\n')
   
-  if ( class(x)[2] == 'counts' ){
-      writeces.counts(x, file, na.string='.')
-    } else if ( class(x)[2] == 'sites' ){
-      writeces.sites(x, file, na.string='.')
-    } else if ( class(x)[2] == 'plots' ){
-      writeces.plots(x, file, verbose)
-    } else if ( class(x)[2] == 'data' ){
-      writeces.spp(x, file, age)
-    } else if ( class(x)[2] == 'glmfit' ){
-      writeces.glmfit(x, file, ads=FALSE, jvs=FALSE, prod=FALSE)
-    } else 
-      cat('No data to write!\n')
+  switch(class(cesobj)[2], 
+          counts = writeces.counts(cesobj, file = file, na.string = '.'),
+          sites = writeces.sites(cesobj, file = file, na.string = '.'),
+          plots = writeces.plots(cesobj, file = file, verbose=verbose), 
+          data = writeces.spp(cesobj, file = file, age = age),
+          glmfit = writeces.glmfit(cesobj, file = file, ads = ads, jvs = jvs, prod = prod),
+ #         markfit = plot.ces.markfit(x),
+          cat('No data to write!\n'))
 
 }
 

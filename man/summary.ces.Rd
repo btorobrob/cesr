@@ -8,11 +8,11 @@ Summarizing CES objects
 Methods to summarize CES objects
 }
 \usage{
-summary(x, ads=FALSE, jvs=FALSE, prod=FALSE, age=0, sp.order='alpha', df=FALSE, nrow=6, silent=FALSE)
+summary(cesobj, ads=FALSE, jvs=FALSE, prod=FALSE, age=0, sp.order='alpha', df=FALSE, nrow=6, silent=FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{x}{
+  \item{cesobj}{
 A CES object
 }
   \item{ads, jvs, prod}{

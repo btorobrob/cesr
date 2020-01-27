@@ -1,17 +1,18 @@
 plot.ces <-
-function(x, sites=FALSE, graph='X', N=20, ...){
+function(cesobj, sites=FALSE, graph='X', N=20, sitelist=NULL, col=c('red', 'blue'), ...){
 
-  if( class(x)[1] != 'ces' )
+  if( class(cesobj)[1] != 'ces' )
     stop('Not a CES object!')
   
-  switch( class(x)[2], 
-          plots = plot.ces.plots(x),
-          plot.summary = plot.ces.plots(x),
-          counts = plot.ces.counts(x, sites=sites),
-          data = plot.ces.data(x, N=as.integer(N)),
-          glmfit = plot.ces.glmfit(x, graph=graph, ... ),
-          markfit = plot.ces.markfit(x),
-          cat('No plot method defined!\n'))
-
+  switch(class(cesobj)[2], 
+         plots = plot.ces.plots(cesobj),
+         plot.summary = plot.ces.plots(cesobj),
+         counts = plot.ces.counts(cesobj, sites=sites),
+         data = plot.ces.data(cesobj, N=as.integer(N)),
+         glmfit = plot.ces.glmfit(cesobj, graph=graph, ... ),
+         markfit = plot.ces.markfit(cesobj),
+         ch = plot.ces.ch(cesobj, sitelist=sitelist, col=col, ...),
+         cat('No plot method defined!\n'))
+  
 }
 

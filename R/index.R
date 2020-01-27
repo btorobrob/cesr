@@ -3,10 +3,10 @@ function(x, year=-1, smooth=FALSE, trend=0, compare=0, verbose=FALSE, visit.corr
 
   if ( !class(x)[1] == 'ces' | !class(x)[2] == "counts" )
     stop("No ces capture information\n")
-
+  
   if ( year == -1 ) 
     year <- max(x$ad.data$year, x$jv.data$year)
-
+  
   # check in case there are no captures in a given year
   if ( (length(x$ad.data)>0 & length(x$ad.data[x$ad.data==year])==0) |
        (length(x$jv.data)>0 & length(x$jv.data[x$jv.data==year])==0) ){ 
@@ -32,14 +32,14 @@ function(x, year=-1, smooth=FALSE, trend=0, compare=0, verbose=FALSE, visit.corr
     warning('Only one site detected', immediate.=TRUE, call.=FALSE)
   
   if ( smooth == TRUE ) {
-
+    
     x=x # placeholder
-
+    
   } else {
-
+    
     if ( trend > 0 & compare > 0 )
       stop("Specify only one of 'trend' or 'compare'\n")
-
+    
     ad.res <- numeric(0)
     jv.res <- numeric(0)
     
@@ -69,7 +69,7 @@ function(x, year=-1, smooth=FALSE, trend=0, compare=0, verbose=FALSE, visit.corr
         pr.res <- ann.model.prod(x, year, offset=visit.corr, cl=cl)
     }
   }  
-
+  
   if ( !exists('ad.res') )
     ad.res <- NA
   if ( !exists('jv.res') )
@@ -78,11 +78,11 @@ function(x, year=-1, smooth=FALSE, trend=0, compare=0, verbose=FALSE, visit.corr
     pr.res <- NA
   
   res <- list(ad.results=ad.res, jv.results=jv.res, pr.results=pr.res, 
-            model.type=mtype, spp=x$spp, spp.name=x$spp.name, limits=cl)
+              model.type=mtype, spp=x$spp, spp.name=x$spp.name, limits=cl)
   class(res) <- c('ces','glmfit')
-
+  
   if ( verbose == TRUE ){
-    writeces(res)
+    writeces.glmfit(res, file=stdout())
   } else {
     summary(res)
   }

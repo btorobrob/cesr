@@ -40,19 +40,19 @@ cesr provides tools to perform basic analyses of annual variation in abundance, 
 ## Before you start ...
 To use cesr you first need to download and install R (if it is not already installed on your computer). To do this you need to go to [R homepage](https://cloud.r-project.org/) and click on the 'download R' link for your system. There are many guides to using R, some are easy to understand, others are highly technical and less easy to understand. Good places to start is the [introductory guide](http://cran.r-project.org/doc/manuals/R-intro.pdf) available on the R website, which gives a few basic commands, and the [quick-R](https://www.statmethods.net/r-tutorial/index.html) website. For those who want to undertake some statistical analyses, Mick Crawley has written a good introduction^[Crawley, M. (2005) Statistics: an introduction using R. Wiley-Blackwell, London.] , while his _R Book_^[Crawley, M. (2007). The R book. Wiley-Blackwell, London.] is quite comprehensive. For those who need more technical details on doing high-level analysis, these books^[Try Bolker (2008) or Zuur _et al._ (2007), both of which use ecology examples, or Venables & Ripley (2002), which is more general; Wood (2006) is more advanced but explains the backround statistics well] offer good explanations. If you intend to use R a lot, do have a look at the [RStudio](https://www.rstudio.org) software which provides a nice environment for writing and developing R code.
 
-The basic R program allows you to do many things, but not everything. The beauty of the R system is that people can contribute 'packages' (cesr is one) that add specific extra functionality to the base system. The cesr package is now available for download and you can install it with the following R command:
+The basic R program allows you to do many things, but not everything. The beauty of the R system is that people can contribute 'packages' (cesr is one) that add specific extra functionality to the base system. The cesr package is now available for download and you can install it with the following R commands:
 ```{r, eval=FALSE}
-devtools::install_github("btorobrob/cesr")
+install.packages('remotes')
+remotes::install_github("btorobrob/cesr")
 ```
-This slightly cryptic command simply goes to my account (btorobrob) on Github and gets the cesr package. Don't worry, you only need to do this done once, unless you change computer, update R, or you want to update the cesr package itself. This should also download all the extra packages cesr needs (notably data.table to speed up the data extraction and RMark for the survival analysis) so you may see some text whizzing by on the screen. 
-
-Each time you start R, you will need to load, or 'attach', the cesr package (there are many hundreds of packages to do all sorts of different analyses, so for efficiency R only loads those you actually want to use). Do this using
+These slightly cryptic commands simply goes to my account (btorobrob) on Github and gets the cesr package (and the code to do this doesn't come automatically with R)^[You can safely ignore the warning about RTools not being installed. R users who have the devtools package already installed can use the function of the same name in that package]. Don't worry, you only need to do this  once, unless you change computer, update R, or you want to update the cesr package itself. This should also download all the extra packages cesr needs (notably data.table to speed up the data extraction and RMark for the survival analysis) so you may see some text whizzing by on the screen. 
+Each time you start R, you will need to load, or 'attach', the cesr package (there are many thousands of packages to do all sorts of different analyses, so for efficiency R only loads those you actually want to use). Do this using
 ```{r}
 library(cesr)
 ```
 You should get the brief welcome message telling you which version of the package you are using.
 
-**One important thing to remember.** You can do very little harm by getting things wrong, if you get in a mess just close R down and start again. R will usually tell you what it thinks has gone wrong, but it can be quite cryptic, especially if you are unfamiliar with how it works. I've tried to translate the commonest ones, if you come across others copy and paste the error message from the R window _and_ the command you used which generated it into an email to meand I'll see if I can help.
+**One important thing to remember.** You can do very little harm by getting things wrong, if you get in a mess just close R down and start again. R will usually tell you what it thinks has gone wrong, but it can be quite cryptic, especially if you are unfamiliar with how it works. I've tried to translate the commonest ones, if you come across others copy and paste the error message from the R window _and_ the command you used which generated it into an email to me; I'll see if I can help.
 
 ## A sample session
 

@@ -33,8 +33,8 @@ function(cesobj, file=stdout(), col=c('blue', 'red'), border='gray10', leg.size=
   legend('center', legend=c('captured same year', 'captured later', 'single capture'), horiz=TRUE,
          col=cols, border=border, bty='n', pch=15, cex=leg.size, pt.cex=leg.size*2, ...)
   par(op)
-
+  
   invisible(list(years = yr.dat,
-              sites = site.dat,
-              spp.name = cesobj$spp.name))
+                 sites = site.dat,
+                 spp.name = cesobj$spp.name))
 }

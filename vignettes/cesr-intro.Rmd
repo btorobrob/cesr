@@ -218,11 +218,11 @@ Now that we have all the data in place, we can calculate annual indices of abund
 ```{r}
 robin.res = index(robin.dat)
 ```
-Assuming data for both adults and juveniles were extracted with extract.data() then index will analyse both adult and juvenile abundances and productivity (the ratio of juvenile to adult birds caught, see below) and produce a simple summary of the results for each. The dispersion parameter (calculated by dividing the deviance by the degrees of freedom) is a quick way of assessing how well the model we have fitted fits our data, if the model fit is good then it should approximately equal 1, though values of up to 2 or 3 are acceptable; for more details, see the description about the models fitted below^[not yet written!]. You will also see printed the change between the first and last years for which there are data. Note, unless you say otherwise, the function will attempt to correct for missing visits using the standard BTO method (see Peach _et al._ 1996; Robinson _et al._ 2007), if you do not want this you can use the argument visit.corr:
+Assuming data for both adults and juveniles were extracted with extract.data() then index will analyse both adult and juvenile abundances and productivity (the ratio of juvenile to adult birds caught, see below) and produce a simple summary of the results for each. The change values are just that, so the number of adult robins caught increased by nearly 30%, whereas the number of juveniles caught decreased by (very nearly) 20%. The dispersion parameter (calculated by dividing the deviance by the degrees of freedom) is a quick way of assessing how well the model we have fitted fits our data, if the model fit is good then it should approximately equal 1, though values of up to 2 or 3 are acceptable; for more details, see the description about the models fitted below^[not yet written!]. You will also see printed the change between the first and last years for which there are data. Note, unless you say otherwise, the function will attempt to correct for missing visits using the standard BTO method (see Peach _et al._ 1996; Robinson _et al._ 2007), if you do not want this you can use the argument visit.corr:
 ```{r, eval=FALSE}
 robin.res = index(robin.dat, visit.corr=FALSE)
 ```
-From analyses of BTO data, it seems that the typical level of missing visits makes relatively little difference to the final indices in any case (Miles _et al._ 2007; Cave _et al._ 2009).
+From analyses of BTO data, it seems that the typical level of missing visits (at least in Britain) makes relatively little difference to the final indices in any case (Miles _et al._ 2007; Cave _et al._ 2009).
 
 For a quick look at the annual indices from these models, simply type:
 ```{r, fig.dim = c(5,6), fig.align='center'}
@@ -284,6 +284,13 @@ robin.ch = extract.ch(ukdata, species=10990, plots=uk_sites)
 ```{r}
 summary(robin.ch)
 ```
+As with all ces objects you can plot this to get an idea of what the data look like
+```{r, fig.dim = c(5, 5), fig.align='center'}
+plot(robin.ch, sitelist=c('417', '420', '463'))
+```
+
+Each line represents a particular capture history, grouped by site. Blue indicates occasions when those birds were captured, red when they were not; darker colours indicate more frequently occurring histories (i.e. representing more individuals). We've chosen to plot just three sites simply to make the example a bit clearer. Working from the top of the plot, the first two groups of birds were caught in each of the first three and two years respectively. The third group, were caught twice in the first year, not in the second, and again in the third. Note there are _two_ capture occasions in the first year (hence the x-axis label not being year). Several individuals caught in the fourth year on this site were caught both again in that year and in each of the subsequent three years (the dark blue bar, halfway down).
+
 Survival probabilities for adults are estimated using function mark.ces(). This runs Program MARK (White & Burnham 1999) through the RMark package (Laake & Rexstad 2008) to fit a form of the standard CJS mark-recapture model modified to account for transients (after the manner of Pradel _et al._ 1997), see below for details^[not yet written!]. Briefly, this allows us to account for individuals that are only caught once, either because they are migrating through the area, or because they are breeding a fair distance from the nets and so are much less likely to be caught than those with nests close to the net locations.
 ```{r}
 robin.surv = mark.ces(robin.ch)
@@ -328,7 +335,6 @@ sitereport(ukdata, year=2017, template_file='new_filename')
 Making small changes to the R code output (rather than simply the text) is probably possible, but major changes (i.e. if you need different summaries, or you want pdf output directly) will probably require altering the sitereport() function, which is beyond what we can do here, but feel free to create a copy of the function and have a go. If you get stuck drop me a line and I'll help if I can.
 
 Good luck!
-
 
 ## References
 **Baillie, SR** (1990) Integrated population monitoring of breeding birds in Britain and Ireland. _Ibis_ 132:151-161.

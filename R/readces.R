@@ -76,7 +76,7 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=FALSE){
     result[age1 %in% c('3','3J'), age := 3] 
     result <- result[ age %in% c(2, 3, 4) ] # anything else we just delete, note should keep 2s 
     result[ , age1 := NULL]
-    ages <- ages[!ages %in% c('3','3J','4','5','6')] # check for non 3/4 age codes
+    ages <- ages[!ages %in% c('2','3','3J','4','5','6')] # check for non 3/4 age codes
     if( length(ages) > 0 ){
       age.warning <- paste('unexpected age-codes:', paste(ages, collapse=','), 'encountered; recoded as 4 or deleted')
       warning(age.warning, call. = FALSE)
@@ -112,7 +112,7 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=FALSE){
   # remove races if required
   result[ , race := species]  # just so we know it is there
   if( group.race )
-    result[ , species := (10 * floor(species/10))]  # concatenate races, original code now in race
+    result[ , species := (10 * floor(as.numeric(species)/10))]  # concatenate races, original code now in race
 
   # check for duplicated rings on different species (yes, really!)
   dup_spp <- unique(result[ , c('species','ring')], by=c('species', 'ring')) 

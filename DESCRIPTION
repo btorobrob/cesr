@@ -1,7 +1,7 @@
 Package: cesr
-Version: 0.50.0
+Version: 0.50.1
 Title: Trend analysis of Constant Effort Site ringing data
-Date: 2020-01-06
+Date: 2020-02-10
 Author: Rob Robinson <rob.robinson@bto.org>
 Maintainer: Rob Robinson <rob.robinson@bto.org>
 Description: Facilities for reading EuroCES data in Euring format to produce annual indices of abundance, productivity and survival. Designed to primarily analyse data from schemes with 10-12 visits per year following methods used by the BTO. Use read.ces() to read in data, extract.data() and index() to do abundance/productivity trends and extract.ch() and mark.ces() to estimate survival probabilities.

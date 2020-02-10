@@ -1,5 +1,5 @@
 readces <-
-function(file=NULL, visits='std', fill.sex=FALSE, group.race=FALSE){
+function(file=NULL, visits='std', fill.sex=FALSE, group.race=TRUE){
   
   if( is.null(file) )
     file <- file.choose()
@@ -15,9 +15,9 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=FALSE){
                  'visit_period', 'visit_start_time', 'visit_end_time',  'total_net_length',
                  'ring_scheme', 'ring_number', 'brood_patch_score', 'wing_length', 
                  'mass', 'body_mass', 'time_of_weighing', 'length_p3', 'fat_score', 
-                 'moult_state', 'habitat_type')
+                 'moult_state', 'habitat_type', 'start', 'end')
   # map back to the main list
-  column_nos <- c(1:23, 1, 2, 2, 3, 3, 5, 10, 11, 9, 12, 13, 17, 19, 20, 20, 21, 22, 23, 18, 4)
+  column_nos <- c(1:23, 1, 2, 2, 3, 3, 5, 10, 11, 9, 12, 13, 17, 19, 20, 20, 21, 22, 23, 18, 4, 10, 11)
   
   match.names <- adist(tolower(coln), tolower(c(var.names, alt.names)))
   which.names <- unlist(apply(match.names, 1, which.min))
@@ -66,7 +66,7 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=FALSE){
   }
 
   # check that ages are all 3/4 for simplicity later on...
-  if( length(result$age[!result$age %in% c(3,4)]) > 0 ){
+  if( length(result$age[!result$age %in% c(2, 3, 4)]) > 0 ){
     result[ , age1 := as.character(age)]
     result[ , age := NULL] # sometimes it is character, so start from scratch
     setkey(result, 'age1')
@@ -74,6 +74,7 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=FALSE){
     adult <- c('4','5','6','7','8','9','A','B','C','D','E','F','G','H','J','K','L','M','P','N','Q','R','S','T')
     result[age1 %in% adult, age := 4] 
     result[age1 %in% c('3','3J'), age := 3] 
+    result[age1 == 2, age := 2] 
     result <- result[ age %in% c(2, 3, 4) ] # anything else we just delete, note should keep 2s 
     result[ , age1 := NULL]
     ages <- ages[!ages %in% c('2','3','3J','4','5','6')] # check for non 3/4 age codes
@@ -188,7 +189,7 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=FALSE){
     c1 <- suppressWarnings(as.integer(substr(coords,9,11)))
     c2 <- suppressWarnings(as.integer(substr(coords,12,13)))/60
     c3 <- suppressWarnings(as.integer(substr(coords,14,15)))/3600
-    if( max(c2, c3) > 60 )
+    if( max(c2, c3, na.rm=TRUE) > 60 )
       warning("values greater than 60 detected in latitude minutes/seconds, check coordinate format", call.=FALSE)
     result [ , long := ew * (c1 + c2 + c3)]
   } else if ( llfmt == 14 ){
@@ -197,7 +198,7 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=FALSE){
     c1 <- suppressWarnings(as.integer(substr(coords,9,10)))
     c2 <- suppressWarnings(as.integer(substr(coords,11,12))/60)
     c3 <- suppressWarnings(as.integer(substr(coords,13,14))/3600)
-    if( max(c2, c3) > 60 )
+    if( max(c2, c3, na.rm=TRUE) > 60 )
       warning("values greater than 60 detected in longitude minutes/seconds, check coordinate format", call.=FALSE)
     result [ , long := ew * (c1 + c2 + c3)]
   } else {
@@ -224,7 +225,10 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=FALSE){
   }
 
   # habitats
-  dodgy <- unique(result$habitat[!(result$habitat %in% c('DS','FA','GN','RD','WD','WS'))])
+  result[ , habitat := toupper(habitat)]
+  result[habitat=='RD', habitat := 'RB']
+
+  dodgy <- unique(result$habitat[!(result$habitat %in% c('DS','FA','GN','RB','WD','WS'))])
   if( length(dodgy) > 0 ){
     wmessage <- paste("unrecognised habitat codes:", paste(dodgy, collapse=', '))
     warning(wmessage, call.=FALSE)

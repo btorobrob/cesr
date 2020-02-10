@@ -9,7 +9,7 @@ Read in CES data
 Reads in CES data from a text file in EuroCES format
 }
 \usage{
-readces(file, visits='std', fill.sex=FALSE, group.race=FALSE)
+readces(file, visits='std', fill.sex=FALSE, group.race=TRUE)
 readBTO(file, species)
 }
 %- maybe also 'usage' for other objects documented here.
@@ -27,14 +27,14 @@ A numeric Euring species code
 Should all encounters be populated with the most frequent sex recorded?
 }
   \item{group.race}{
-Aggregate records of different races (ie those where the last digit of the Euring code is not zero)?
+Aggregate records of different races (i.e. those where the last digit of the Euring code is not zero)?
 }
 }
 \details{
 For details of the file specification see the CES pages of the Euring website, the function will attempt to match similar column names; a warning will be generated if it detects anything amiss (not guaranteed!). 
 }
 \value{
-A dataframe with (at a minimum) the following columns: countryID, site, habitat, visit, day, month, year, julian, netlength, scheme, ring, species, sex, age, race, lat, long. 
+A dataframe with (at a minimum) the following columns: countryID, site, habitat, visit, day, month, year, netlength, scheme, ring, species, sex, age, race, julian, lat, long. 
 
 Latitude and longitude will be in decimal degrees. Race will usually be the same as spp (i.e. a Euring number), but may be different where particular races were identified in the data file (e.g. as for Motacilla alba alba/yarrelli). The column 'julian' gives the day of year from 1 Jan (including 29 Feb in leap years). The function does some basic error-checking and will try to give informative messages where it detects a problem. Where records are deleted or values set to NA (missing) this will be stated.  
 }
@@ -46,7 +46,7 @@ Euring CES pages: https://euring.org/research/ces-europe/
 Rob Robinson
 }
 \note{
-The CES programs expect birds aged as either juvenile (3) or adult (4), the function will recode ages where it can, records with other ages (0, 1, 2) will be deleted.
+The CES programs expect birds aged as either juvenile (3) or adult (4), the function will recode ages where it can, 2 is also allowed; records with other ages (0, 1) will be deleted.
 
 readBTO() is provided for reading in BTO '.all' fixed format files, variables not included in this format (eg habitat, NetLength) are simply set to NA.
 }

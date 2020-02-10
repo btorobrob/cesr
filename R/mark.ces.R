@@ -23,9 +23,8 @@ function(cesobj, exclude=NULL, type='+', trend=0, compare=0, cleanup=FALSE){
   
   if( !is.null(exclude) ){
     # first convert site IDs to site number
-    excl.rows <- which(as.character(cesobj$sitename) %in% as.character(exclude))
-    include.rows <- !(chdata$site %in% excl.rows)
-    chdata <- chdata[include.rows, ]
+    excl.rows <- which(as.character(chdata$sitename) %in% as.character(exclude))
+    chdata <- chdata[-excl.rows, ]
     chdata$sitename <- droplevels(chdata$sitename)
   }
   if( length(levels(chdata$sitename)) == 1 ) # check if only 1 site

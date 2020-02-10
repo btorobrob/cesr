@@ -106,6 +106,8 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=TRUE){
   result[ , sex := as.factor(sex)]
   
   # set site names
+  if( length(grep("[#]", as.character(result$siteID))) > 0 ) # yes, really- thanks to Arizaga
+    warning("Using the '#' sign in sitenames confuses Mark, rename your sites!", call.=FALSE)
   result[ , sitename := as.factor(siteID)] 
   result[ , site := as.numeric(as.factor(siteID))]
   result[ , siteID := NULL] # no longer needed

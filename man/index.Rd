@@ -8,15 +8,18 @@ Calculate indices of abundance and productivity from CES data
  Takes a CES object created by \code{extract.data} and, depending on what data are available, creates indices of the number of adults and juveniles caught and the ratio of the two, as an index of productivity.
 }
 \usage{
-index(x, year=-1, smooth=FALSE, trend=0, compare=0, verbose=FALSE, visit.corr=TRUE, cl=0.95)
+index(cesobj, year=-1, begin=0, smooth=FALSE, trend=0, compare=0, verbose=FALSE, visit.corr=TRUE, cl=0.95)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{x}{
+  \item{cesobj}{
   A CES object create by \code{extract.data} 
 }
   \item{year}{
   A year to act as reference year, i.e. in which the index is value is 1
+}
+  \item{begin}{
+  The first year for which the trend should be calculated from. May be useful if a species is not common in the first years of the dataset, but becomes so subsequently.
 }
   \item{visit.corr}{
   Logical, include the correction for missing visits when calculating indices?

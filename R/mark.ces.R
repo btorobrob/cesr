@@ -22,7 +22,6 @@ function(cesobj, exclude=NULL, type='+', trend=0, compare=0, cleanup=FALSE){
   chdata <- cesobj$chdata
   
   if( !is.null(exclude) ){
-    # first convert site IDs to site number
     excl.rows <- which(as.character(chdata$sitename) %in% as.character(exclude))
     chdata <- chdata[-excl.rows, ]
     chdata$sitename <- droplevels(chdata$sitename)

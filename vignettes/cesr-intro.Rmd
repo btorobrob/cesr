@@ -2,8 +2,9 @@
 title: "cesr - Calculating trends from CES data"
 author: "Rob Robinson"
 date: "`r format(Sys.Date(), '%d %B %Y')`"
-output: rmarkdown::html_vignette
-#output: rmarkdown::pdf_document
+#output: rmarkdown::html_vignette
+output: rmarkdown::pdf_document
+urlcolor: blue
 vignette: >
   %\VignetteIndexEntry{cesr-intro}
   %\VignetteEngine{knitr::rmarkdown}
@@ -77,9 +78,17 @@ Incidentally, in books about R, you will sometimes see an '=' used to assign an 
 
 ## Data Preparation
 
-The package comes with some sample data from Britain for Robin _Erithacus rubecula_ and  Song Thrush _Turdus philomelos_ which we will use to demonstrate the use of this package. Often the hardest part in any analysis is often getting the data in a form that is suitable for analysis, consequently, cesr expects to get the data in a particular format. In an effort to reduce the options for things going wrong, most of the functions in the package require an object belonging the ces 'class'. These are generated automatically by the functions, so in most cases you don't need to worry about it, it just ensures all the necessary information is available and in the correct format. Because of this, to avoid problems later on, it is strongly recommended that you format your data correctly [guidelines here](http://www.NEED TO CREATE PAGE!!!) and read it in using the readces() function, which sets up the correct variables. If you use another method (e.g. read.csv()), even if the data are in the right format, R should tell you don't have 'a CES object'; expect all kinds of pain if you persist!
+The package comes with some sample data from Britain for Robin _Erithacus rubecula_ and  Song Thrush _Turdus philomelos_ which we will use to demonstrate the use of this package. Often the hardest part in any analysis is often getting the data in a form that is suitable for analysis, consequently, cesr expects to get the data in a particular format. In an effort to reduce the options for things going wrong, most of the functions in the package require an object belonging the ces 'class'. These are generated automatically by the functions, so in most cases you don't need to worry about it, it just ensures all the necessary information is available and in the correct format. Because of this, to avoid problems later on, it is strongly recommended that you format your data correctly [guidelines here](https://euring.org/research/ces-europe/methods/data-format-euroces) and read it in using the readces() function, which sets up the correct variables. If you use another method (e.g. read.csv()), even if the data are in the right format, R should tell you don't have 'a CES object'; expect all kinds of pain if you persist!
 
 Your file should be a comma-separated plain text file with all the data for every species caught by one scheme in one file. Schemes should screen the data for appropriate sites and years to use and all ringing additional to the standard CES effort (either extra nets or visits) should be excluded, i.e. the data should be ready to use as is. Each row should represent the capture of one bird on a particular day, thus an individual bird may appear on multiple rows, both on different dates within the same year and if it is recaptured in subsequent years. The first row should be column identifiers, and all birds should be included even if they include missing data (for example, birds that are unaged, that is Euring age-code 0 or 2). 
+
+The first few lines could look a bit like this:
+```
+countryID,Site,coords,habitat,visit,day,month,year,NetLength,scheme,ring_number,species,sex,age
+ES,E001,+425200-0023200,WS,6,17,07,2010,132,ESA,B....90916,11870,M,4
+ES,E001,+425200-0023200,WS,1,01,05,2010,132,ESA,B....90926,11870,F,4
+```
+
 
 ## Reading in the data
 

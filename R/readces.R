@@ -1,5 +1,5 @@
 readces <-
-function(file=NULL, visits='std', fill.sex=FALSE, group.race=TRUE){
+function(file=NULL, visits='std', fill.sex=FALSE, group.race=FALSE){
   
   if( is.null(file) )
     file <- file.choose()
@@ -115,7 +115,7 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=TRUE){
   # remove races if required
   result[ , race := species]  # just so we know it is there
   if( group.race )
-    result[ , species := (10 * floor(as.numeric(species)/10))]  # concatenate races, original code now in race
+    result[ , species := (10 * floor(as.numeric(as.character(species))/10))]  # concatenate races, original code now in race
 
   # check for duplicated rings on different species (yes, really!)
   dup_spp <- unique(result[ , c('species','ring')], by=c('species', 'ring')) 

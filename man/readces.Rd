@@ -9,7 +9,7 @@ Read in CES data
 Reads in CES data from a text file in EuroCES format
 }
 \usage{
-readces(file, visits='std', fill.sex=FALSE, group.race=TRUE)
+readces(file, visits='std', fill.sex=FALSE, group.race=FALSE)
 readBTO(file, species)
 }
 %- maybe also 'usage' for other objects documented here.

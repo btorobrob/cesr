@@ -68,8 +68,10 @@ function(cesobj, year=-1, begin=0, smooth=FALSE, trend=0, compare=0, verbose=FAL
         ad.res <- annc.model.counts(ad.data, compare, offset=visit.corr, cl=cl)
       if ( nrow(jv.data) > 0 )
         jv.res <- annc.model.counts(jv.data, compare, offset=visit.corr, cl=cl)
-      if ( nrow(jv.data)>0 & nrow(ad.data)>0 )
-        pr.res <- annc.model.prod(list(ad.data, jv.data), compare, offset=visit.corr, cl=cl)
+      if ( nrow(jv.data)>0 & nrow(ad.data)>0 ){
+        data <- list(ad.data=ad.data, jv.data=jv.data)
+        pr.res <- annc.model.prod(data, compare, offset=visit.corr, cl=cl)
+      }
     } else {
       mtype <- list(type='annual', refyear=year, nyrs=0)
       if ( nrow(ad.data) > 0 )

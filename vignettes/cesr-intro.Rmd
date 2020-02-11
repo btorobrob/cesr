@@ -2,8 +2,8 @@
 title: "cesr - Calculating trends from CES data"
 author: "Rob Robinson"
 date: "`r format(Sys.Date(), '%d %B %Y')`"
-#output: rmarkdown::html_vignette
-output: rmarkdown::pdf_document
+output: rmarkdown::html_vignette
+#output: rmarkdown::pdf_document
 urlcolor: blue
 vignette: >
   %\VignetteIndexEntry{cesr-intro}
@@ -145,7 +145,7 @@ shows the first _n_ lines of data, while the second:
 ```{r}
 summary(ukdata, df=TRUE)
 ```
-gives a summary of each variable. Note there are two ways in which variables are summarised: for numeric variables it gives, the minimum, quartile, median and maximum values; for character variables it gives a frequency count of the commonest entries.
+gives a summary of each variable. Note there are two ways in which variables are summarised: for numeric variables it gives, the minimum, quartile, median and maximum values; for character variables it gives a frequency count of the commonest entries. Note also that _cesr_ has done a little bit of re-arranging of the data, so the columns are not quite the same as those required to be read in!
 
 As with summary(), all CES objects can be 'plot'ted, which will give a graphical summary of the information therein, So:
 ```{r, fig.dim = c(5, 5), fig.align='center'}

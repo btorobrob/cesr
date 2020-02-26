@@ -2,12 +2,14 @@ annt.model.prod <-
 function(x, year=-1, trend=100, offset=TRUE, cl=0.95){
 
   data <- x  # we're going to need this later, annoyingly
+  year <- ifelse(year==-1, min(x[[1]]$year, na.rm=TRUE), year)
+  
   ad.new <- x$ad.data[ , c('site','year','totcaps','corrcaps') ]
   names(ad.new)<-c('site','year','adcaps','adexcaps')
   jv.new <- x$jv.data[ , c('site','year','totcaps','corrcaps') ]
   names(jv.new)<-c('site','year','jvcaps','jvexcaps')
   x <- merge(ad.new, jv.new)
-  x$totcaps <- x$adcaps + x$jvcaps
+    x$totcaps <- x$adcaps + x$jvcaps
   x$totexcaps <- x$adexcaps + x$jvexcaps
   x <- x[x$totcaps>0, ]     # no birds caught so doesn't contribute to model fit
 

@@ -10,7 +10,9 @@ function(x, year=-1, trend=100, offset=TRUE, cl=0.95){
   nyrs <- max(x$year) - min(x$year) + 1
   if ( trend > nyrs )
     trend <- nyrs
-     
+  
+  year <- ifelse(year==-1, min(x$year, na.rm=TRUE), year)
+
   if ( nyrs > trend ) {
     ybreak <- max(x$year) - trend
     yearf <- ifelse ( x$year > ybreak, 0, x$year )

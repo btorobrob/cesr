@@ -1,5 +1,5 @@
 mark.ces <-
-function(cesobj, exclude=NULL, type='+', trend=0, compare=0, cleanup=FALSE){
+function(cesobj, exclude=NULL, type='+', trend=0, compare=0, cleanup=TRUE){
   
   requireNamespace('RMark', quietly=TRUE)
   
@@ -116,8 +116,8 @@ function(cesobj, exclude=NULL, type='+', trend=0, compare=0, cleanup=FALSE){
   
   ## Now run the MARK models
   model.ces <- RMark::make.mark.model(x.pd, ddl, parameters=list(Phi=phi.ces,p=p.ces))
-  model <- RMark::run.mark.model(model.ces, delete=cleanup)
-  
+  model <- RMark::run.mark.model(model.ces, delete=cleanup, ignore.stderr=TRUE)
+
   # and possibly reset working dir
   if( cleanup == FALSE )
     setwd(oldwd)
@@ -161,7 +161,7 @@ function(cesobj, exclude=NULL, type='+', trend=0, compare=0, cleanup=FALSE){
   p1_res <- p1_res[ , c(5,1:4)]
   rownames(p1_res) <- NULL
   
-  setwd(oldwd)
+#  setwd(oldwd)
   
   results <- list(model=model,
        AIC=model$results$AICc, npar=model$results$npar,

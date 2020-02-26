@@ -14,11 +14,8 @@ extract.coverage(cesdata, early=NA, late=NA, min.visits=1, all.visits=0, exclude
   \item{x}{
   A CES object created by \code{readces}
 }
-  \item{early}{
-  A numeric vector of length 2, the first giving the number of visits in the first period, the second the number of visits required for the site to be included.
-}
-  \item{late}{
-  A numeric vector of length 2, the first giving the number of visits in the second period, the second the number of visits required for the site to be included.
+  \item{early, late}{
+  Numeric vectors of length 2, the first giving the number of visits in the first/second period, the second the number of visits required in each for the site to be included. They will be reversed if necessary.
 }
   \item{all.visits}{
   The number of visits that should be made in the season. If missing will default to the highest visit number in the dataset.

@@ -1,4 +1,4 @@
-extract.coverage <-
+extract.coverage1 <-
 function(cesdata, early=NA,late=NA, min.visits=1, all.visits=0, exclude=list(years=NULL, sites=NULL)){
 
   if( !(class(cesdata)[1]=='ces' & class(cesdata)[2]=='data')  )
@@ -28,8 +28,13 @@ function(cesdata, early=NA,late=NA, min.visits=1, all.visits=0, exclude=list(yea
     early <- c(last.visit, 1)
   if( is.na(late[1]) )
     late <- c(last.visit, 1)
-  if( (early[1] < early[2]) | (late[1] < late[2]) )
-    stop('first elements of early/late must be greater than second\n')
+  if( (early[1] < early[2]) | (late[1] < late[2]) ){
+    if( early[1] < early[2] )
+      early <- rev(early)
+    if( late[1] < late[2] )
+      late <- rev(late)
+    warning('first elements of early/late should be greater than second, they have been reversed', call.=FALSE)
+  }
   
   # identify visits covered, i.e. those where some birds were caught; 
     # Note this will miss a few visits where no birds are caught

@@ -1,4 +1,4 @@
-extract.coverage1 <-
+extract.coverage <-
 function(cesdata, early=NA,late=NA, min.visits=1, all.visits=0, exclude=list(years=NULL, sites=NULL)){
 
   if( !(class(cesdata)[1]=='ces' & class(cesdata)[2]=='data')  )

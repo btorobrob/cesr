@@ -13,10 +13,10 @@ ces.table(cesobj, species=NA, columns=c("A-0", "P-0", "S-0"), plots=NULL, min.n=
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{cesobj}{
-a CES dataset created by \code{readces().} 
+a CES dataset created by \code{readces().}
 }
   \item{species}{
-a vector of numeric Euring codes. If missing species with more than min.n records will be extracted from the supplied dataset.} 
+a vector of numeric Euring codes. If missing species with more than min.n records will be extracted from the supplied dataset.
 }
   \item{columns}{
 specification for the trends required, see details.
@@ -32,17 +32,17 @@ logical, include (95\%) confidence limits in the table output?
 }
   \item{ndigits}{
 the number of decimal places to round the results to.
+}
   \item{year}{
 the reference year for comparisons, if not the first.
 }
   \item{visit.corr}{
 logical, correct counts for missing visits or not? 
 }
-}
 
 }
 \details{
-This function runs index() multiple times to create a table of trends for each species. Each row of the table represents a species, each column a trend that is specified by the 'columns' argument. This is a three letter combination as follow: the first character is the initial letter specifying the measure to be calculated A(dult) or J(uvenile) numbers, P(roductivity) or S(urvival). The second character is either a hyphen ('-') to indicate a comparison with previous years, or a slash ('/') to indicate a trend. This is followed by a number to indicate either the number of previous years with which to compare the current year, or the number of years (counting back from the last year) over which to calculate the trend. Thus, 'A/10' calulates the trend in number adult numbers over the previous ten years, and 'S-5' compares the survival in the current year with the previous five years. The default is to compare to the previous year for adult numbers, productivity and survival. The entries in the table will either be a percentage change from the previous period, or the estimate of the slope (i.e. per year change) on either the log (numbers) or logit (productivity and survival) scale.
+This function runs index() multiple times to create a table of trends for each species. Each row of the table represents a species, each column a trend that is specified by the 'columns' argument. This is a three letter combination as follows: the first character is the initial letter specifying the measure to be calculated A(dult) or J(uvenile) numbers, P(roductivity) or S(urvival). The second character is either a hyphen ('-') to indicate a comparison with previous years, or a slash ('/') to indicate a trend. This is followed by a number to indicate either the number of previous years with which to compare the current year, or the number of years (counting back from the last year) over which to calculate the trend. Thus, 'A/10' calulates the trend in number adult numbers over the previous ten years, and 'S-5' compares the survival in the current year with the previous five years. The default is to compare to the previous year for adult numbers, productivity and survival. The entries in the table will either be a percentage change from the previous period, or the estimate of the slope (i.e. per year change) on either the log (numbers) or logit (productivity and survival) scale.
 }
 \value{
 a list with two components: 'table' is a character matrix with each of the table entries; 'results' is a list containing the output of \code{index} for each table entry.

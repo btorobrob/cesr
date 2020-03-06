@@ -1,4 +1,5 @@
 export(
+  ces.table,
 	extract.ch,
 	extract.counts,
 	extract.coverage,
@@ -26,6 +27,6 @@ export(
 # plot.ces.counts, plot.ces.data, plot.ces.glmfit, plot.ces.markfit, plot.ces.plots, lot.ces.ch
 # summary.ces.ch, summary.ces.counts, summary.ces.glmfit, summary.ces.markfit, summary.ces.plots, summary.ces.sites, summary.ces.spp
 # writeces.counts, writeces.glmfit, writeces.plots, writeces.sites, writeces.spp
-# calc.offset, plglm, prsumglm, yrsum 
+# calc.offset, get.estimate, plglm, prsumglm, yrsum 
 # siteplot
 

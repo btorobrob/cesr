@@ -1,6 +1,10 @@
+# write a plot function!
+# return vals for annual and compare? first is change, second is %
+#   --- I think actually this useful, document somewhere?
 # check for NAs in important columns in readces
 # check the se column of the constant model - is this the annual or difference se?
-# Rethink the column heads?!
+# Rethink the column labels?!
+## Can we collect objects, at least if they have a common name?
 
 ces.table <-
 function(cesobj, species=NA, columns=c("A-0", "P-0", "S-0"), plots=NULL, min.n=100, conf.lim=TRUE, ndigits=2, year=-1, visit.corr=TRUE){
@@ -16,6 +20,12 @@ function(cesobj, species=NA, columns=c("A-0", "P-0", "S-0"), plots=NULL, min.n=1
   if( any(is.na(species)) ){
     warning('non-numeric species codes detected and ignored', call.=FALSE, immediate.=TRUE)
     species <- species[!is.na(species)]
+  }
+  check.spp <- species %in% cesnames$spp
+  if( sum(check.spp) < length(check.spp) ){ # i.e. some entries are FALSE
+    dodgy <- paste(species[!check.spp], collapse=',')
+    warning(paste('invalid species codes detected:', dodgy), call.=FALSE, immediate.=TRUE)
+    species <- species[check.spp]
   }
     
   if( is.null(plots) ){
@@ -56,18 +66,21 @@ function(cesobj, species=NA, columns=c("A-0", "P-0", "S-0"), plots=NULL, min.n=1
           res[[ctr]] <- list(ad.results = ann.model.counts(spp.data$ad.data, offset=visit.corr),
                              model.type = list(type='annual', refyear=year, nyrs=0), limits=0.95,
                              spp = spp.data$spp, spp.name = spp.data$spp.name)
+          class(res[[ctr]]) <- c('ces', 'glmfit')
           table.est[i, j] <- get.estimate(res[[ctr]], mtype='annual', cl=conf.lim, ndigits=ndigits) 
         }
         else if( mtype == '-' ){ # a compare model  
           res[[ctr]] <- list(ad.results = annc.model.counts(spp.data$ad.data, compare=nyear, offset=visit.corr),
                              model.type = list(type='constant', refyear=year, nyrs=nyear), limits=0.95,
                              spp = spp.data$spp, spp.name = spp.data$spp.name)
+          class(res[[ctr]]) <- c('ces', 'glmfit')
           table.est[i, j] <- get.estimate(res[[ctr]], mtype='constant', cl=conf.lim, ndigits=ndigits) 
         }
         else if( mtype == '/' ){ # a trend model  
           res[[ctr]] <- list(ad.results = annt.model.counts(spp.data$ad.data, trend=nyear, offset=visit.corr),
                              model.type = list(type='trend', refyear=year, nyrs=nyear), limits=0.95,
                              spp = spp.data$spp, spp.name = spp.data$spp.name)
+          class(res[[ctr]]) <- c('ces', 'glmfit')
           table.est[i, j] <- get.estimate(res[[ctr]], mtype='trend', cl=conf.lim, ndigits=ndigits) 
         }
         else{
@@ -79,18 +92,23 @@ function(cesobj, species=NA, columns=c("A-0", "P-0", "S-0"), plots=NULL, min.n=1
           res[[ctr]] <- list(jv.results = ann.model.counts(spp.data$jv.data, offset=visit.corr),
                              model.type = list(type='annual', refyear=year, nyrs=0), limits=0.95,
                              spp = spp.data$spp, spp.name = spp.data$spp.name)
+          class(res[[ctr]]) <- c('ces', 'glmfit')
           table.est[i, j] <- get.estimate(res[[ctr]], mtype='annual', cl=conf.lim, ndigits=ndigits) 
         }
         else if( mtype == '-' ){ # a compare model  
           res[[ctr]] <- list(jv.results = annc.model.counts(spp.data$jv.data, compare=nyear, offset=visit.corr),
                              model.type = list(type='constant', refyear=year, nyrs=nyear), limits=0.95,
                              spp = spp.data$spp, spp.name = spp.data$spp.name)
+          class(res[[ctr]]) <- c('ces', 'glmfit')
           table.est[i, j] <- get.estimate(res[[ctr]], mtype='constant', cl=conf.lim, ndigits=ndigits) 
         }
-        else if( mtype == '/' ) # a trend model  
+        else if( mtype == '/' ){ # a trend model  
           res[[ctr]] <- list(jv.results = annt.model.counts(spp.data$jv.data, trend=nyear, offset=visit.corr),
                              model.type = list(type='trend', refyear=year, nyrs=nyear), limits=0.95,
                              spp = spp.data$spp, spp.name = spp.data$spp.name)
+          class(res[[ctr]]) <- c('ces', 'glmfit')
+          table.est[i, j] <- get.estimate(res[[ctr]], mtype='trend', cl=conf.lim, ndigits=ndigits) 
+        }
         else {
           warning("unrecognised model type: please use '-' or '/' only", call. = FALSE)
           next
@@ -103,16 +121,19 @@ function(cesobj, species=NA, columns=c("A-0", "P-0", "S-0"), plots=NULL, min.n=1
           res[[ctr]] <- list(pr.results = ann.model.prod(pr.data, offset=visit.corr),
                              model.type = list(type='annual', refyear=year, nyrs=0), limits=0.95,
                              spp = spp.data$spp, spp.name = spp.data$spp.name)
+          class(res[[ctr]]) <- c('ces', 'glmfit')
           table.est[i, j] <- get.estimate(res[[ctr]], mtype='annual', cl=conf.lim, ndigits=ndigits) 
         } else if( mtype == '-' ){ # a compare model  
           res[[ctr]] <- list(pr.results = annc.model.prod(pr.data, compare=nyear, offset=visit.corr),
                              model.type = list(type='constant', refyear=year, nyrs=nyear), limits=0.95,
                              spp = spp.data$spp, spp.name = spp.data$spp.name)
+          class(res[[ctr]]) <- c('ces', 'glmfit')
           table.est[i, j] <- get.estimate(res[[ctr]], mtype='constant', cl=conf.lim, ndigits=ndigits) 
         } else if( mtype == '/' ){ # a trend model  
           res[[ctr]] <- list(pr.results = annt.model.prod1(pr.data, trend=nyear, offset=visit.corr),
                              model.type = list(type='trend', refyear=year, nyrs=nyear), limits=0.95,
                              spp = spp.data$spp, spp.name = spp.data$spp.name)
+          class(res[[ctr]]) <- c('ces', 'glmfit')
           table.est[i, j] <- get.estimate(res[[ctr]], mtype='trend', cl=conf.lim, ndigits=ndigits) 
         } else {
           warning("unrecognised model type: please use '-' or '/' only", call. = FALSE)
@@ -123,6 +144,7 @@ function(cesobj, species=NA, columns=c("A-0", "P-0", "S-0"), plots=NULL, min.n=1
           res[[ctr]] <- list(s.results = mark.ces(spp.mark, exclude=NULL, type='+', compare=nyear, cleanup=TRUE),
                              model.type = list(type='compare', refyear=year, nyrs=nyear), limits=0.95,
                              spp = spp.data$spp, spp.name = spp.data$spp.name)
+          class(res[[ctr]]) <- c('ces', 'markfit')
           row.est <- res[[ctr]]$s.results$survival[nrow(res[[ctr]]$s.results$survival), ]
           est <- round(ilogit(row.est[2]), ndigits)
           if( conf.lim ){
@@ -135,6 +157,7 @@ function(cesobj, species=NA, columns=c("A-0", "P-0", "S-0"), plots=NULL, min.n=1
           res[[ctr]] <- list(s.results = mark.ces(spp.mark, exclude=NULL, type='+', trend=nyear, cleanup=TRUE),
                              model.type = list(type='trend', refyear=year, nyrs=nyear), limits=0.95,
                              spp = spp.data$spp, spp.name = spp.data$spp.name)
+          class(res[[ctr]]) <- c('ces', 'markfit')
           row.est <- res[[ctr]]$s.results$model$results$beta[grep('Phi:Tind:Time', rownames(res[[ctr]]$s.results$model$results$beta)), ]
           est <- round(row.est[1], ndigits)
           if( conf.lim ){
@@ -164,7 +187,10 @@ function(cesobj, species=NA, columns=c("A-0", "P-0", "S-0"), plots=NULL, min.n=1
   # ... and expand
   col.headings <- as.character(sapply(col.headings, FUN=function(x) switch(x, 'A'='Adults', 'J'='Juveniles', 'P'='Productivity', 'S'='Survival')))
   
+  return.list <- list(table = table.est,
+                      results = res)
+  class(return.list) <- c('ces', 'res.table')
+  
   print(knitr::kable(table.est, col.names=col.headings, align='r', row.names=TRUE))
-  return(list(table = table.est,
-              results = res))
+  return(return.list)
 }

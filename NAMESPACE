@@ -11,6 +11,7 @@ export(
 	plot.ces,
   plot.transients,
 	plot.trend,
+  print.ces,
 	readces,
 	readBTO,
 	select.data,

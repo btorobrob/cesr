@@ -2,7 +2,7 @@
 # return vals for annual and compare? first is change, second is %
 #   --- I think actually this useful, document somewhere?
 # check for NAs in important columns in readces
-# check the se column of the constant model - is this the annual or difference se?
+# check the se column of the constant model - is this the annual or di,fference se?
 # Rethink the column labels?!
 ## Can we collect objects, at least if they have a common name?
 

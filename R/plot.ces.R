@@ -12,6 +12,7 @@ function(cesobj, sites=FALSE, graph='X', N=20, sitelist=NULL, col=c('red', 'blue
          glmfit = plot.ces.glmfit(cesobj, graph=graph, ... ),
          markfit = plot.ces.markfit(cesobj),
          ch = plot.ces.ch(cesobj, sitelist=sitelist, col=col, ...),
+         res.table = plot.ces.table(cesobj, graph=graph, ...),
          cat('No plot method defined!\n'))
   
 }

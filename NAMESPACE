@@ -1,3 +1,5 @@
+S3method(summary, ces)
+S3method(plot, ces)
 export(
   ces.table,
 	extract.ch,

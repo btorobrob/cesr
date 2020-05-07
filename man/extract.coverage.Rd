@@ -18,7 +18,7 @@ extract.coverage(cesdata, early=NA, late=NA, min.visits=1, all.visits=0, exclude
   Numeric vectors of length 2, the first giving the number of visits in the first/second period, the second the number of visits required in each for the site to be included. They will be reversed if necessary.
 }
   \item{all.visits}{
-  The number of visits that should be made in the season. If missing will default to the highest visit number in the dataset.
+  The number of visits that should be made in the season. If missing will default to the highest visit number in the dataset with a warning (see details).
 }
   \item{min.visits}{
   The minimum number of visits that should be made in the season. An alternative to specifying early/late.
@@ -28,7 +28,9 @@ extract.coverage(cesdata, early=NA, late=NA, min.visits=1, all.visits=0, exclude
 }
 }
 \details{
-  Creates a list containing information on coverage of sites in each year. For a site to be considered covered in a given year a certain number of visits (min.visits) must be made. Most adults will be caught earlier in the season, most juveniles later; thus an additional constraint is imposed in that a certain number (y) of the first x visits, and similarly of later visits, should also be made. This can be specified using early=c(x,y), and similarly late=c(x,y); for example, in Britain, four of the first six and four of the last six visits are required so these would be specified as c(6,4). This has the advantage that if a site is only covered in the early period of the year, say, it can still be used for calculating adult abundance.  
+  Creates a list containing information on coverage of sites in each year. For a site to be considered covered in a given year a certain number of visits (min.visits) must be made. Most adults will be caught earlier in the season, most juveniles later; thus an additional constraint is imposed in that a certain number (y) of the first x visits, and similarly of later visits, should also be made. This can be specified using early=c(x,y) and late=c(x,y); for example, in Britain, four of the first six and four of the last six visits are required so these would be specified as c(6,4). This has the advantage that if a site is only covered in the early period of the year, say, it can still be used for calculating adult abundance. Although normally the specification is likely to be the same for bother periods, it doesn't have to be (e.g. if you have an odd number of visits), and the periods can overlap if required.
+  
+  It is wise to specify all.visits explicitly, if not the highest visit number will be taken from the dataset. This can cause problems if, say, most sites do nine visits, but one site has done ten in one year, meaning that only that one season is identified as 'complete' and greatly inflating the number of 'missing' visits. The function will try to warn if it thinks this has happened.
 }
 \value{
 A list containing three objects

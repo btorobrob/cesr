@@ -4,30 +4,39 @@ function(cesdata, early=NA,late=NA, min.visits=1, all.visits=0, exclude=list(yea
   if( !(class(cesdata)[1]=='ces' & class(cesdata)[2]=='data')  )
     stop("Cannot extract from non-CES data\n")
 
-  data1 <- data.table::data.table(cesdata[ , c('visit', 'sitename', 'site', 'year')], key='year,site,visit')
-  if( is.character(data1$visit) )
+  cesdata <- data.table::data.table(cesdata, key='year,site,visit')
+  if( is.character(cesdata$visit) )
     stop('extracting coverage only works with standard (numbered) visits\n')
   
   if( !is.null(exclude$years) )
-    data1 <- data1[!year %in% exclude$years]
+    cesdata <- cesdata[!year %in% exclude$years]
   if( !is.null(exclude$sites) )
-    data1 <- data1[!sitename %in% exclude$sites]
-  if( nrow(data1) == 0 )
+    cesdata <- cesdata[!sitename %in% exclude$sites]
+  if( nrow(cesdata) == 0 )
     stop("no data left after exclusions\n")
   
   # check the visit parameters
   last.visit <- max(cesdata$visit, na.rm=TRUE)
-  if( (all.visits == 0) | (all.visits > last.visit) ){
+  if( all.visits == 0 ){ # if this is not specified bad things can happen if there are some rogue extra visits 
+    all.visits <- last.visit
+    warning(paste('all.visits not specified,', last.visit, 'visits found'), call.=FALSE)
+  } else if( all.visits > last.visit ){ # are there fewer visits than there are supposed to be?
     all.visits <- last.visit 
-    if( all.visits > last.visit )
-      warning('all.visits is larger than highest visit number', call.=FALSE)
+    warning(paste('all.visits is larger than highest visit number, it has been changed to', last.visit), call.=FALSE)
+  } else if( last.visit > all.visits ){ # are there more visits than there are supposed to be?
+    nr <- nrow(cesdata[cesdata$visit > all.visits])
+    ns <- length(table(cesdata$site[cesdata$visit > all.visits]))
+    ny <- length(table(cesdata$year[cesdata$visit > all.visits]))
+    cesdata <- cesdata[!cesdata$visit > all.visits, ] # get rid of them
+    wmsg <- paste('extra visits detected:', nr, 'records removed from', ns, 'site(s) and', ny, 'year(s)')
+    warning(wmsg, call.=FALSE)
   }
-  
+
   if( is.na(early[1]) ) # this should effectively mean no selection
     # need to subset to avoid warning when early/late are specified
-    early <- c(last.visit, 1)
+    early <- c(all.visits, 1)
   if( is.na(late[1]) )
-    late <- c(last.visit, 1)
+    late <- c(all.visits, 1)
   if( (early[1] < early[2]) | (late[1] < late[2]) ){
     if( early[1] < early[2] )
       early <- rev(early)
@@ -36,6 +45,9 @@ function(cesdata, early=NA,late=NA, min.visits=1, all.visits=0, exclude=list(yea
     warning('first elements of early/late should be greater than second, they have been reversed', call.=FALSE)
   }
   
+  # just keep the necessary variables
+  data1 <- cesdata[ , c('visit', 'sitename', 'site', 'year')]
+
   # identify visits covered, i.e. those where some birds were caught; 
     # Note this will miss a few visits where no birds are caught
   visit.cov <- data1[ , .N, by=.(year, site, visit)]
@@ -90,8 +102,12 @@ function(cesdata, early=NA,late=NA, min.visits=1, all.visits=0, exclude=list(yea
                   nrow(visit.cov[nbirds>0]), 'visits, with',
                   nrow(miss.vis), 'visits missing\n')
   cat(sumtxt)
+  if( nrow(miss.vis) > nrow(visit.cov[nbirds>0])/10 )
+    warning('more than 10% of visits are missing, has all.visits been specified correctly?', call.=FALSE)
 
-  sites <- extract.sites(cesdata, exclude$sites) # cant use data1 because its now a data.table
+  cesdata <- as.data.frame(cesdata) # convert back to df to use extract.sites
+  class(cesdata) <- c('ces', 'data', 'data.frame')
+  sites <- extract.sites(cesdata, exclude$sites) 
   
   result <- list(sites = sites,
                 years = data.frame(site.cov),

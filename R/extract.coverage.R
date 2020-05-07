@@ -97,7 +97,7 @@ function(cesdata, early=NA,late=NA, min.visits=1, all.visits=0, exclude=list(yea
   all[ , sy := paste(site, year, sep='_')]
   all <- subset(all, sy %in% unique(per.cov$sy))
   miss.vis <- merge(all, visit.cov, by=c('site','year','visit'), all.x=TRUE)
-  miss.vis <- miss.vis[(is.na(nbirds))]
+  miss.vis <- miss.vis[(is.na(nbirds)), -'nbirds'] # nbirds is NA by definition, so drop
   sumtxt <- paste(length(unique(visit.cov$site)), 'sites contributed', 
                   nrow(visit.cov[nbirds>0]), 'visits, with',
                   nrow(miss.vis), 'visits missing\n')

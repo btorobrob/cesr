@@ -12,14 +12,19 @@ function(cesobj, exclude=NULL, type='+', trend=0, compare=0, cleanup=TRUE){
   if( trend > 0 & compare > 0 )
     stop('Specify only one of trend or compare')
 
-  if( cleanup == FALSE ){
-    if( length(grep('markfiles', getwd())) == 0 ) # don't do this recursively!
-      dir.create('markfiles', showWarnings=FALSE)
-    oldwd <- getwd()
-    setwd('markfiles')
-  }  
-  
+  # create a directory for the markfiles
+  oldwd <- getwd()
+  if( dir.exists('./markfiles') )
+    setwd('./markfiles')
+  else if( length(grep('markfiles', getwd())) > 0 ){} # don't do this recursively!
+  else if( dir.create('./markfiles', showWarnings=FALSE) == FALSE ){
+    dir.create('~/markfiles', showWarnings=FALSE)
+    setwd('~/markfiles')
+  } else 
+    setwd('./markfiles') # because dir.create() will have been successful
+
   chdata <- cesobj$chdata
+  chdata$sitename <- as.factor(chdata$sitename)
   
   if( !is.null(exclude) ){
     excl.rows <- which(as.character(chdata$sitename) %in% as.character(exclude))
@@ -116,7 +121,7 @@ function(cesobj, exclude=NULL, type='+', trend=0, compare=0, cleanup=TRUE){
   
   ## Now run the MARK models
   model.ces <- RMark::make.mark.model(x.pd, ddl, parameters=list(Phi=phi.ces,p=p.ces))
-  model <- RMark::run.mark.model(model.ces, delete=cleanup, ignore.stderr=TRUE)
+  model <- RMark::run.mark.model(model.ces, delete=cleanup, invisible=TRUE, ignore.stderr=TRUE)
 
   # and possibly reset working dir
   if( cleanup == FALSE )
@@ -160,8 +165,6 @@ function(cesobj, exclude=NULL, type='+', trend=0, compare=0, cleanup=TRUE){
   p1_res$sitename <- sites
   p1_res <- p1_res[ , c(5,1:4)]
   rownames(p1_res) <- NULL
-  
-#  setwd(oldwd)
   
   results <- list(model=model,
        AIC=model$results$AICc, npar=model$results$npar,

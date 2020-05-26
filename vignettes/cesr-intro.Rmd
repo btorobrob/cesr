@@ -53,7 +53,9 @@ library(cesr)
 ```
 You should get the brief welcome message telling you which version of the package you are using.
 
-**One important thing to remember.** You can do very little harm by getting things wrong, if you get in a mess just close R down and start again. R will usually tell you what it thinks has gone wrong, but it can be quite cryptic, especially if you are unfamiliar with how it works. I've tried to translate the commonest ones, if you come across others copy and paste the error message from the R window _and_ the command you used which generated it into an email to me; I'll see if I can help.
+**One important thing to remember.** You can do very little harm by getting things wrong, if you get in a mess just close R down and start again. 
+
+R will usually tell you what it thinks has gone wrong. You might (will) encounter two types of messages: 'errors' and 'warnings'. Errors are usually serious enough that R will stop what it is doing and you will need to fix the problem. Warnings arise when it is unsure how to proceed, but it can make a guess and carry on; sometimes it gets it right, others not. You are *strongly* advised to understand why the warning was issued and what R has done to fix the issue. Even though calculations are proceeding, bad things can ensue! The messages R gives are intended to be helpful, but can be quite cryptic, especially if you are unfamiliar with how it works. I've tried to translate the commonest ones, if you come across others copy and paste the error message from the R window _and_ the command you used which generated it into an email to me; I'll see if I can help.
 
 ## A sample session
 

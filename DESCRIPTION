@@ -11,6 +11,7 @@ ByteCompile: yes
 ZipData: no
 Packaged: 2012-01-07 21:52:22 UTC; robrob
 Depends: data.table
-Imports: reshape, RMark, maps, utils
+Imports: reshape, RMark, maps, utils, Rcpp
 Suggests: knitr, rmarkdown
+LinkingTo: Rcpp
 VignetteBuilder: knitr

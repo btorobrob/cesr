@@ -28,7 +28,7 @@ function(cesdata, early=NA,late=NA, min.visits=1, all.visits=0, exclude=list(yea
     ns <- length(table(cesdata$site[cesdata$visit > all.visits]))
     ny <- length(table(cesdata$year[cesdata$visit > all.visits]))
     cesdata <- cesdata[!cesdata$visit > all.visits, ] # get rid of them
-    wmsg <- paste('extra visits detected:', nr, 'records removed from', ns, 'site(s) and', ny, 'year(s)')
+    wmsg <- paste('extra visits detected:', nr, 'records will be ignored from', ns, 'site(s) and', ny, 'year(s)')
     warning(wmsg, call.=FALSE)
   }
 

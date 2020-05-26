@@ -1,12 +1,12 @@
 index <-
-function(cesobj, year=-1, begin=0, smooth=FALSE, trend=0, compare=0, verbose=FALSE, visit.corr=TRUE, cl=0.95){
+function(cesdata, year=-1, begin=0, smooth=FALSE, trend=0, compare=0, verbose=FALSE, visit.corr=TRUE, cl=0.95){
 
-  if ( !class(cesobj)[1] == 'ces' | !class(cesobj)[2] == "counts" )
+  if ( !class(cesdata)[1] == 'ces' | !class(cesdata)[2] == "counts" )
     stop("No ces capture information\n")
   
-  
-  ad.data <- cesobj$ad.data
-  jv.data <- cesobj$jv.data
+  # get data for sites covered in more than one year
+  ad.data <- cesdata$ad.data[cesdata$ad.data$nyears > 1, ]
+  jv.data <- cesdata$jv.data[cesdata$jv.data$nyears > 1, ]
   
   if ( year == -1 ) 
     year <- max(ad.data$year, jv.data$year, na.rm=TRUE)
@@ -93,7 +93,7 @@ function(cesobj, year=-1, begin=0, smooth=FALSE, trend=0, compare=0, verbose=FAL
     pr.res <- NA
   
   res <- list(ad.results=ad.res, jv.results=jv.res, pr.results=pr.res, 
-              model.type=mtype, spp=cesobj$spp, spp.name=cesobj$spp.name, limits=cl)
+              model.type=mtype, spp=cesdata$spp, spp.name=cesdata$spp.name, limits=cl)
   class(res) <- c('ces','glmfit')
   
   if ( verbose == TRUE ){

@@ -8,12 +8,12 @@ Calculate indices of abundance and productivity from CES data
  Takes a CES object created by \code{extract.data} and, depending on what data are available, creates indices of the number of adults and juveniles caught and the ratio of the two, as an index of productivity.
 }
 \usage{
-index(cesobj, year=-1, begin=0, smooth=FALSE, trend=0, compare=0, verbose=FALSE, visit.corr=TRUE, cl=0.95)
+index(cesdata, year=-1, begin=0, smooth=FALSE, trend=0, compare=0, verbose=FALSE, visit.corr=TRUE, cl=0.95)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{cesobj}{
-  A CES object create by \code{extract.data} 
+  \item{cesdata}{
+  A CES dataset create by \code{extract.data} 
 }
   \item{year}{
   A year to act as reference year, i.e. in which the index is value is 1
@@ -25,7 +25,7 @@ index(cesobj, year=-1, begin=0, smooth=FALSE, trend=0, compare=0, verbose=FALSE,
   Logical, include the correction for missing visits when calculating indices?
 }
   \item{cl}{
-  Width of confidence limits. 0.95 is default, 0.83 limits don't overlap with (approximate) probability 0.95, so may be useful when comparing values of the index in specific years.
+  Width of confidence limits. 0.95 is default, 0.83 limits don't overlap with (approximate) probability 0.95, so may be useful when comparing (or graphing) values of the index in specific years.
 }
   \item{smooth}{
   An indicator value to determine if smoothed trends should be calculated. Not currently implemented.
@@ -41,7 +41,7 @@ index(cesobj, year=-1, begin=0, smooth=FALSE, trend=0, compare=0, verbose=FALSE,
 }
 }
 \details{
-%%  ~~ If necessary, more details than the description above ~~
+Uses data from sites covered in more than one year.
 }
 \value{
 A list with some or all of the following components

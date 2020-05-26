@@ -7,10 +7,10 @@ Get data on an individual species
  Creates dataframes with capture data for adult and juvenile birds from a CES object created by \code{readces}
 }
 \usage{
-extract.data(x, species, plots)
+extract.data(cesdata, species=0, plots=NULL, min.yrs=1)
 }
 \arguments{
-  \item{x}{
+  \item{cesdata}{
 a CES object created by \code{readces}
 }
   \item{species}{
@@ -18,6 +18,9 @@ Euring species code (including the final zero which would indicate race)
 }
   \item{plots}{
 an object containing plot coverage data created by \code{extract.coverage}. 
+}
+  \item{min.yrs}{
+sites covered in fewer than min.yrs will be ignored. 
 }
 }
 \details{

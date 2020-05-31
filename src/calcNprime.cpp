@@ -1,7 +1,7 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
-// Calculate for Nprime for each site and year: the number of birds that would have been caught (across all years) 
+// Calculate Nprime for each site and year: the number of birds that would have been caught (across all years) 
 // given the visits missing in that year (i.e how many individuals were caught only on those visits?) 
 
 // [[Rcpp::export]]

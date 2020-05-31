@@ -121,8 +121,9 @@ function(cesdata, exclude=NULL, type='+', trend=0, compare=0, cleanup=TRUE){
   
   ## Now run the MARK models
   model.ces <- RMark::make.mark.model(x.pd, ddl, parameters=list(Phi=phi.ces,p=p.ces))
-  model <- RMark::run.mark.model(model.ces, delete=cleanup, invisible=TRUE, ignore.stderr=TRUE)
-
+  model <- suppressWarnings(RMark::run.mark.model(model.ces, delete=cleanup, invisible=TRUE, ignore.stderr=TRUE))
+  # complains about embedded NULs not sure why
+  
   # and possibly reset working dir
   if( cleanup == FALSE )
     setwd(oldwd)

@@ -4,7 +4,7 @@ function(cesobj){
   if ( !class(cesobj)[1] == 'ces' | !class(cesobj)[2] == 'markfit' )
     stop("No information to plot\n")
   
-  if( grep("s.results", names(cesobj)) != 0 ) # comes from a ces.table
+  if( length(grep("s.results", names(cesobj))) != 0 ) # comes from a ces.table
     cesobj <- cesobj$s.results
   
   surv.est <- cesobj$survival

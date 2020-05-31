@@ -8,10 +8,10 @@ Get adult capture history data for an individual species
  Creates a list with individual capture histories for birds from a CES object created by \code{readces} for a survival analysis using \code{mark.ces}
 }
 \usage{
-extract.ch(x, species=0, late=FALSE, group=NA, exclude=NULL, min.n=0, plots=NULL)
+extract.ch(cesdata, species=0, plots=NULL, late=FALSE, group=NA, exclude=NULL, min.n=1, min.yrs=3)
 }
 \arguments{
-  \item{x}{
+  \item{cesdata}{
 a CES object created by \code{readces}
 }
   \item{species}{
@@ -21,7 +21,7 @@ a numeric Euring species code (including final zero which would indicate race)
 should late visits be considered in site selection? In UK (at least) most adults are caught in first 6 visits, so defaults to FALSE (ie a site is included if, say, 4 of the first 6 visits are made). Set to TRUE to require late visits to be considered also, which will results in more site-year combinations being considered as 'missing'
 }
   \item{group}{
-a character string indicating a grouping variable for survival, such as 'sex'. Group levels should be alphabetic only (i.e. no digits (0-9) or symbols please). 
+a character string indicating a grouping variable for survival, such as 'sex'. Group levels should be alphabetic only (i.e. no digits (0-9) or symbols please; these confuse MARK). 
 }
   \item{exclude}{
 one or more levels of 'group' to exclude, for example, '-' for unsexed birds   

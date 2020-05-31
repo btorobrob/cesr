@@ -1,46 +1,58 @@
+Changes in version 0.51.0
+==============
+- 31052020: add some interpretation for trend survival models to summary() 
+- 31052020: Add C++ code to speedup (~2x) extract.data/extract.ch
+- 31052020: Add min.yrs to extract.ch(), and exclude sites with <3 years coverage 
+- 26052020: Add min.yrs to extract.data(), and exclude sites with only one years coverage 
+- 08052020: Add better checking of all.visits to extract.coverage()
+- 11022020: Change the default in readces() to keep races separate
+- 11022020: Bugfix - don't delete 2's (e.g. for A. caudatus)
+
+
 Changes in version 0.41.2
 ==============
-- 01012020: Fixed bug introduced by changes in data.table that screwed things up big time
-- 01012020: Added vignette
-- 01012020: Added some extra checking to readces and creates column for julian days
-- 01012020: Added plotting method for the 'raw' ces data objects
+- 01012020: Fix bug introduced by changes in data.table that screwed things up big time
+- 01012020: Add vignette
+- 01012020: Add some extra checking to readces and creates column for julian days
+- 01012020: Add plotting method for the 'raw' ces data objects
 - 01012020: changed the default for silent= in summary.ces.data()
 
 Changes in version 0.41.2
 ==============
-- 14122018: Introduced fuzzy-matching of variable names in readces()
-- 14122018: Removed warning for age-codes 3J, 5, 6 in readces()
-
+- 14122018: Introduce fuzzy-matching of variable names in readces()
+- 14122018: Remove warning for age-codes 3J, 5, 6 in readces()
 
 Changes in version 0.41.1
 ==============
-- 30122017: Added check for numeric dates and net lengths in readces() and updated help file
-- 09042018: Made summary.ces() do something sensible when given a species summary object
+- 30122017: Add check for numeric dates and net lengths in readces() and updated help file
+- 09042018: Make summary.ces() do something sensible when given a species summary object
 - 15052018: Bugfix - readces() not reading alphabetic visits correctly
 - 17052018: Bugfix - missed the visit column from missing.visits[] in extract.counts
-- 14062018: Added ability for siteplot() to summarise catches per visit
+- 14062018: Add ability for siteplot() to summarise catches per visit
 
 Changes in version 0.41.0
 ==============
-- 02102017: Altered model functions to cope with single sites 
+- 02102017: Alter model functions to cope with single sites 
+
 
 Changes in version 0.40.2
 ==============
-- 27092017: Added ';' as a column separator to readces() 
+- 27092017: Add ';' as a column separator to readces() 
 - 27092017: Bugfix - added na.rm=TRUE to the error checking for coordinates
 - 27032016: Fixed major bug that meant extract.ch() didn't extract data for individual species
-- 27032016: Tidied up the documentation a lot with the help of R CMD check
+- 27032016: Tidy up the documentation a lot with the help of R CMD check
 - 27032016: Added trend and compare arguments to mark.ces()
 - 27032016: Bugfix - in mark.ces() - return to original directory from 'markfiles'
 - 18042016: Bugfix - added family=quasipoisson in annt.model.counts()
 - 26042016: Bugfix - plot.ces.plots() threw an error
 - 04052016: Bugfix - in summary.ces.plots() to calculate length of site operation correctly 
 - 09122016: Bugfix - in extract.ch() cope with years with no captures (with a warning)
-- 11042017: Bugfix - forced species codes to be integer (with warning) in readces() to avoid a later problem in extract.ch()
+- 11042017: Bugfix - force species codes to integer (with warning) in readces() to avoid a later problem in extract.ch()
 
 Changes in version 0.40.1
 ==============
-- 17032016: Fixed major bug that meant included sites with zero captures weren't counted in extract.data()
+- 17032016: Fix major bug that meant included sites with zero captures weren't counted in extract.data()
+
 
 Changes in version 0.30.33
 ==============

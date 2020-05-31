@@ -1,19 +1,19 @@
 extract.ch <-
-function(cesobj, species=0, late=FALSE, group=NA, exclude=NULL, min.n=0, plots=NULL){
+function(cesdata, species=0, plots=NULL, late=FALSE, group=NA, exclude=NULL, min.n=1, min.yrs=3){
   
   requireNamespace('reshape', quietly=TRUE)
 
   ## creates the extra time period by using the year-1 column
   ## this works because we are only estimating adult survival, so one age group
   
-  if( !(class(cesobj)[1] == 'ces' & class(cesobj)[2] == 'data')  )
+  if( !(class(cesdata)[1] == 'ces' & class(cesdata)[2] == 'data')  )
     stop("No ces data\n")
   
   if( is.null(plots) )
     stop("no plot data, use extract.coverage() first and give plots=")
   
   if ( species == 0 ) {
-    if ( length(unique(cesobj$species)) == 1 ) 
+    if ( length(unique(cesdata$species)) == 1 ) 
       species <- as.character(unique(x$species))
     else
       stop("please supply a Euring species code, using species=")
@@ -22,9 +22,11 @@ function(cesobj, species=0, late=FALSE, group=NA, exclude=NULL, min.n=0, plots=N
   selspp <- as.character(species) # to avoid name conflicts in x as a data.table
   
   # first birds captured as adults
-  ind <- data.table::data.table(cesobj, key=c('species','age'))
+  ind <- data.table::data.table(cesdata)
   ind <- ind[(species==selspp & age==4), list(ring, site, sex, year) ] # pulls out adults
   ind <- ind[ !(is.na(ring)), ] # remove species for which no adults caught
+  ind <- merge(ind, plots$site[ , c('site', 'nyears')], by='site')
+  ind <- ind[nyears >= min.yrs, ] # remove sites covered in too few years
   
   if( nrow(ind) == 0 )
     stop(paste('No records for', selspp))
@@ -43,7 +45,7 @@ function(cesobj, species=0, late=FALSE, group=NA, exclude=NULL, min.n=0, plots=N
   ind[ , yearno := (year-first.year+1) ]
   ind[ , ind := paste(ring, site, sep='_') ]
   
-  if ( min.n > 0 ){
+  if ( min.n > 0 ){  # filter sites with too few captures 
     xx <- ind[ , list(nencs=.N), by=site]
     xx <- xx[(nencs > min.n)]
     data.table::setkey(xx, 'site')
@@ -59,17 +61,14 @@ function(cesobj, species=0, late=FALSE, group=NA, exclude=NULL, min.n=0, plots=N
   }
   years[ , site := as.numeric(site) ]
   
-  data.table::setkey(ind, year, site) # set the keys to merge data
-  data.table::setkey(years, year, site)
-  data <- merge(ind, years, all.x=TRUE)
+  data <- merge(ind, years, by=c('site','year'))
   # and remove birds from non-included years or sites when no birds caught
-  data <- data[!is.na(data$nvisits) & !is.na(data$site)] 
   numyrs <- length(allyrs)
   # now determine missing years - get years (col 2) as columns
   cov <- data.table::data.table(reshape::cast(reshape::melt(years[ , list(site, year)], id='site'), site~value)) 
-  tmp <- cov[ , 'site', with=FALSE] # this is kludgy
-  cov[!is.na(cov)] <- '0'   # need these characters for the capture history
-  cov[is.na(cov)] <- '.'
+  tmp <- cov[ , site] # this is kludgy, to avoid site being overwritten
+  cov[!is.na(cov)] <- 1   # use numbers to make things easier for C
+  cov[is.na(cov)] <- 0 
   cov[ , site := tmp]
   data.table::setnames(cov,c('site', paste0('cov', min(years$year):max(years$year)))) # maybe more than in ind
   
@@ -89,68 +88,42 @@ function(cesobj, species=0, late=FALSE, group=NA, exclude=NULL, min.n=0, plots=N
   yearsum <- xx[ , lapply(.SD, sum2), by=ind, .SDcols=yrcols]  
   
   setnames(yearsum, c('ind', paste0('sum', first.year:last.year)))
-  sc <- paste0('sum', min(data$year):max(data$year)) # select the year columns
-  yearsum$n_encs <- apply(as.matrix(yearsum[ ,.SD, .SDcols=(sc)]), 1, sum) # this is much faster than using :=
-  
-  data.table::setkey(yearsum, 'n_encs')
-  nzero <- nrow(yearsum[0])
-  if( nzero > 0 ){
-    wmessage <- ifelse(nzero == 1,
-                       c('histories with no captures encountered, 1 record deleted'),
-                       paste('histories with no captures encountered,', nzero, 'records deleted'))
-    warning(wmessage, call.=FALSE)
-    yearsum <- yearsum[!J(0)]
+
+  # check for all zero capture histories
+  n_encs <- apply(as.matrix(yearsum[ ,.SD, .SDcols=(names(yearsum)[-1])]), 1, sum) # this is much faster than using :=
+  zero.ch <- n_encs==0
+  if( sum(zero.ch) > 0 ){
+    warning(paste('histories with no captures encountered,', nzero, 'record(s) deleted'), call.=FALSE)
+    yearsum <- yearsum[!zero.ch]
   }
-  yearsum[ , n_encs := NULL]
   # get siteno from ind
   yearsum[ , site := as.integer(matrix(unlist(strsplit(ind, '_')), ncol=2, byrow=TRUE)[ , 2])]
+  # and get site coverage for each individual
+  yearsum <- merge(yearsum, cov, by='site') # WARNING: code below relies on site being first col then sum20xx columns
+ 
+  minyrcol <- min(grep('sum', names(yearsum))) # should always be 3, but for safety...
+  maxyrcol <- max(grep('sum', names(yearsum))) # the end of the year columns
+  maxcvcol <- ncol(yearsum) # the end of the cov columns, for readability
+  yearsum$ch <- createCH(data.matrix(yearsum[ , .SD, .SDcols=c(minyrcol:maxyrcol)]),
+                         data.matrix(yearsum[ , .SD, .SDcols=c((maxyrcol+1):maxcvcol)]))
   
-  # now work out year of first capture, gives no entries before the right entry, which is helpful
-#  yearsum$first <- apply(as.matrix(yearsum[ ,.SD, .SDcols=(sc)]), 1, function(x) min(which(x>0))) #again much faster than :=
-#  firstcol <- which(names(yearsum) == 'first') 
-  data.table::setkey(yearsum, site)
-  data.table::setkey(cov, site)
-  
-  yearsum <- merge(yearsum, cov) # WARNING: code below relies on site being first col then sum20xx columns
-  sumcol <- grep('sum', names(yearsum))
-  covcol <- grep('cov', names(yearsum))
-  
-  create_ch <- function(x, covcol, sumcol){
-    first <- min(which(x[sumcol]>0))
-    #first <- as.integer(x[firstcol])
-    if( first == 1 ) # caught on first occasion
-      pre <- ''
-    else
-      pre <- paste0(x[covcol[1:(first-1)]], collapse='')
-    catch <- paste0(1L, as.integer(ifelse(x[sumcol[first]]==1,0,1)), collapse='')
-    if( first == length(sumcol) ) # caught on last occasion
-      post <- ''
-    else{
-      post1 <- x[sumcol[(first+1):length(sumcol)]]
-      post2 <- x[covcol[(first+1):length(covcol)]]
-      post1[post2 == '.'] <- '.'
-      post <- paste0(post1, collapse='')
-    }
-    paste0(pre, catch, post)
-  }
-  
-  sitenames <- unique(cesobj$sitename)
+  # now get the sitenames...
+  sitenames <- unique(cesdata$sitename)
   sitenames <- data.frame(site=as.integer(sitenames), sitename=as.character(sitenames))
-  
-  yearsum[ , ch := apply(yearsum, 1, create_ch, covcol, sumcol)]  
-  yearsum[ , ch := gsub('2', '1', ch)]
+  yearsum <- merge(yearsum, sitenames, by='site', all.x=TRUE)
+  # ... and the ring number
   yearsum[ , ring := matrix(unlist(strsplit(as.character(ind),'_')), ncol=2, byrow=TRUE)[ , 1]]
-  yearsum <- merge(yearsum, sitenames, by.x='site', by.y='site', all.x=TRUE)
+  # and tidy up!
   yearsum <- yearsum[ , list(ring, ch, site, sitename)]
   
   gplvls <- NA
   if ( !is.na(group) ){ # now get the grouping variable
-    cols <- c(which(names(cesobj) == 'ring'), which(names(cesobj) == group))
+    cols <- c(which(names(cesdata) == 'ring'), which(names(cesdata) == group))
     if( length(cols) != 2 ){
       gpmessage <- paste('grouping variable', group, 'not identified')
       warning(gpmessage, call.=FALSE)
     }
-    g <- cesobj[ , .SD, .SDcols=(cols)]
+    g <- cesdata[ , .SD, .SDcols=(cols)]
     data.table::setnames(g, c('ring', 'group'))
     # this bit checks each ring has a unique group
     gtab <- xtabs(~ring+group, data=g)

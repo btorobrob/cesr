@@ -18,6 +18,17 @@ function(x){
       se <- round(x$model$results$beta[sloperow, 2], 3)
       p <- round(pt(slope/se, df=x$model.yrs-2, lower.tail=FALSE), 3)
       cat(paste('Trend in (logit) survival: ', slope, ' +/- ', se, '; t=', round(slope/se,2), ', P=', p, '\n', sep=''))
+      # now convert into probabilities
+      end.survival <- x$survival[nrow(x$survival), 'estimate']
+      begin.survival <- x$survival[(nrow(x$survival)-x$model.yrs+1), 'estimate']
+      total.change <- end.survival/begin.survival
+      ann.change <- total.change ^ (1/x$model.yrs)
+      if( end.survival > begin.survival )
+        cat(paste0('(This is equivalent to a ', round(100*(total.change-1),1), '% increase over ', x$model.yrs,
+                   ' years, at an average of ', round(100*(ann.change-1),1), '% per year)\n'))
+      else if( begin.survival > end.survival )
+        cat(paste0('(This is equivalent to a ', round(100*(1-total.change),1), '% decrease over ', x$model.yrs,
+                   ' years, at an average of ', round(100*(1-ann.change),1), '% per year)\n'))
     } else {
       # need to do this
     }

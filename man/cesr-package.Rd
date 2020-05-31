@@ -12,8 +12,8 @@ Facilities for reading EuroCES data in Euring format to produce annual indices o
 \tabular{ll}{
 Package: \tab cesr\cr
 Type: \tab Package\cr
-Version: \tab 0.50.2\cr
-Date: \tab 2020-05-02\cr
+Version: \tab 0.51.0\cr
+Date: \tab 2020-05-31\cr
 License: \tab GPL-2\cr
 LazyLoad: \tab yes\cr
 }

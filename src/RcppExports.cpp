@@ -18,9 +18,22 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// createCH
+StringVector createCH(IntegerMatrix caps, IntegerMatrix cov);
+RcppExport SEXP _cesr_createCH(SEXP capsSEXP, SEXP covSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< IntegerMatrix >::type caps(capsSEXP);
+    Rcpp::traits::input_parameter< IntegerMatrix >::type cov(covSEXP);
+    rcpp_result_gen = Rcpp::wrap(createCH(caps, cov));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_cesr_calcNprime", (DL_FUNC) &_cesr_calcNprime, 3},
+    {"_cesr_createCH", (DL_FUNC) &_cesr_createCH, 2},
     {NULL, NULL, 0}
 };
 

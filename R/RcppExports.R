@@ -5,3 +5,7 @@ calcNprime <- function(capsdf, missdf, sitedf) {
     .Call('_cesr_calcNprime', PACKAGE = 'cesr', capsdf, missdf, sitedf)
 }
 
+createCH <- function(caps, cov) {
+    .Call('_cesr_createCH', PACKAGE = 'cesr', caps, cov)
+}
+

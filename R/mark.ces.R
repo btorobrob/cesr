@@ -1,4 +1,4 @@
-mark.ces1 <-
+mark.ces <-
 function(cesdata, exclude=NULL, type='+', trend=0, compare=0, cleanup=TRUE){
   
   requireNamespace('RMark', quietly=TRUE)

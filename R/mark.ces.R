@@ -1,4 +1,4 @@
-mark.ces <-
+mark.ces1 <-
 function(cesdata, exclude=NULL, type='+', trend=0, compare=0, cleanup=TRUE){
   
   requireNamespace('RMark', quietly=TRUE)
@@ -46,46 +46,22 @@ function(cesdata, exclude=NULL, type='+', trend=0, compare=0, cleanup=TRUE){
     x.pd <- RMark::process.data(chdata, begin.time=cesdata$begin.time, groups=groups)
   
   ddl <- RMark::make.design.data(x.pd, parameters=list(Phi=list(age.bins=c(0,1,100)),
-                                             p=list(age.bins=c(0,1,100))))
-  ddl$Phi$time_var <- as.factor(ifelse(ddl$Phi$Cohort==ddl$Phi$Time, 1, ddl$Phi$time)) # Separate initial capture period
-  if( length(ddl$p$sitename) == 0 )
-    ddl$p$time_var <- as.factor(ifelse(ddl$p$Cohort==ddl$p$Time, 0, 1)+1)
-  else 
-    ddl$p$time_var <- as.factor(ifelse(ddl$p$Cohort==ddl$p$Time, 0, ddl$p$sitename)+1)
-
+                                                       p=list(age.bins=c(0,1,100))))
+  # Separate out the initial capture period
+  # the years are associated w/ time periods when phi_res is constructed
+  ddl$Phi$time_var <- as.factor(ifelse(ddl$Phi$Cohort==ddl$Phi$Time, 1, ddl$Phi$time)) 
+  # reverse the age factor, so we estimate within season retrap prob separately for each site
+  ddl$p$age <- as.numeric(as.numeric(ddl$p$age) == 1) 
   
-# ddl$Phi$initial <- ifelse(ddl$Phi$Cohort==ddl$Phi$Time, 1, 0)   # create initial capture period
-# ddl$p$initial <- ifelse(ddl$p$Cohort==ddl$p$Time, 1, 0)
-  
-# Next recompute time, Time, and Age (years since marking) to account for the 
-# additional occasion/interval. Time will probably not be useful but labelling 
-# time correctly will help and Age, which is now number of years since initial 
-# capture could be useful.
-#  time1 <- as.numeric(as.character(ddl$Phi$time))-1
-#  tt <- as.numeric(as.character(ddl$Phi$time))
-#  tc <- as.numeric(as.character(ddl$Phi$cohort))
-#  time1[tc==tt] <- x$begin.time + ddl$Phi$Time[tc==tt]
-#  time1[tc==(tt+1)] <- x$begin.time + ddl$Phi$Time[tc==(tt+1)]-1
-#  ddl$Phi$time1 <- as.factor(time1)
-#  ddl$Phi$Time[ddl$Phi$Age==0] <- 0 
-  
-#  time1 <- as.numeric(as.character(ddl$p$time))-1
-#  tt <- as.numeric(as.character(ddl$p$time))
-#  tc <- as.numeric(as.character(ddl$p$cohort))
-#  time1[tc==tt] <- x$begin.time + ddl$p$Time[tc==tt]
-#  time1[tc==(tt+1)] <- x$begin.time + ddl$p$Time[tc==(tt+1)]-1
-#  ddl$p$time1 <- as.factor(time1)
-#  ddl$p$Age <- ddl$p$Age-1
-#  ddl$p$Time[ddl$p$Age==0] <- 0 
-  
+  ## now setup the models
   if( trend > 0 ){
     trend <- floor(trend) # just in case
     # work out Time period to start the trend
     nyrs <- cesdata$years - ifelse(trend > cesdata$years, cesdata$years, trend) + 1 
     ddl$Phi$Tind <- ifelse(ddl$Phi$Time >= nyrs, 1, 0) # years with a trend 
-    ddl$Phi$tind <- 1 - ddl$Phi$Tind # years before trend
-    ddl$Phi$tind[ddl$Phi$time_var==1] <- 1 # make sure the transient year is picked up
-    ddl$Phi$Tind[ddl$Phi$tind==1] <- 0 # but don't fit separate transient during compare period
+    ddl$Phi$tind <- 1 - ddl$Phi$Tind       # years before trend
+    ddl$Phi$tind[ddl$Phi$time_var==1] <- 1 # make sure the transient period is picked up
+    ddl$Phi$Tind[ddl$Phi$tind==1] <- 0     # but exclude transient period from trend
     if( is.na(cesdata$group$name) )
       phi.ces <- list(formula = as.formula('~tind:time_var+Tind:Time'))
     else
@@ -96,9 +72,9 @@ function(cesdata, exclude=NULL, type='+', trend=0, compare=0, cleanup=TRUE){
     compare <- floor(compare) # just in case
     nyrs <- cesdata$years - ifelse(compare > cesdata$years, cesdata$years, compare) + 1 
     ddl$Phi$Cind <- ifelse(ddl$Phi$Time >= nyrs, 1, 0) # years within compare period 
-    ddl$Phi$tind <- 1 - ddl$Phi$Cind # years before compare
+    ddl$Phi$tind <- 1 - ddl$Phi$Cind       # years before compare
     ddl$Phi$tind[ddl$Phi$time_var==1] <- 1 # make sure the transient year is picked up
-    ddl$Phi$Cind[ddl$Phi$tind==1] <- 0 # but don't fit separate transient during compare period
+    ddl$Phi$Cind[ddl$Phi$tind==1] <- 0     # but exclude transient period from compare period
     if( is.na(cesdata$group$name) )
       phi.ces <- list(formula = as.formula('~tind:time_var+Cind'))
     else
@@ -117,12 +93,12 @@ function(cesdata, exclude=NULL, type='+', trend=0, compare=0, cleanup=TRUE){
   if( nosite )
     p.ces <- list(formula=~age)
   else 
-    p.ces <- list(formula=~sitename+age)
+    p.ces <- list(formula=~sitename*age)
   
   ## Now run the MARK models
   model.ces <- RMark::make.mark.model(x.pd, ddl, parameters=list(Phi=phi.ces,p=p.ces))
   model <- suppressWarnings(RMark::run.mark.model(model.ces, delete=cleanup, invisible=TRUE, ignore.stderr=TRUE))
-  # complains about embedded NULs not sure why
+  # now complains about embedded NULs not sure why
   
   # and possibly reset working dir
   if( cleanup == FALSE )
@@ -167,6 +143,19 @@ function(cesdata, exclude=NULL, type='+', trend=0, compare=0, cleanup=TRUE){
   p1_res <- p1_res[ , c(5,1:4)]
   rownames(p1_res) <- NULL
   
+  # check to see whether there are any boundary estimates ...
+  low.p <- (p_res$estimate < 0.01)
+  if( sum(low.p) > 0 ){
+    if( sum(low.p < 10) )
+      warning(paste("some sites have near zero recapture probabilities:", paste(p_res$sitename[low.p], collapse=",")), call.=FALSE)
+    else
+      warning("more than ten sites have near zero recapture probabilities", call.=FALSE)
+  }
+  # ... unlikely to be any high ones, but just in case 
+  high.p <- (p_res$estimate > 0.95)
+  if( sum(high.p) > 0 )
+    warning(paste("some sites have improbably high recapture probabilities:", paste(p_res$sitename[high.p], collapse=",")), call.=FALSE)
+
   results <- list(model=model,
        AIC=model$results$AICc, npar=model$results$npar,
        model.name=model.name, model.yrs=model.yrs,

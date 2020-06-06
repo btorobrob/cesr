@@ -34,10 +34,10 @@ function(x, mtype){
       cat(sprintf("Change between %d and %d: %4.1f%%\n", fyear, year0, delta_ind))
   }
   else if ( mtype$type == 'trend' )
-    cat(sprintf("Slope for past %d years is %4.2f +/- %4.2f (t=%4.3f, P=%4.3f) \n", 
+    cat(sprintf("Slope for past %d years is %4.2f \u00B1 %4.2f (t=%4.3f, P=%4.3f) \n", 
                 x$test$nyrs, x$test$slope, x$test$slope.se, x$test$tval, x$test$tsig))
   else if ( mtype$type == 'constant' ) 
-    cat(sprintf("Last year is %3.1f%% that in previous % d years: Estimate=%4.2f +/- %4.2f (t=%4.3f, P=%4.3f) \n",
+    cat(sprintf("Last year is %3.1f%% that in previous % d years: Estimate=%4.2f \u00B1 %4.2f (t=%4.3f, P=%4.3f) \n",
                 100*exp(x$test$slope), x$test$nyrs, x$test$slope, x$test$slope.se, x$test$tval, x$test$tsig))
   cat('\n')
   return(x$parms)

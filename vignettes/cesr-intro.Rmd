@@ -308,16 +308,21 @@ Survival probabilities for adults are estimated using function mark.ces(). This 
 ```{r}
 robin.surv = mark.ces(robin.ch)
 ```
-You can safely ignore the warning message about the number of parameters being adjusted upwards^[If you see the error message: Error in setwd("markfiles"): cannot change working directory, you probably need to use setwd() to change the working folder to one you have permission to write to.]
+(If you see the error message: Error in setwd("markfiles"): cannot change working directory, you probably need to use setwd() to change the working folder to one you have permission to write to.)
+
 This will estimate a number of quantities, which again we can see by using summary()
 ```{r}
 summary(robin.surv)
 ```
-The probability of residency is, loosely, the proportion of birds caught on the site that is likely to be resident and breeding there. Adult survival rates are estimated annually and assumed to be the same across all sites (this could be relaxed by using the group= option when extracting the data and re-running mark.ces). The recapture probabilities are site-specific, but constant through time (reflecting constant effort!). In this case the summary of recapture probabilities isn't very informative, looking at the full output robin.surv$recapture shows us that site 411 has a very low recapture probability of 0.05, so we may wish exclude it, using the exclude= argument to mark.ces:
+The probability of residency is, loosely, the proportion of birds caught on the site that is likely to be resident and breeding there. Adult survival rates are estimated annually and assumed to be the same across all sites (this could be relaxed by using the group= option when extracting the data and re-running mark.ces). The recapture probabilities are site-specific, but constant through time (reflecting constant effort!). In this case the summary of recapture probabilities isn't very informative, but R has identified that sites 447 and 656 have poorly estimated recapture probabilities, so we may wish exclude them, using the exclude= argument to mark.ces:
 ```{r}
-robin.surv = mark.ces(robin.ch, exclude=c(411))
+robin.surv = mark.ces(robin.ch, exclude=c(656,447))
 ```
-which gives similar results, excluding sites may be more worthwhile if their recapture probabilities are close to 0 or 1. It can also be informative to look at a graph of the annual survival estimates and site-specific recaptures, by simply :
+which gives similar results:
+```{r}
+summary(robin.surv)
+```
+It can also be informative to look at a graph of the annual survival estimates and site-specific recaptures, by simply :
 ```{r, fig.dim = c(5,5), fig.align='center'}
 plot(robin.surv)
 ```

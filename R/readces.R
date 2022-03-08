@@ -11,10 +11,10 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=FALSE){
                  'StartTime','EndTime','scheme','ring','species','sex','age','brood',
                  'moult','wing','weight','weighTime','p3','fat')
   # longer form ones
-  alt.names <- c('Country_Identifier',' Site_Identifier', 'sitename', 'coordinates', 'site_coordinates', 
+  alt.names <- c('Country_Identifier',' Site_Identifier', 'sitename', 'coordinates', 'site_coordinates',
                  'visit_period', 'visit_start_time', 'visit_end_time',  'total_net_length',
-                 'ring_scheme', 'ring_number', 'brood_patch_score', 'wing_length', 
-                 'mass', 'body_mass', 'time_of_weighing', 'length_p3', 'fat_score', 
+                 'ring_scheme', 'ring_number', 'brood_patch_score', 'wing_length',
+                 'mass', 'body_mass', 'time_of_weighing', 'length_p3', 'fat_score',
                  'moult_state', 'habitat_type', 'start', 'end')
   # map back to the main list
   column_nos <- c(1:23, 1, 2, 2, 3, 3, 5, 10, 11, 9, 12, 13, 17, 19, 20, 20, 21, 22, 23, 18, 4, 10, 11)

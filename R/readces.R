@@ -4,20 +4,25 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=FALSE){
   if( is.null(file) )
     file <- file.choose()
   
-  # get column names and work out how many
+  if( !file.exists(file) )
+    stop(paste("cannot find the file:", file, "please check typing and that are you in the right directory"))
+
+    # get column names and work out how many
   coln <- strsplit(readLines(file, n=1), '[,;]')[[1]]
   # short form names
-  var.names <- c('countryID','siteID','coords','habitat','visit','day','month','year','netlength',
-                 'StartTime','EndTime','scheme','ring','species','sex','age','brood',
-                 'moult','wing','weight','weighTime','p3','fat')
+  var.names <- c('countryID', 'siteID', 'coords', 'habitat', 'visit',
+                 'day', 'month', 'year', 'netlength', 'StartTime', 'EndTime',
+                 'scheme', 'ring', 'species', 'sex', 'age', 'brood',
+                 'moult', 'wing', 'weight', 'weighTime', 'p3', 'fat')
   # longer form ones
-  alt.names <- c('Country_Identifier',' Site_Identifier', 'sitename', 'coordinates', 'site_coordinates',
-                 'visit_period', 'visit_start_time', 'visit_end_time',  'total_net_length',
-                 'ring_scheme', 'ring_number', 'brood_patch_score', 'wing_length',
-                 'mass', 'body_mass', 'time_of_weighing', 'length_p3', 'fat_score',
-                 'moult_state', 'habitat_type', 'start', 'end')
+  alt.names <- c('Country_Identifier', 'Site_Identifier', 'sitename', 'coordinates', 
+                 'site_coordinates', 'visit_period', 'visit_start_time', 'visit_end_time',
+                 'total_net_length', 'ring_scheme', 'ring_number', 'brood_patch_score', 
+                 'wing_length', 'mass', 'body_mass', 'time_of_weighing', 'length_p3', 
+                 'fat_score', 'moult_state', 'habitat_type', 'start', 'end')
   # map back to the main list
-  column_nos <- c(1:23, 1, 2, 2, 3, 3, 5, 10, 11, 9, 12, 13, 17, 19, 20, 20, 21, 22, 23, 18, 4, 10, 11)
+  column_nos <- c(1:23, 1, 2, 2, 3, 3, 5, 10, 11, 9, 12, 13, 17, 19, 20, 20, 21,
+                  22, 23, 18, 4, 10, 11)
   
   match.names <- adist(tolower(coln), tolower(c(var.names, alt.names)))
   which.names <- unlist(apply(match.names, 1, which.min))
@@ -106,7 +111,7 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=FALSE){
   result[ , sex := as.factor(sex)]
   
   # set site names
-  if( length(grep("[#]", as.character(result$siteID))) > 0 ) # yes, really- thanks to Arizaga
+  if( length(grep("[#]", as.character(result$siteID))) > 0 ) # yes, really - thanks to Arizaga
     warning("Using the '#' sign in sitenames confuses Mark, rename your sites!", call.=FALSE)
   result[ , sitename := as.factor(siteID)] 
   result[ , site := as.numeric(as.factor(siteID))]
@@ -228,7 +233,7 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=FALSE){
 
   # habitats
   result[ , habitat := toupper(habitat)]
-  result[habitat=='RD', habitat := 'RB']
+  result[habitat %in% c('RD','RE'), habitat := 'RB']
 
   dodgy <- unique(result$habitat[!(result$habitat %in% c('DS','FA','GN','RB','WD','WS'))])
   if( length(dodgy) > 0 ){

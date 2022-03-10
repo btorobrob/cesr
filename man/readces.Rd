@@ -9,7 +9,7 @@ Read in CES data
 Reads in CES data from a text file in EuroCES format
 }
 \usage{
-readces(file, visits='std', fill.sex=FALSE, group.race=FALSE)
+readces(file, visits='std', fill.sex=FALSE, group.race=TRUE)
 readBTO(file, species)
 }
 %- maybe also 'usage' for other objects documented here.
@@ -31,12 +31,13 @@ Aggregate records of different races (i.e. those where the last digit of the Eur
 }
 }
 \details{
-For details of the file specification see the CES pages of the Euring website, the function will attempt to match similar column names; a warning will be generated if it detects anything amiss (not guaranteed!). 
+For details of the file specification see the CES pages of the Euring website, the function will attempt to match similar column names; a warning will be generated if it detects anything amiss (not guaranteed!). Some of these can be safely ignored (e.g. the 'surprising species' one) if 
+everything appears to be in order.
 }
 \value{
 A dataframe with (at a minimum) the following columns: countryID, site, habitat, visit, day, month, year, netlength, scheme, ring, species, sex, age, race, julian, lat, long. 
 
-Latitude and longitude will be in decimal degrees. Race will usually be the same as spp (i.e. a Euring number), but may be different where particular races were identified in the data file (e.g. as for Motacilla alba alba/yarrelli). The column 'julian' gives the day of year from 1 Jan (including 29 Feb in leap years). The function does some basic error-checking and will try to give informative messages where it detects a problem. Where records are deleted or values set to NA (missing) this will be stated.  
+Latitude and longitude will be in decimal degrees. Race will usually be the same as species (i.e. a Euring number), but may be different where particular races were identified in the data file (e.g. as for Motacilla alba alba/yarrelli). The column 'julian' gives the day of year from 1 Jan (including 29 Feb in leap years). The function does some basic error-checking and will try to give informative messages where it detects a problem. Where records are deleted or values set to NA (missing) a warning will be given.  
 }
 
 \references{

@@ -1,5 +1,5 @@
 readces <-
-function(file=NULL, visits='std', fill.sex=FALSE, group.race=FALSE){
+function(file=NULL, visits='std', fill.sex=FALSE, group.race=TRUE){
   
   if( is.null(file) )
     file <- file.choose()
@@ -55,10 +55,22 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=FALSE){
   
   setnames(result, col.names)
   
+  # Check for unknown species
+  unknown_spp <- sum(result$species==0)
+  if( unknown_spp > 0 ){
+    result <- result[species > 0, ]
+    wmessage <- paste(unknown_spp, 'unknown species (0) records removed')
+    warning(wmessage, call.=FALSE)
+  }
+  
   # remove races if required
   result[ , race := species]  # just so we know it is there
-  if( group.race )
+  if( group.race ){
     result[ , species := (10 * floor(as.numeric(as.character(species))/10))]  # concatenate races, original code now in race
+    wmessage <- paste("Subspecies have been grouped in the 'species' column, use the 'race' column',",
+                      "or group.race=FALSE if this is not desired")
+    warning(wmessage, call.=FALSE)
+  }
   
   # check species are valid Euring codes
   result[ , species := as.factor(species)]

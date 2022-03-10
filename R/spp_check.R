@@ -1,17 +1,21 @@
-spp_check <- function(cesobj){
+spp_check <- function(cesdata){
   
-  cesobj$ring_spp <- paste(x$ring, x$species, sep="_")
+  cesdata$ring <- paste(cesdata$scheme, cesdata$ring, sep="_")
+  cesdata$ring_spp <- paste(cesdata$ring, cesdata$species, sep="_")
   # remove multiple captures w/in species
-  cesobj <- cesobj[!duplicated(cesobj$ring_spp), ] 
+  cesdata <- cesdata[!duplicated(cesdata$ring_spp), ] 
   # get the number of ring occurrences  
-  tt <- as.data.frame(xtabs(~ring, data=cesobj))
+  tt <- as.data.frame(xtabs(~ring, data=cesdata))
   # and select out the multiples
-  tt <- tt[tt$Freq>1, ]
-  # pull back which species these have been ringed as
-  for( i in 1:nrow(tt) )
-    tt$species[i] <- paste(cesobj$species[cesobj$ring==tt$ring[i]], collapse=",")
+  tt <- droplevels(tt[tt$Freq>1, ])
+  if (nrow(tt) == 0 )
+    return(NULL)
+  else   # pull back which species these have been ringed as
+    for( i in 1:nrow(tt) )
+      tt$species[i] <- paste(cesdata$species[cesdata$ring==tt$ring[i]], collapse=",")
   
   tt <- tt[ , c('ring', 'species')]
+  tt$ring <- substr(tt$ring, 5, 20)
   row.names(tt) <- NULL
   
   return(tt)

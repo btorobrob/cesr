@@ -7,22 +7,23 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=FALSE){
   if( !file.exists(file) )
     stop(paste("cannot find the file:", file, "please check typing and that are you in the right directory"))
 
-    # get column names and work out how many
+  # get column names and work out how many
   coln <- strsplit(readLines(file, n=1), '[,;]')[[1]]
   # short form names
   var.names <- c('countryID', 'siteID', 'coords', 'habitat', 'visit',
                  'day', 'month', 'year', 'netlength', 'StartTime', 'EndTime',
                  'scheme', 'ring', 'species', 'sex', 'age', 'brood',
-                 'moult', 'wing', 'weight', 'weighTime', 'p3', 'fat')
+                 'moult', 'wing', 'weight', 'weighTime', 'p3', 'fat', 'lat', 'long')
   # longer form ones
   alt.names <- c('Country_Identifier', 'Site_Identifier', 'sitename', 'coordinates', 
                  'site_coordinates', 'visit_period', 'visit_start_time', 'visit_end_time',
                  'total_net_length', 'ring_scheme', 'ring_number', 'brood_patch_score', 
                  'wing_length', 'mass', 'body_mass', 'time_of_weighing', 'length_p3', 
-                 'fat_score', 'moult_state', 'habitat_type', 'start', 'end')
+                 'fat_score', 'moult_state', 'habitat_type', 'start', 'end',
+                 'latitude', 'longitude', 'lon')
   # map back to the main list
-  column_nos <- c(1:23, 1, 2, 2, 3, 3, 5, 10, 11, 9, 12, 13, 17, 19, 20, 20, 21,
-                  22, 23, 18, 4, 10, 11)
+  column_nos <- c(1:25, 1, 2, 2, 3, 3, 5, 10, 11, 9, 12, 13, 17, 19, 20, 20, 21,
+                  22, 23, 18, 4, 10, 11, 24, 25, 25)
   
   match.names <- adist(tolower(coln), tolower(c(var.names, alt.names)))
   which.names <- unlist(apply(match.names, 1, which.min))
@@ -53,6 +54,11 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=FALSE){
   # use suppressWarnings to avoid messages about bumping col classes late in the data
   
   setnames(result, col.names)
+  
+  # remove races if required
+  result[ , race := species]  # just so we know it is there
+  if( group.race )
+    result[ , species := (10 * floor(as.numeric(as.character(species))/10))]  # concatenate races, original code now in race
   
   # check species are valid Euring codes
   result[ , species := as.factor(species)]
@@ -117,11 +123,6 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=FALSE){
   result[ , site := as.numeric(as.factor(siteID))]
   result[ , siteID := NULL] # no longer needed
   
-  # remove races if required
-  result[ , race := species]  # just so we know it is there
-  if( group.race )
-    result[ , species := (10 * floor(as.numeric(as.character(species))/10))]  # concatenate races, original code now in race
-
   # check for duplicated rings on different species (yes, really!)
   dup_spp <- unique(result[ , c('species','ring')], by=c('species', 'ring')) 
   dup_ndx <- duplicated(dup_spp, by=c('ring'))
@@ -176,44 +177,54 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=FALSE){
   jday <- function(d, m, y){ strptime(paste0(m, '/', d, '/', y), format="%m/%d/%Y")$yday }
   result[ , julian := jday(day, month, year)]
 
-  # convert co-ordinates
-  if( !is.character(result$coords) )
-    warning('coordinates not in Euring format', call. = FALSE)
-  coords <- result$coords
-  # do this to avoid a cryptic warning about NAs being coerced
-  c1 <- suppressWarnings(as.integer(substr(coords,1,3)))
-  c2 <- suppressWarnings(as.integer(substr(coords,4,5))/60)
-  c3 <- suppressWarnings(as.integer(substr(coords,6,7))/3600)
-  if( anyNA(c(c1, c2, c3)) )
-    warning("missing values generated for latitude, are all the coordinates 15 characters long?", call.=FALSE)
-  result[ , lat := c1 + c2 + c3]
-  ew <- ifelse(substr(coords,8,8) == '-', -1 , 1)
-  llfmt <- max(nchar(coords), na.rm  = TRUE) # does coords have 14 or 15 characters
+  # convert co-ordinates if necessary
+  if( any(colnames(result)=="coords") ){
 
-  if ( llfmt == 15 ){   # Euring code specifies 15 chars, but just in case long deg is 2 digits rather than 3
-    if( anyNA(as.integer(substr(coords,9,11))) | anyNA(as.integer(substr(coords,12,13))) | anyNA(as.integer(substr(coords,14,15))) )
-      warning("missing values generated in longitude, check for stray non-numeric characters", call.=FALSE)
-    c1 <- suppressWarnings(as.integer(substr(coords,9,11)))
-    c2 <- suppressWarnings(as.integer(substr(coords,12,13)))/60
-    c3 <- suppressWarnings(as.integer(substr(coords,14,15)))/3600
-    if( max(c2, c3, na.rm=TRUE) > 60 )
-      warning("values greater than 60 detected in latitude minutes/seconds, check coordinate format", call.=FALSE)
-    result [ , long := ew * (c1 + c2 + c3)]
-  } else if ( llfmt == 14 ){
-    if( anyNA(as.integer(substr(coords,9,10))) | anyNA(as.integer(substr(coords,11,12))) | anyNA(as.integer(substr(coords,13,14))) )
-      warning("missing values generated in longitude, check for possible stray non-numeric characters", call.=FALSE)
-    c1 <- suppressWarnings(as.integer(substr(coords,9,10)))
-    c2 <- suppressWarnings(as.integer(substr(coords,11,12))/60)
-    c3 <- suppressWarnings(as.integer(substr(coords,13,14))/3600)
-    if( max(c2, c3, na.rm=TRUE) > 60 )
-      warning("values greater than 60 detected in longitude minutes/seconds, check coordinate format", call.=FALSE)
-    result [ , long := ew * (c1 + c2 + c3)]
-  } else {
-    err <- which(nchar(coords) %in% c(14, 15))
-    wmessage <- paste("Unrecognised lat-long format in row", paste(head(which(nchar(coords) < 14)), collapse=' '), '...')
+    if( !is.character(result$coords) )
+      warning('coordinates not in Euring format', call. = FALSE)
+    coords <- result$coords
+    # do this to avoid a cryptic warning about NAs being coerced
+    c1 <- suppressWarnings(as.integer(substr(coords,1,3)))
+    c2 <- suppressWarnings(as.integer(substr(coords,4,5))/60)
+    c3 <- suppressWarnings(as.integer(substr(coords,6,7))/3600)
+    if( anyNA(c(c1, c2, c3)) )
+      warning("missing values generated for latitude, are all the coordinates 15 characters long?", call.=FALSE)
+    result[ , lat := c1 + c2 + c3]
+    ew <- ifelse(substr(coords,8,8) == '-', -1 , 1)
+    llfmt <- max(nchar(coords), na.rm  = TRUE) # does coords have 14 or 15 characters
+  
+    if ( llfmt == 15 ){   # Euring code specifies 15 chars, but just in case long deg is 2 digits rather than 3
+      if( anyNA(as.integer(substr(coords,9,11))) | anyNA(as.integer(substr(coords,12,13))) | anyNA(as.integer(substr(coords,14,15))) )
+        warning("missing values generated in longitude, check for stray non-numeric characters", call.=FALSE)
+      c1 <- suppressWarnings(as.integer(substr(coords,9,11)))
+      c2 <- suppressWarnings(as.integer(substr(coords,12,13)))/60
+      c3 <- suppressWarnings(as.integer(substr(coords,14,15)))/3600
+      if( max(c2, c3, na.rm=TRUE) > 60 )
+        warning("values greater than 60 detected in latitude minutes/seconds, check coordinate format", call.=FALSE)
+      result [ , long := ew * (c1 + c2 + c3)]
+    } else if ( llfmt == 14 ){
+      if( anyNA(as.integer(substr(coords,9,10))) | anyNA(as.integer(substr(coords,11,12))) | anyNA(as.integer(substr(coords,13,14))) )
+        warning("missing values generated in longitude, check for possible stray non-numeric characters", call.=FALSE)
+      c1 <- suppressWarnings(as.integer(substr(coords,9,10)))
+      c2 <- suppressWarnings(as.integer(substr(coords,11,12))/60)
+      c3 <- suppressWarnings(as.integer(substr(coords,13,14))/3600)
+      if( max(c2, c3, na.rm=TRUE) > 60 )
+        warning("values greater than 60 detected in longitude minutes/seconds, check coordinate format", call.=FALSE)
+      result [ , long := ew * (c1 + c2 + c3)]
+    } else {
+      err <- which(nchar(coords) %in% c(14, 15))
+      wmessage <- paste("Unrecognised lat-long format in row", paste(head(which(nchar(coords) < 14)), collapse=' '), '...')
+      warning(wmessage, call.=FALSE)
+    }   
+    result[ , coords := NULL ]
+
+  }
+  # do a final check
+  if( sum(colnames(result)%in%c("lat","long")) != 2 )
+  {
+    wmessage <- paste('coordinates not recognised, check you have either a coordinates or lat-long columns')
     warning(wmessage, call.=FALSE)
-  }   
-  result[ , coords := NULL ]
+  }    
 
   # check NetLengths
   if( !is.integer(result$netlength) ){

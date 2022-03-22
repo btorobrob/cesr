@@ -266,7 +266,15 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=TRUE){
   result[ , habitat := as.factor(habitat)]
   
   result[ , scheme := as.factor(scheme)]
-
+  
+  # check biometrics for commas rather than decimal points
+  if( is.character(result$wing) )
+    result$wing <- as.numeric(gsub(",", ".", result$wing, fixed=TRUE))
+  if( is.character(result$weight) )
+    result$weight <- as.numeric(gsub(",", ".", result$weight, fixed=TRUE))
+  if( is.character(result$p3) )
+    result$p3 <- as.numeric(gsub(",", ".", result$p3, fixed=TRUE))
+ 
   # return dataframe
   result <- as.data.frame(result)
   class(result) <- c('ces', 'data', 'data.frame')

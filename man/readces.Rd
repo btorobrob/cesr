@@ -31,8 +31,7 @@ Aggregate records of different races (i.e. those where the last digit of the Eur
 }
 }
 \details{
-For details of the file specification see the CES pages of the Euring website, the function will attempt to match similar column names; a warning will be generated if it detects anything amiss (not guaranteed!). Some of these can be safely ignored (e.g. the 'surprising species' one) if 
-everything appears to be in order.
+For details of the file specification see the CES pages of the Euring website, the function will attempt to match similar column names; a warning will be generated if it detects anything amiss (not guaranteed!). Some of these can be safely ignored (e.g. the 'surprising species' one) if everything appears to be in order.
 }
 \value{
 A dataframe with (at a minimum) the following columns: countryID, site, habitat, visit, day, month, year, netlength, scheme, ring, species, sex, age, race, julian, lat, long. 

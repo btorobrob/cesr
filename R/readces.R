@@ -30,33 +30,20 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=TRUE){
   col.numbers <- column_nos[which.names]
   col.names <- var.names[col.numbers]
   
-  if( any(duplicated(col.names) == TRUE) ){ # duplicates indicate something is amiss
-    duplicated.names <- which(duplicated(col.names))
-    col.names[duplicated.names] <- paste0('var', duplicated.names)
-    wmsg <- paste('unrecognised column names:', paste(coln[duplicated.names], collapse=', '))
-    warning(wmsg, call. = FALSE)
-  }
-  
-  # this forces some structure but is maybe too restrictive?  
-  #  ncol <- length(coln)
-  #  if( ncol == 14 )
-  #    col.names <- c('countryID','siteID','coords','habitat','visit','day','month','year','NetLength',
-  #                  'scheme','ring','species','sex','age')
-  #  else if( ncol == 23 )
-  #    col.names <- c('countryID','siteID','coords','habitat','visit','day','month','year','NetLength',
-  #                  'StartTime','EndTime','scheme','ring','species','sex','age','brood','moult','wing','weight','weighTime','p3','fat')
-  #  else {
-  #    col.names <- coln
-  #    warning('unexpected number of columns read, names not checked which may cause errors', call.=FALSE)
-  #  }
-  
   result <- suppressWarnings(data.table::fread(file))
   # use suppressWarnings to avoid messages about bumping col classes late in the data
-  
   setnames(result, col.names)
+
+  # duplicates indicate something is amiss
+  duplicated.cols <- which(duplicated(col.names))
+  if( any(duplicated.cols) == TRUE ){ 
+    wmsg <- paste('unrecognised columns', paste(duplicated.cols, collapse=', '), 'removed')
+    warning(wmsg, call. = FALSE)
+    result <- subset(result, select=col.names[-duplicated.cols])
+  }
   
   # Check for unknown species
-  unknown_spp <- sum(result$species==0)
+  unknown_spp <- sum(result$species==0, na.rm=TRUE)
   if( unknown_spp > 0 ){
     result <- result[species > 0, ]
     wmessage <- paste(unknown_spp, 'unknown species (0) records removed')
@@ -269,11 +256,11 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=TRUE){
   
   # check biometrics for commas rather than decimal points
   if( is.character(result$wing) )
-    result$wing <- as.numeric(gsub(",", ".", result$wing, fixed=TRUE))
+    result$wing <- suppressWarnings(as.numeric(gsub(",", ".", result$wing, fixed=TRUE)))
   if( is.character(result$weight) )
-    result$weight <- as.numeric(gsub(",", ".", result$weight, fixed=TRUE))
+    result$weight <- suppressWarnings(as.numeric(gsub(",", ".", result$weight, fixed=TRUE)))
   if( is.character(result$p3) )
-    result$p3 <- as.numeric(gsub(",", ".", result$p3, fixed=TRUE))
+    result$p3 <- suppressWarnings(as.numeric(gsub(",", ".", result$p3, fixed=TRUE)))
  
   # return dataframe
   result <- as.data.frame(result)

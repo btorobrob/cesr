@@ -1,3 +1,11 @@
+Changes in version 0.51.1
+==============
+- 30032022 - readces() removes (with a warning) unrecognised columns
+- 10032022 - readces() removes (with a warning) records where species=0
+- 10032022 - Change the default of readces() to group.race=TRUE and add a warning on this
+- 10032022 - Allow readces() to read lat-longs as well as Euring format coordinates
+- 08032022 - Add spp_check() to report rings used on multiple species
+
 Changes in version 0.51.0
 ==============
 - 31052020: add some interpretation for trend survival models to summary() 

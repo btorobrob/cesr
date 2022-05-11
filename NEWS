@@ -1,5 +1,6 @@
 Changes in version 0.51.1
 ==============
+- 09052022 - readces() will cope with decimal degrees in the coordinates column
 - 30032022 - readces() removes (with a warning) unrecognised columns
 - 10032022 - readces() removes (with a warning) records where species=0
 - 10032022 - Change the default of readces() to group.race=TRUE and add a warning on this

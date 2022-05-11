@@ -34,9 +34,9 @@ Aggregate records of different races (i.e. those where the last digit of the Eur
 For details of the file specification see the CES pages of the Euring website, the function will attempt to match similar column names; a warning will be generated if it detects anything amiss (not guaranteed!). Some of these can be safely ignored (e.g. the 'surprising species' one) if everything appears to be in order.
 }
 \value{
-A dataframe with (at a minimum) the following columns: countryID, site, habitat, visit, day, month, year, netlength, scheme, ring, species, sex, age, race, julian, lat, long. 
+A dataframe with (at a minimum) the following columns: countryID (where the scheme is), sitename(as referred by the scheme), site (a sequential numeric identifier), habitat, visit (number), day, month, year, netlength, scheme (of the ring), ring, species, sex, age, race, julian, lat, long. Unrecognised columns in the datafile will be removed. 
 
-Latitude and longitude will be in decimal degrees. Race will usually be the same as species (i.e. a Euring number), but may be different where particular races were identified in the data file (e.g. as for Motacilla alba alba/yarrelli). The column 'julian' gives the day of year from 1 Jan (including 29 Feb in leap years). The function does some basic error-checking and will try to give informative messages where it detects a problem. Where records are deleted or values set to NA (missing) a warning will be given.  
+Latitude and longitude are in decimal degrees. Race will usually be the same as species (i.e. a Euring number), unless particular races were identified in the data file (e.g. as for Motacilla alba alba/yarrelli, see group.race=). The column 'julian' gives the day of year from 1 Jan (including 29 Feb in leap years). The function does some basic error-checking and will try to give informative messages where it detects a problem. Where records are deleted or values set to NA (missing) a warning will be given.  
 }
 
 \references{
@@ -46,7 +46,7 @@ Euring CES pages: https://euring.org/research/ces-europe/
 Rob Robinson
 }
 \note{
-The CES programs expect birds aged as either juvenile (3) or adult (4), the function will recode ages where it can, 2 is also allowed; records with other ages (0, 1) will be deleted.
+The CES programs expect birds aged as either juvenile (3) or adult (4), the function will recode ages where it can, 2 is also allowed; records with other ages (0, 1) will be deleted. Expect some warnings, most are there for information only- they do not necessarily indicate an error. 
 
 readBTO() is provided for reading in BTO '.all' fixed format files, variables not included in this format (eg habitat, NetLength) are simply set to NA.
 }

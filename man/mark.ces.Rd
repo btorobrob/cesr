@@ -43,7 +43,7 @@
   Rob Robinson, with thanks to Christian Kamplicher
 }
 \note{
-  %%  ~~further notes~~
+  Requires MARK (http://www.phidot.org/software/mark/downloads/index.html) to be installed (and the MarkPath variable to be set if it is not in the default location, see ?mark)
 }
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~

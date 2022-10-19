@@ -39,6 +39,9 @@
 \author{
   Rob Robinson, with thanks to Christian Kamplicher
 }
+\note{
+  Requires MARK (http://www.phidot.org/software/mark/downloads/index.html) to be installed (and the MarkPath variable to be set if it is not in the default location, see ?mark)
+}
 
 \examples{
 data(ukdata)

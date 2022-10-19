@@ -1,6 +1,5 @@
 \name{summary.ces}
 \alias{summary.ces}
-%- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 Summarizing CES objects
 }
@@ -8,11 +7,10 @@ Summarizing CES objects
 Methods to summarize CES objects
 }
 \usage{
-summary(cesobj, ads=FALSE, jvs=FALSE, prod=FALSE, age=0, sp.order='alpha', df=FALSE, nrow=6, silent=FALSE)
+\method{summary}{ces}(object, age=0, sp.order='alpha', ads=FALSE, jvs=FALSE, prod=FALSE, df=FALSE, nrow=6, silent=FALSE, ...)
 }
-%- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{cesobj}{
+  \item{object}{
 A CES object
 }
   \item{ads, jvs, prod}{
@@ -33,6 +31,10 @@ integer, if x is a species summary object, print this many rows, ordered by high
   \item{silent}{
 logical, if TRUE suppress printing of the species counts. May be useful if you just want to generate a table of species counts for further manipulation.
 }
+  \item{...}{
+arguments passed to other methods.
+}
+
 }
 \details{
 summary() will call the appropriate method as follows: 
@@ -46,21 +48,11 @@ Normally one will want to summarise results for both age-classes and productivit
 \value{
 Invisibly, a dataframe (or a list of dataframes) containing the numerical data.
 }
-\references{
-%% ~put references to the literature/web site here ~
-}
-
 \author{
 Rob Robinson
-}
-\seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
 data(ukdata)
 summary(ukdata)
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+\keyword{ attribute }

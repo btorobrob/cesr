@@ -1,8 +1,21 @@
 useDynLib(cesr)
 importFrom(Rcpp, sourceCpp)
 
+importFrom("grDevices", "col2rgb", "dev.off", "jpeg", "pdf", "png",
+           "postscript", "svg", "tiff")
+importFrom("graphics", "abline", "arrows", "axis", "barplot",
+           "boxplot", "bxp", "image", "legend", "lines", "mtext",
+           "par", "points", "segments", "title")
+importFrom("stats", "as.formula", "coef", "glm", "median", "na.omit",
+           "predict", "pt", "qnorm", "quantile", "quasibinomial",
+           "quasipoisson", "relevel", "reshape", "vcov", "xtabs")
+importFrom("utils", "adist", "capture.output", "head", "write.table")
+importFrom("data.table", "data.table", "setkey", "setnames")
+importFrom("reshape", "cast", "melt")
+
 S3method(summary, ces)
 S3method(plot, ces)
+S3method(print, ces)
 
 export(
   ces.table,
@@ -15,15 +28,16 @@ export(
 	map.ces,
 	mark.ces,
 	plot.ces,
-  plot.transients,
 	plot.trend,
   print.ces,
 	readces,
 	readBTO,
 	select.data,
 	setceslang,
+	siteplot,
 	sitereport,
 	summary.ces,
+  transient_plot,
 	writeces,	
 	load.boxplot,
 	save.boxplot
@@ -35,5 +49,5 @@ export(
 # summary.ces.ch, summary.ces.counts, summary.ces.glmfit, summary.ces.markfit, summary.ces.plots, summary.ces.sites, summary.ces.spp
 # writeces.counts, writeces.glmfit, writeces.plots, writeces.sites, writeces.spp
 # calc.offset, get.estimate, plglm, prsumglm, yrsum 
-# siteplot
+
 

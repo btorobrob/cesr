@@ -47,30 +47,18 @@ This function runs index() multiple times to create a table of trends for each s
 \value{
 a list with two components: 'table' is a character matrix with each of the table entries; 'results' is a list containing the output of \code{index} for each table entry.
 }
-\references{
-%% ~put references to the literature/web site here ~
-}
 \author{
-Rob Robinson}
-\note{
-%%  ~~further notes~~
+Rob Robinson
 }
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
 \code{\link{index}}
 }
 \examples{
-## Not run:
+\dontrun{
 data(ukdata)
 # compare adult numbers in the current yaer to the previous year, 
 # survival with the previous five years and a 10-year trend in productivity
 results <- ces.table(ukdata, columns=c('A-0', 'S-5', 'P/10'))
-## End (not run)
 }
-
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{ ~kwd1 }% use one of  RShowDoc("KEYWORDS")
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+}

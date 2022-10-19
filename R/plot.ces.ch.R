@@ -1,7 +1,7 @@
 plot.ces.ch <- 
-function(cesobj, col=c('red', 'blue'), sitelist=NULL, cex=0.75, xlab='Occasion', ylab='Site', main=''){
+function(x, col=c('red', 'blue'), sitelist=NULL, cex=0.75, xlab='Occasion', ylab='Site', main=''){
   
-  chdata <- cesobj$chdata
+  chdata <- x$chdata
 
   # check the sitenames are valid
   if( !is.null(sitelist) ){

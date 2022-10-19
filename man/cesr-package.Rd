@@ -12,8 +12,8 @@ Facilities for reading EuroCES data in Euring format to produce annual indices o
 \tabular{ll}{
 Package: \tab cesr\cr
 Type: \tab Package\cr
-Version: \tab 0.51.0\cr
-Date: \tab 2020-05-31\cr
+Version: \tab 0.51.1\cr
+Date: \tab 2022-10-18\cr
 License: \tab GPL-2\cr
 LazyLoad: \tab yes\cr
 }
@@ -47,16 +47,16 @@ Maintainer: Rob Robinson <rob.robinson@bto.org>
 }
 \keyword{ package }
 \examples{                                               
-A sample session might look as follows:
-\preformatted{
+\dontrun{
+# A sample session might look as follows:
 setwd('d:/data/ces')  # set the working directory which contains the data file 
 setceslang('English')  # which language for species names? 
 
 alldat <- readces('netherlands.csv')  # read in the data
 plot.nl <- extract.coverage(alldat)  # determine which sites covered in which years
-sonth.nl <- extract.data(alldat,species=12000,plots=plot.nl)  # extract data for Song Thrush
-st.fit0 <- index(sonth.nl,year=2008)  # fit an annual index
-st.fit1 <- index(sonth.nl,trend=30)  # fit a simple linear trend
+sonth.nl <- extract.data(alldat, species=12000,plots=plot.nl)  # extract data for Song Thrush
+st.fit0 <- index(sonth.nl, year=2008)  # fit an annual index
+st.fit1 <- index(sonth.nl, trend=30)  # fit a simple linear trend
 
 writeces(st.fit0, 'sonthdata.txt')  # write annual indices to a file
 }

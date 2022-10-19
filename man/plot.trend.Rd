@@ -8,7 +8,7 @@ Plot CES trend
 Plots an estimated trend from CES data either to the screen or to a file.
 }
 \usage{
-plot.trend(x, type, group=NULL, file = NULL, width=480, height=480, units='px', ylab='', ylim=c(0,0), xlim=c(0,0), lty=c(1,2), lcol='black', line=NA, rlty=3, rcol='black', lwd=1, annual=FALSE, pch=19, p.col='black', ...)
+plot.trend(x, type, group=NULL, file = NULL, width=480, height=480, units='px', ylab='', ylim=c(0,0), xlim=c(0,0), lty=c(1,2), lcol='black', line=NA, rlty=3, rcol='black', lwd=1, annual=FALSE, pch=19, pcol='black', ...)
 }
 \arguments{
   \item{x}{
@@ -69,20 +69,11 @@ Plots a single CES trend to a file, or to the screen if no file is not specified
 \value{
 If assigned to an object, a dataframe with the following columns: 'years', 'parm', 'se', 'index', 'lcl', 'ucl'. 
 }
-\references{
-%% ~put references to the literature/web site here ~
-}
 \author{
 Rob Robinson
 }
 \note{
-If you get an error about "figure margins too large", you need to either increase the height and width, or check you have the correct units. 
-}
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
-\seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
+If you get an error about "figure margins too large", you need to either increase the height and width (of the file, or make the plotting window larger), or check you have the correct units. 
 }
 \examples{
 ##---- Should be DIRECTLY executable !! ----
@@ -91,5 +82,4 @@ If you get an error about "figure margins too large", you need to either increas
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+\keyword{ hplot }

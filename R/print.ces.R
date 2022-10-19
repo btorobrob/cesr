@@ -1,11 +1,11 @@
 print.ces <-
-function(cesobj){
+function(x, ...){
   
-  if( !class(cesobj)[1] == 'ces' )
-    print(cesobj)
+  if( !class(x)[1] == 'ces' )
+    print(x)
   else 
-    switch( class(cesobj)[2],
-            res.table = summary.ces.table(cesobj),
-            print(cesobj))
+    switch( class(x)[2],
+            res.table = summary.ces.table(x),
+            print(x))
 
 }

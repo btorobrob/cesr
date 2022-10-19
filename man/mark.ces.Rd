@@ -8,10 +8,10 @@
   Fit CJS-with-transients model to estimate annual adult survival from CES data.
 }
 \usage{
-  mark.ces(x, exclude=NULL, type='+', trend=0, compare=0, cleanup=FALSE)
+  mark.ces(cesobj, exclude=NULL, type='+', trend=0, compare=0, cleanup=TRUE)
 }
 \arguments{
-  \item{x}{
+  \item{cesobj}{
     A CES object with capture histories, typically created by \code{\link{extract.ch}}
   }
   \item{exclude}{
@@ -36,21 +36,10 @@
 \value{
   A list consisting of model (the output returned by RMark), its AIC and (corrected) number of paramters (npar), and dataframes called residency, survival, recapture and recap1 with the parameter estimate, standard error and upper and lower confidence limits (as ucl, lcl) for each parameter.  
 }
-\references{
-  %% ~put references to the literature/web site here ~
-}
 \author{
   Rob Robinson, with thanks to Christian Kamplicher
 }
-\note{
-  %%  ~~further notes~~
-}
 
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-  
-  \seealso{
-    %% ~~objects to See Also as \code{\link{help}}, ~~~
-  }
 \examples{
 data(ukdata)
 plots <- extract.coverage(ukdata)
@@ -59,5 +48,5 @@ robin.res <- mark.ces(robin.dat)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+\keyword{ models }
+\keyword{ regression }

@@ -1,18 +1,18 @@
 summary.ces <-
-function(cesobj, age=0, sp.order='taxon', ads=FALSE, jvs=FALSE, prod=FALSE, df=FALSE, silent=FALSE){
+function(object, age=0, sp.order='alpha', ads=FALSE, jvs=FALSE, prod=FALSE, df=FALSE, nrow=6,silent=FALSE, ...){
 
-  if( !class(cesobj)[1] == 'ces' )
-    summary(cesobj)
+  if( !class(object)[1] == 'ces' )
+    summary(object)
   else {
-    switch( class(cesobj)[2],
-            counts = summary.ces.counts(cesobj),
-            plots = summary.ces.plots(cesobj),
-            sites = summary.ces.sites(cesobj),
-            data = summary.ces.spp(cesobj, age=age, sp.order=sp.order, df=df, silent=silent),
-            glmfit = summary.ces.glmfit(cesobj, ads=ads, jvs=jvs, prod=prod),
-            markfit = summary.ces.markfit(cesobj),
-            ch = summary.ces.ch(cesobj),
-            res.table = summary.ces.table(cesobj),
+    switch( class(object)[2],
+            counts = summary.ces.counts(object),
+            plots = summary.ces.plots(object),
+            sites = summary.ces.sites(object),
+            data = summary.ces.spp(object, age=age, sp.order=sp.order, df=df, nrow=nrow, silent=silent),
+            glmfit = summary.ces.glmfit(object, ads=ads, jvs=jvs, prod=prod),
+            markfit = summary.ces.markfit(object),
+            ch = summary.ces.ch(object),
+            res.table = summary.ces.table(object),
             cat('No data to summarise!\n'))
   }
 }

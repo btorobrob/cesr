@@ -1,9 +1,9 @@
 mark.ces <-
-function(cesdata, exclude=NULL, type='+', trend=0, compare=0, cleanup=TRUE){
+function(cesobj, exclude=NULL, type='+', trend=0, compare=0, cleanup=TRUE){
   
   requireNamespace('RMark', quietly=TRUE)
   
-  if( class(cesdata)[1]!="ces" | class(cesdata)[2]!='ch' )
+  if( class(cesobj)[1]!="ces" | class(cesobj)[2]!='ch' )
     stop('use extract.ch() to create a Mark data list')
   
   if( type != '+' & type != ':' )
@@ -23,7 +23,7 @@ function(cesdata, exclude=NULL, type='+', trend=0, compare=0, cleanup=TRUE){
   } else 
     setwd('./markfiles') # because dir.create() will have been successful
 
-  chdata <- cesdata$chdata
+  chdata <- cesobj$chdata
   chdata$sitename <- as.factor(chdata$sitename)
   
   if( !is.null(exclude) ){
@@ -32,18 +32,18 @@ function(cesdata, exclude=NULL, type='+', trend=0, compare=0, cleanup=TRUE){
     chdata$sitename <- droplevels(chdata$sitename)
   }
   if( length(levels(chdata$sitename)) == 1 ) # check if only 1 site
-    groups <- cesdata$group$name
+    groups <- cesobj$group$name
   else 
-    groups <- c("sitename", cesdata$group$name)
+    groups <- c("sitename", cesobj$group$name)
 
-  groups <- groups[!is.na(groups)]   # cesdata$group will be NA if group isn't set
+  groups <- groups[!is.na(groups)]   # cesobj$group will be NA if group isn't set
   
   nosite <- FALSE
   if( length(groups) == 0 ){
-    x.pd <- RMark::process.data(chdata, begin.time=cesdata$begin.time)
+    x.pd <- RMark::process.data(chdata, begin.time=cesobj$begin.time)
     nosite <- TRUE # only 1 site so cant fit this factor
   } else 
-    x.pd <- RMark::process.data(chdata, begin.time=cesdata$begin.time, groups=groups)
+    x.pd <- RMark::process.data(chdata, begin.time=cesobj$begin.time, groups=groups)
   
   ddl <- RMark::make.design.data(x.pd, parameters=list(Phi=list(age.bins=c(0,1,100)),
                                                        p=list(age.bins=c(0,1,100))))
@@ -57,35 +57,35 @@ function(cesdata, exclude=NULL, type='+', trend=0, compare=0, cleanup=TRUE){
   if( trend > 0 ){
     trend <- floor(trend) # just in case
     # work out Time period to start the trend
-    nyrs <- cesdata$years - ifelse(trend > cesdata$years, cesdata$years, trend) + 1 
+    nyrs <- cesobj$years - ifelse(trend > cesobj$years, cesobj$years, trend) + 1 
     ddl$Phi$Tind <- ifelse(ddl$Phi$Time >= nyrs, 1, 0) # years with a trend 
     ddl$Phi$tind <- 1 - ddl$Phi$Tind       # years before trend
     ddl$Phi$tind[ddl$Phi$time_var==1] <- 1 # make sure the transient period is picked up
     ddl$Phi$Tind[ddl$Phi$tind==1] <- 0     # but exclude transient period from trend
-    if( is.na(cesdata$group$name) )
+    if( is.na(cesobj$group$name) )
       phi.ces <- list(formula = as.formula('~tind:time_var+Tind:Time'))
     else
-      phi.ces <- list(formula = as.formula(paste0('~', cesdata$group$name, '+tind:time_var+', cesdata$group$name, ':Tind:Time')))
+      phi.ces <- list(formula = as.formula(paste0('~', cesobj$group$name, '+tind:time_var+', cesobj$group$name, ':Tind:Time')))
     model.name <- 'trend'
-    model.yrs <- ifelse(trend > cesdata$years, cesdata$years, trend)
+    model.yrs <- ifelse(trend > cesobj$years, cesobj$years, trend)
   } else if( compare > 0 ){
     compare <- floor(compare) # just in case
-    nyrs <- cesdata$years - ifelse(compare > cesdata$years, cesdata$years, compare) + 1 
+    nyrs <- cesobj$years - ifelse(compare > cesobj$years, cesobj$years, compare) + 1 
     ddl$Phi$Cind <- ifelse(ddl$Phi$Time >= nyrs, 1, 0) # years within compare period 
     ddl$Phi$tind <- 1 - ddl$Phi$Cind       # years before compare
     ddl$Phi$tind[ddl$Phi$time_var==1] <- 1 # make sure the transient year is picked up
     ddl$Phi$Cind[ddl$Phi$tind==1] <- 0     # but exclude transient period from compare period
-    if( is.na(cesdata$group$name) )
+    if( is.na(cesobj$group$name) )
       phi.ces <- list(formula = as.formula('~tind:time_var+Cind'))
     else
-      phi.ces <- list(formula = as.formula(paste0('~', cesdata$group$name, '+tind:time_var+', cesdata$group$name, ':Cind')))
+      phi.ces <- list(formula = as.formula(paste0('~', cesobj$group$name, '+tind:time_var+', cesobj$group$name, ':Cind')))
     model.name <- 'constant'
-    model.yrs <- ifelse(compare > cesdata$years, cesdata$years, compare)
+    model.yrs <- ifelse(compare > cesobj$years, cesobj$years, compare)
   } else {
-    if( is.na(cesdata$group$name) )
+    if( is.na(cesobj$group$name) )
       phi.ces <- list(formula = as.formula('~time_var'))
     else
-      phi.ces <- list(formula = as.formula(paste('~', paste('time_var', cesdata$group$name, sep=type))))    
+      phi.ces <- list(formula = as.formula(paste('~', paste('time_var', cesobj$group$name, sep=type))))    
     model.name <- 'annual'
     model.yrs <- 0
   }
@@ -111,16 +111,16 @@ function(cesdata, exclude=NULL, type='+', trend=0, compare=0, cleanup=TRUE){
   r_res <- phi_res[rrows, 1:4]
   s_res <- phi_res[-(rrows), 1:4]
   
-  if( !is.na(cesdata$group$name) ){
-    r_res$group <- cesdata$group$levels
+  if( !is.na(cesobj$group$name) ){
+    r_res$group <- cesobj$group$levels
     r_res <- r_res[ , c(5,1:4)]
-    s_res$group <- rep(cesdata$group$levels, each=cesdata$years)
-    s_res$years <- rep(c(cesdata$begin.time:(cesdata$begin.time+cesdata$years-1)),length(cesdata$group$levels))  
+    s_res$group <- rep(cesobj$group$levels, each=cesobj$years)
+    s_res$years <- rep(c(cesobj$begin.time:(cesobj$begin.time+cesobj$years-1)),length(cesobj$group$levels))  
     s_res <- s_res[ , c(5,6,1:4)]
   } else {
     if( compare > 0 ) # replicate the last row to generate enough annual estimates
       s_res <- s_res[c(1:nrow(s_res), rep(nrow(s_res), model.yrs-1)), ]
-    s_res$years <- c(cesdata$begin.time:(cesdata$begin.time+cesdata$years-1))  
+    s_res$years <- c(cesobj$begin.time:(cesobj$begin.time+cesobj$years-1))  
     s_res <- s_res[ , c(5,1:4)]
   }
   rownames(r_res) <- NULL
@@ -163,8 +163,8 @@ function(cesdata, exclude=NULL, type='+', trend=0, compare=0, cleanup=TRUE){
        survival=s_res,
        recapture=p_res,
        recap1=p1_res,
-       group=cesdata$group,            
-       spp.name=cesdata$spp.name)
+       group=cesobj$group,            
+       spp.name=cesobj$spp.name)
   class(results) <- c('ces', 'markfit')
   
   return(results)

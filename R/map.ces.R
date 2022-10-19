@@ -1,21 +1,24 @@
 map.ces <-
-function(x, type='c', xlim=c(-20,30), ylim=c(35,70), pch=21, col=c('white','red'), 
+function(cesobj, type='c', xlim=c(-20,30), ylim=c(35,70), pch=21, col=c('white','red'), 
          file=NULL, width=640, height=480, units='px', ...){
     
   # for pch: 21=circle, 22=square, 23=diamond, 24=up-triangle, 25=down-triangle
   
-  if( class(x)[1]!='ces' )
+  if( class(cesobj)[1]!='ces' )
        stop("No ces data\n")
-  if( class(x)[2]=='data' ){
-    x <- x[!duplicated(x$sitename), ]
-    x$current <- 1 # plot all sites same colour
-  } else if( class(x)[2]=='plots' ){
-    x <- x$sites
-  } else if( class(x)[2]!='sites' ) {
+  if( class(cesobj)[2]=='data' ){
+    x <- cesobj[!duplicated(cesobj$sitename), ]
+  } else if( class(cesobj)[2]=='plots' ){
+    x <- cesobj$sites
+  } else if( class(cesobj)[2]=='sites' ){
+    x <- cesobj
+  } else {
     stop("No map data to plot\n")
   }
+  x$current <- 1 # plot all sites same colour
   
   if( tolower(substr(type,1,1) == 'c') ) {  # Current vs non-current sites 
+    col <- rep(col, length.out=2)
     x$col <- ifelse(x$current==0,col[1],col[2])
   } else if( tolower(substr(type,1,1) == 'n') ) {  # Colour by number of years
     lq <- as.numeric(quantile(x$nyears,0.25))
@@ -39,7 +42,8 @@ function(x, type='c', xlim=c(-20,30), ylim=c(35,70), pch=21, col=c('white','red'
     if (length(col) < nlvl) 
       stop(sprintf("please supply at least %d colors", nlvl))
     x$col<-col[as.numeric(x$habitat)]  # Pick colors by habitat factor level
-  }
+  } else
+    x$col <- col[1]
 
   ftype <-'stdio'
   if ( !is.null(file) ){

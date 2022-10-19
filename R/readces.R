@@ -180,7 +180,7 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=TRUE){
   if( any(colnames(result)=="coords") ){
 
     if( !is.character(result$coords) )
-      warning('Coordinates not in Euring format "+ddmmss±dddmmss"', call. = FALSE)
+      warning(paste0('Coordinates not in Euring format "+ddmmss', quote("\uB1"), 'dddmmss"'), call. = FALSE)
 
     coords <- result$coords
     # first check to see whether they are the right length (14, 15 characters)

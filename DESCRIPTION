@@ -10,7 +10,7 @@ LazyLoad: yes
 ByteCompile: yes
 ZipData: no
 Packaged: 2012-01-07 21:52:22 UTC; robrob
-Depends: data.table
+Depends: data.table, R (>= 3.5.0)
 Imports: reshape, RMark, maps, utils, Rcpp
 Suggests: knitr, rmarkdown
 LinkingTo: Rcpp

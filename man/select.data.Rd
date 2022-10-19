@@ -28,30 +28,18 @@ An easy way of subsetting a CES data object to select particular sites. Experien
 }
 \value{
 A ces data object}
-\references{
-%% ~put references to the literature/web site here ~
-}
 \author{
 Rob Robinson
 }
-\note{
-%%  ~~further notes~~
-}
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
 \seealso{
-\code{\link{readces}}, ~~~
+\code{\link{readces}}
 }
 \examples{
 data(ukdata)
 sitelist = c(401, 403, 405, 407, 408, 414, 417, 447, 463) # select sites with complete data
 complete = select.data(ukdata, sites=sitelist)
 
-scrub = select.data(ukdata, habitat=’DS’)
+scrub = select.data(ukdata, habitat='DS')
 
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+\keyword{ manip }

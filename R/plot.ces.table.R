@@ -1,13 +1,13 @@
 plot.ces.table <-
-function(cesobj, graph=NULL, ...){
+function(x, graph=NULL, ...){
   
   if( is.null(graph) | !is.numeric(graph) ){
-    cat(paste0('Graph should be a number between 1 and ', length(cesobj$results), 
+    cat(paste0('Graph should be a number between 1 and ', length(x$results), 
               '; choose from:\n'))
-    print(names(cesobj$results))
+    print(names(x$results))
     invisible()
   } else 
-    result <- plot(cesobj$results[[graph]], ...)
+    result <- plot(x$results[[graph]], ...)
   
   invisible(result)
 

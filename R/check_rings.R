@@ -1,4 +1,4 @@
-spp_check <- function(cesdata){
+check_rings <- function(cesdata){
   
   cesdata$ring <- paste(cesdata$scheme, cesdata$ring, sep="_")
   cesdata$ring_spp <- paste(cesdata$ring, cesdata$species, sep="_")

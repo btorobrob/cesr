@@ -1,7 +1,7 @@
 extract.ch <-
 function(cesdata, species=0, plots=NULL, late=FALSE, group=NA, exclude=NULL, min.n=1, min.yrs=3){
   
-  requireNamespace('reshape', quietly=TRUE)
+#  requireNamespace('reshape', quietly=TRUE)
 
   ## creates the extra time period by using the year-1 column
   ## this works because we are only estimating adult survival, so one age group
@@ -14,7 +14,7 @@ function(cesdata, species=0, plots=NULL, late=FALSE, group=NA, exclude=NULL, min
   
   if ( species == 0 ) {
     if ( length(unique(cesdata$species)) == 1 ) 
-      species <- as.character(unique(x$species))
+      species <- as.character(unique(cesdata$species))
     else
       stop("please supply a Euring species code, using species=")
   } 

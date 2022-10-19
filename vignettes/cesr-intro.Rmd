@@ -6,9 +6,9 @@ output: rmarkdown::html_vignette
 #output: rmarkdown::pdf_document
 urlcolor: blue
 vignette: >
-  %\VignetteIndexEntry{cesr-intro}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+  \VignetteIndexEntry{cesr-intro}
+  \VignetteEngine{knitr::rmarkdown}
+  \VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include = FALSE}

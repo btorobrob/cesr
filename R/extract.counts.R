@@ -1,7 +1,7 @@
 extract.counts <-
-function(cesdata, species=0, age=0, plots=NULL){
+function(cesobj, species=0, age=0, plots=NULL){
   
-  if ( !(class(cesdata)[1]=='ces' & class(cesdata)[2]=='data')  )
+  if ( !(class(cesobj)[1]=='ces' & class(cesobj)[2]=='data')  )
     stop("Please supply a CES data object\n")
   if ( age != 3 & age != 4 )
     stop("Invalid age - use either 3 (juvenile) or 4 (adult)")
@@ -11,7 +11,7 @@ function(cesdata, species=0, age=0, plots=NULL){
   selspp <- species
   selage <- age
   
-  data.in <- data.table::data.table(cesdata, key=c('site', 'age'))
+  data.in <- data.table::data.table(cesobj, key=c('site', 'age'))
   
   # sort out the input dataset
   if ( species == 0 )

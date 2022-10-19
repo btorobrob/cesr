@@ -1,6 +1,5 @@
 \name{extract.coverage}
 \alias{extract.coverage}
-%- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 Identify CES sites covered in each year
 }
@@ -11,17 +10,17 @@ Identify CES sites covered in each year
 extract.coverage(cesdata, early=NA, late=NA, min.visits=1, all.visits=0, exclude=list(years=NULL, sites=NULL))
 }
 \arguments{
-  \item{x}{
+  \item{cesdata}{
   A CES object created by \code{readces}
 }
   \item{early, late}{
   Numeric vectors of length 2, the first giving the number of visits in the first/second period, the second the number of visits required in each for the site to be included. They will be reversed if necessary.
 }
-  \item{all.visits}{
-  The number of visits that should be made in the season. If missing will default to the highest visit number in the dataset with a warning (see details).
-}
   \item{min.visits}{
   The minimum number of visits that should be made in the season. An alternative to specifying early/late.
+}
+  \item{all.visits}{
+  The number of visits that should be made in the season. If missing will default to the highest visit number in the dataset with a warning (see details).
 }
   \item{exclude}{
   A list with one or two components listing sites or years that should be excluded from consideration.
@@ -48,9 +47,6 @@ A list containing three objects
 }
 %% ...
 }
-\references{
-%% ~put references to the literature/web site here ~
-}
 \author{
 Rob Robinson
 }
@@ -60,14 +56,9 @@ The function calculates coverage from the catch data, thus if no birds are caugh
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
-\seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
-}
+
 \examples{
 data(ukdata)
 sites.cov<-extract.coverage(ukdata)
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+\keyword{ manip }

@@ -1,7 +1,7 @@
 plot.trend <-
-function(cesobj, type='', group=NULL, file=NULL, width=480, height=480, units='px', ylab='', ylim=c(0,0), xlim=c(0,0), lty=c(1,2), lcol='black', line=NA, rlty=3, rcol='black', lwd=1, annual=FALSE, pch=19, pcol='black', ...){  
+function(x, type='', group=NULL, file=NULL, width=480, height=480, units='px', ylab='', ylim=c(0,0), xlim=c(0,0), lty=c(1,2), lcol='black', line=NA, rlty=3, rcol='black', lwd=1, annual=FALSE, pch=19, pcol='black', ...){  
     
-  if( type=='' & class(cesobj)[2]=='markfit' ) 
+  if( type=='' & class(x)[2]=='markfit' ) 
     type <- 'Survival' # survival objects should only be one thing, so can get way with assuming
 
   select <- tolower(substr(type, 1, 1))
@@ -70,22 +70,22 @@ function(cesobj, type='', group=NULL, file=NULL, width=480, height=480, units='p
   
   ## plot the graph
   if( select == 'a' ) {
-    res <- cesobj$ad.results$parms
+    res <- x$ad.results$parms
     if( ylab == '' )
       ylab <- "Adult Abundance"
   } else if( select == 'j' ) {
-    res <- cesobj$jv.results$parms
+    res <- x$jv.results$parms
     if ( ylab == '' )
       ylab <- "Juvenile Abundance"
   } else if( select == 'p' ) {
-    res <- cesobj$pr.results$parms
+    res <- x$pr.results$parms
     if( ylab == '')
       ylab <- "Productivity"
   } else if( select == 's' ) {
     if( is.null(group) ){
-      res <- cesobj$survival
+      res <- x$survival
     } else {
-      res <- cesobj$survival[x$survival$group==group, ]
+      res <- x$survival[x$survival$group==group, ]
     }
     res$index <- res$estimate
     if( ylab == '' )

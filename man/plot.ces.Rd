@@ -8,10 +8,10 @@ Plot CES Objects
 Methods to quickly plot CES objects of different types.
 }
 \usage{
-plot(cesobj, sites = FALSE, graph = "X", N=20, sitelist=NULL, col=c('red', 'blue'), ...)
+\method{plot}{ces}(x, sites = FALSE, graph = "X", N=20, sitelist=NULL, col=c('red', 'blue'), ...)
 }
 \arguments{
-  \item{cesobj}{
+  \item{x}{
 A CES object
 }
   \item{sites}{
@@ -49,9 +49,7 @@ For capture history ('ch') data  (created by \code{extract.ch}), a plot of the c
 \value{
 None
 }
-\references{
-%% ~put references to the literature/web site here ~
-}
+
 \author{
 Rob Robinson, the ch plot was inspired by one of Marc Kery's.
 }
@@ -59,17 +57,13 @@ Rob Robinson, the ch plot was inspired by one of Marc Kery's.
 In the ch plots, because birds are possibly caught twice in their first year, 'Occasion' (the x-axis) is not quite the same as Year. 
 }
 
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
 \seealso{
 \code{\link{plot.trend}}
 }
 \examples{
 data(ukdata)
-robin.dat <- extract.data(ukdata,species=10990)
+plots <- extract.coverage(ukdata)
+robin.dat <- extract.data(ukdata, species=10990, plots=plots)
 plot(robin.dat)
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+\keyword{ hplot }

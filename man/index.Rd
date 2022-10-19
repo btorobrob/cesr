@@ -53,28 +53,17 @@ Each of these three consists of three components: model - a glm object containin
   \item{spp}{Euring species code}
   \item{spp.name}{Name of the species in whichever language has been set by \code{setceslang}}
 }
-\references{
-%% ~put references to the literature/web site here ~
-}
 \author{
 Rob Robinson
 }
-\note{
-%%  ~~further notes~~
-}
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
-\seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
-}
 \examples{
 data(ukdata)
-robin.dat <- extract.data(ukdata, species=10990)
+plots <- extract.coverage(ukdata)
+robin.dat <- extract.data(ukdata, species=10990, plots=plots)
 result <- index(robin.dat, verbose=TRUE)
 res.lin <- index(robin.dat, trend=5)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+\keyword{ models }
+\keyword{ regression }% __ONLY ONE__ keyword per line

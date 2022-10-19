@@ -19,9 +19,6 @@ A string indicating a valid language, see details below. If no language is set m
 Valid languages are "Latin", "Danish", "Dutch", "English", "Finnish", "French", "German", "Italian", "Norwegian", "Polish", "Portuguese", "Spanish", "Swedish". This is set by a call to options, use \code{options()$ceslang} to check which language is currently set.}
 \value{
 Sets global option 'ceslang'}
-\references{
-%% ~put references to the literature/web site here ~
-}
 \author{
 Rob Robinson
 }
@@ -33,13 +30,7 @@ Names are case sensitive, that is they need to be capitalised.
 Names are 'sticky', that is when an object is created, for example with \code{extract.data}, cesr uses the language set at the time and this cannot easily be changed subsequently.
 } 
 
-\seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
-}
 \examples{
 setceslang("English")
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+\keyword{ sysdata }

@@ -1,5 +1,5 @@
-plot.transients <-
-function(cesobj, file=stdout(), col=c('blue', 'red'), border='gray10', leg.size=0.8, ...){
+transient_plot <-
+function(cesobj, col=c('blue', 'red'), border='gray10', leg.size=0.8, ...){
   
   chdata <- cesobj$chdata
   
@@ -8,7 +8,7 @@ function(cesobj, file=stdout(), col=c('blue', 'red'), border='gray10', leg.size=
   chmat[chmat == "."] <- NA # doing this first avoids warnings about NAs by coercion
   chmat <- t(apply(chmat, 1, as.numeric)) # apply rotates the matrix for some reason
   first <- apply(chmat, 1, function(x) min(which(x==1))) # first capture
-  ring.yr <- seq(cesobj$begin.time, (cesobj$begin.time+cesobj$years))[first]
+  ring.yr <- seq(x$begin.time, (x$begin.time+x$years))[first]
 
   # Work out the status of each individual: 1 = resident caught; 2 = resident not caught; 3 = 'transient'
   get.status <- function(x){
@@ -21,9 +21,9 @@ function(cesobj, file=stdout(), col=c('blue', 'red'), border='gray10', leg.size=
   sitename <- chdata$sitename
   site.dat <- xtabs(~status+sitename)
   
-  cols <- c(paste("#", paste(as.hexmode(col2rgb(col[1])),collapse=''),"88", sep=""), # resident - captured
-           paste("#", paste(as.hexmode(col2rgb(col[1])),collapse=''),"44", sep=""), # resident - not captured
-           paste("#", paste(as.hexmode(col2rgb(col[2])),collapse=''),"44", sep="")) # resident - not captured
+  cols <- c(paste("#", paste(as.hexmode(col2rgb(col[1])),collapse=''), "88", sep=""), # resident - captured
+           paste("#", paste(as.hexmode(col2rgb(col[1])),collapse=''), "44", sep=""), # resident - not captured
+           paste("#", paste(as.hexmode(col2rgb(col[2])),collapse=''), "44", sep="")) # resident - not captured
   
   op <- par(mfrow=c(1,2), fig=c(0,0.5,0.1,1), mar=c(2.1, 3.1, 3.1, 0.5))
   barplot(yr.dat, col=cols, border="#111111", main="Captures by Year", las=1)

@@ -1,5 +1,5 @@
-\name{plot.transients}
-\alias{plot.transients}
+\name{transient_plot}
+\alias{transient_plot}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 Visualise capture frequency
@@ -8,8 +8,9 @@ Visualise capture frequency
 CES sites may have an excess of individuals that are caught only once, and so potentially transient to the site. This function plots individuals by whether they were captured subsequently or not.
 }
 \usage{
-plot.transients(cesobj, col=c('blue', 'red'), border='gray10', leg.size=0.8, ...)
+transient_plot(cesobj, col=c('blue', 'red'), border='gray10', leg.size=0.8, ...)
 }
+
 \arguments{
   \item{cesobj}{
 A CES object created by \code{extract.ch}
@@ -33,22 +34,7 @@ CES sites may have an excess of individuals that are caught only once, and so po
 \value{
 A list with three elements. (i) years - the matrix necessary to draw the years barplot, (ii) sites - the matrix necessary to draw the sites barplot, and (iii) the species name.
 }
-\references{
-%% ~put references to the literature/web site here ~
-}
 \author{
 Rob Robinson
 }
-\note{
-}
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
-\seealso{
-}
-\examples{
-}
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+\keyword{ utilities }

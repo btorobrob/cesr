@@ -1,7 +1,6 @@
 .Rproj.user
 .Rhistory
 .RData
+.RDataTmp
 .Ruserdata
 inst/doc
-vignettes/markfiles
-markfiles

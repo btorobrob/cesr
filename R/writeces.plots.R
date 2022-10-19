@@ -25,7 +25,7 @@ function(x, file, verbose=TRUE){
     tab.mv <- as.data.frame(xtabs(~sy+visit, data=mv))
     tab.mv$Freq <- -1 * (tab.mv$Freq-1)  # swaps 1 and 0, so missing is 0
     colnames(tab.mv) <-c ('sy', 'visitno', 'visit') # means cols are labelled usefully
-    mis.vis <- data.table::reshape(tab.mv, idvar='sy', v.names='visit', timevar='visitno', direction='wide')
+    mis.vis <- reshape(tab.mv, idvar='sy', v.names='visit', timevar='visitno', direction='wide')
     sites <- unique(mv[,-3])
     sites <- merge(sites, mis.vis, all.x=TRUE)
   } else { # collapse columns into string

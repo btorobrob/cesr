@@ -17,6 +17,9 @@ a CES object created by \code{readces}
   \item{species}{
 a numeric Euring species code (including final zero which would indicate race)  
 }
+  \item{plots}{
+an object containing plot coverage data created by \code{extract.coverage}. 
+}
   \item{late}{
 should late visits be considered in site selection? In UK (at least) most adults are caught in first 6 visits, so defaults to FALSE (ie a site is included if, say, 4 of the first 6 visits are made). Set to TRUE to require late visits to be considered also, which will results in more site-year combinations being considered as 'missing'
 }
@@ -29,8 +32,8 @@ one or more levels of 'group' to exclude, for example, '-' for unsexed birds
   \item{min.n}{
 minimum total number of captures for a site to be included, may be useful with large datasets to aid convergence or memory allocation
 }
-  \item{plots}{
-an object containing plot coverage data created by \code{extract.coverage}. 
+  \item{min.yrs}{
+minimum number of years for which a site has operated to be included
 }
 }
 \details{
@@ -44,18 +47,12 @@ A list of five items
   \item{group}{a list consisting of name - character string indicating a grouping variable for survival or NA, and levels - a vector of the group levels}
   \item{spp.name}{Name of the species in whichever language has been set by \code{setceslang}}
 }
-\references{
-%% ~put references to the literature/web site here ~
-}
 \author{
 Rob Robinson
 }
 \note{
 The matching of site names assumes that the order in whch they appear in x is the original one, avoid sorting this dataframe. If histories are extracted by group, the \code{\link{mark.ces}} will always estimate survival by group, to avoid this you will need to re-extract the data without a grouping variable.
 }
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
 \seealso{
 \code{\link{mark.ces}}
 %% ~~objects to See Also as \code{\link{help}}, ~~~
@@ -67,5 +64,4 @@ robin.dat <- extract.ch(ukdata, species=10990, plots=plots)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+\keyword{ manip }

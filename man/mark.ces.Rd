@@ -44,10 +44,12 @@
 }
 
 \examples{
+\dontrun{
 data(ukdata)
 plots <- extract.coverage(ukdata)
 robin.dat <- extract.ch(ukdata, species=10990, plots=plots)
 robin.res <- mark.ces(robin.dat)
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

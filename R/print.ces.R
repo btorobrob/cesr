@@ -6,6 +6,6 @@ function(x, ...){
   else 
     switch( class(x)[2],
             res.table = summary.ces.table(x),
-            print(x))
+            print(as.data.frame(x)))
 
 }

@@ -196,7 +196,7 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=TRUE){
     }
     
     # first check for decimal degrees
-    if( any(as.numeric(substr(coords,4,4)) > 5) ){
+    if( any(as.numeric(substr(coords,4,4)) > 5) ){ # i.e. there are minutes > 50
       warning('Reading in coordinates as decimal degrees', call. = FALSE)
 
       result [ , lat := as.integer(substr(coords,1,7))/10000]
@@ -241,13 +241,24 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=TRUE){
     } # end of the Euring format block
 
   } # end of reading in the coordinates 
-
+  
   # now do a final check
   if( sum(colnames(result) %in% c("lat","long")) != 2 ) {
-    wmessage <- paste('Coordinates not recognised, check you have either a coordinates or lat & long columns')
+    wmessage <- paste('Coordinates not recognised, check you have either a coords or lat & long columns')
     warning(wmessage, call.=FALSE)
   }    
 
+  # now check that sites have only one set of coordinates
+  check.sites <- table(unique(result[ , c('sitename', 'lat', 'long')])$sitename)
+  if( length(table(check.sites > 1)) ){
+    dodgy <- dimnames(check.sites)[[1]][check.sites > 1]
+    if( length(dodgy) == 1 )
+      wmessage <- paste("Site", paste(dodgy, collapse=', '), "has multiple coordinates")
+    else
+      wmessage <- paste("Sites:", paste(dodgy, collapse=', '), "have multiple coordinates")
+    warning(wmessage, call.=FALSE)
+  }
+  
   # check NetLengths
   if( !is.integer(result$netlength) ){
     suppressWarnings(result[ , netlength := as.integer(netlength) ])

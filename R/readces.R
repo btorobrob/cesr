@@ -250,7 +250,7 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=TRUE){
 
   # now check that sites have only one set of coordinates
   check.sites <- table(unique(result[ , c('sitename', 'lat', 'long')])$sitename)
-  if( length(table(check.sites > 1)) ){
+  if( length(table(check.sites)) > 1 ){
     dodgy <- dimnames(check.sites)[[1]][check.sites > 1]
     if( length(dodgy) == 1 )
       wmessage <- paste("Site", paste(dodgy, collapse=', '), "has multiple coordinates")

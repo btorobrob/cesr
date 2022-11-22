@@ -94,6 +94,15 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=TRUE){
     }
   }
   result[ , age := as.integer(age)]
+  # check for juveniles not in first year of ringing
+  dodgy <- merge(result[ , min(year), by=ring], result[age==3, max(year), by=ring], by='ring')
+  names(dodgy) <- c('ring', 'min', 'minj')
+  dodgy <- dodgy[minj > min, ]
+  if( nrow(dodgy) > 0 ){
+    rings <- unique(dodgy$ring)
+    age.warning <- paste('Individuals aged 3 after first year of ringing:', paste(rings, collapse=','))
+    warning(age.warning, call. = FALSE)
+  }
   
   # check sex
   result$sex[result$sex %in% c('1','3','5','8','m')] <-'M'

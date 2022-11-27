@@ -1,5 +1,5 @@
 readces <-
-function(file=NULL, visits='std', fill.sex=FALSE, group.race=TRUE){
+function(file=NULL, visits='std', fix=FALSE, group.race=TRUE){
   
   if( is.null(file) )
     file <- file.choose()
@@ -104,26 +104,21 @@ function(file=NULL, visits='std', fill.sex=FALSE, group.race=TRUE){
     warning(age.warning, call. = FALSE)
   }
   
-  # check sex
-  result$sex[result$sex %in% c('1','3','5','8','m')] <-'M'
-  result$sex[result$sex %in% c('2','4','6','9','f')] <-'F'
+  # tidy up sex
+  result$sex[result$sex %in% c('1','3','5','8','m','M')] <-'M'
+  result$sex[result$sex %in% c('2','4','6','9','f','F')] <-'F'
   result$sex[result$sex %in% c('0','7','-','U')] <- NA
-  if( fill.sex ){
-    tmpM <- result[ , (count=sum(sex=='M')), by=ring]
-    tmpF <- result[ , (count=sum(sex=='F')), by=ring]
-    tmp <- merge(tmpM, tmpF, by='ring', all=TRUE)
-    tmp[ , sex := NA ]
-    tmp$sex[tmp$V1.x > tmp$V1.y ] <-'M'
-    tmp$sex[tmp$V1.y > tmp$V1.x ] <-'F'
-    result <- merge(result, tmp, by='ring', all.x=TRUE)
-    sex.change <- nrow(result[ ((sex.x != sex.y) & sex.x != '-'), ])
-    if( sex.change > 0 )
-      warning(paste(sex.change, 'encounters changed sex'), call.=FALSE)
-    result[ , sex.x := NULL]
-    setnames(result, 'sex.y', 'sex')
+  if( fix ){
+    # fill in M/F (according to which is most commonly recorded)
+    sexes <- setDT(result)[sex%in%c('F','M'), .N, by=.(sex,ring)][order(-N), .(sex_t=sex[1L]), keyby=ring]
+    result <- merge(result, sexes, by='ring', all.x=TRUE)
+    nch1 <- sum(result$sex != result$sex_t, na.rm = TRUE)
+    nch2 <- sum(result$sex[result$sex%in%c("F","M")] != result$sex_t[result$sex%in%c("F","M")], na.rm = TRUE)
+    warning(paste(nch1, 'sexes fixed, of which', nch2, 'records changed sex'), call.=FALSE)
+    result$sex[!is.na(result$sex_t)] <- result$sex_t[!is.na(result$sex_t)]
+    result$sex_t <- NULL    
   }
-  result[ , sex := as.factor(sex)]
-  
+
   # set site names
   if( length(grep("[#]", as.character(result$siteID))) > 0 ) # yes, really - thanks to Arizaga
     warning("Using the '#' sign in sitenames confuses Mark, rename your sites!", call.=FALSE)

@@ -31,7 +31,7 @@ siteplot(data = sppadatay, year = thisyr, site=thissite, splist = splist.site, w
          margin=c(4.5,2,2.5,6), main='Adults', cex.axis=0.75, cex.lab=0.75, pt.cex=1, ylab='', 
          show.names=FALSE)
 title(sub='Number caught per metre', outer=TRUE, line=-2.5)
-ncaps <- Data[sitename==thissite & year==thisyr, .N, by=age]
+ncaps <- cesdata[sitename==thissite & year==thisyr, .N, by=age]
 ttext <- paste('There were', ncaps[age==3, N], 'juvenile captures and', ncaps[age==4, N], 'adult captures in', thisyr)
 title(sub=ttext, outer=TRUE, font.main=1, line=-1)
 ```
@@ -46,18 +46,17 @@ siteplot(data = sppjdatav, year = thisyr, site=thissite, whisklty=1, effort = TR
 siteplot(data = sppadatav, year = thisyr, site=thissite, whisklty=1, effort = TRUE,
          margin=c(4.5,2,2.5,0.5), main='Adults', cex.axis=0.7, cex.lab=0.75, pt.cex=1, ylab='')
 title(sub='Number of birds caught on each visit', outer=TRUE, line=-2.5)
-ncaps <- Data[sitename==thissite & year==thisyr, .N, by=age]
 ```
 
 ***
 
 # Notes
 
-#### Running a CES site helps us to better understand the causes of population change. It does this by measuring changes in abundance survival and productivity (number of juveniles caught per adult). National trends in survival and productivity are published as part of the BirdTrends report (www.bto.org/birdtrends) and on the CES website (www.bto.org/ces). THis sheet presents some results from your site, alongside summarised data from other CES sites. 
+#### Running a CES site helps us to better understand the causes of population change. It does this by measuring changes in abundance survival and productivity (number of juveniles caught per adult). National trends in survival and productivity are published as part of the BirdTrends report (www.bto.org/birdtrends) and on the CES website (www.bto.org/ces). This sheet presents some results from your site, alongside summarised data from other CES sites. 
 
 #### The plots show how your site (the red dot) compares in terms of catching efficiency (captures per metre of net). The thick black line each year marks the median across all sites. The median represents the midpoint of catches - there will be as many sites below as above this point. This includes both new and subsequent captures. The lowest and highest catches by site are indicated by the 'whiskers'. The middle 50% of sites fall within the boxes, so this represents the catch on a 'typical' site. 
 
-#### In the first plot, your total catch of all species is shown for each year together with a summary of the catches on other CES sites. If the red dot falls within the box you caught about as well as everyone else that year; if the red dot falls on the upper (or lower) whisker then you fared better (or worse) than most. In the lower pair of graphs, your catch of young and adult birds for this year is plotted against everyone else's separately for the 12 most commonly caught species at your site. The final pair of graphs (above), show how your catch of young and adult birds on each visit compared with everyone else's. 
+#### In the first plot, your total catch of all species is shown for each year together with a summary of the catches on other CES sites. If the red dot falls within the box you caught about as well as everyone else that year; if the red dot falls on the upper (or lower) whisker then you fared better (or worse) than most. In the lower pair of graphs, your catch of young and adult birds for this year is plotted against everyone else's separately for the `r nspecies` most commonly caught species at your site. The final pair of graphs (above), show how your catch of young and adult birds on each visit compared with everyone else's. 
 
 #### CES is supported by a partnership between the BTO and the Joint Nature Conservation Committee (JNCC) on behalf of the country agencies (Natural England, Natural Resources Wales, Scottish Natural Heritage and DAERA in Northern Ireland). It is part of the British and Irish Ringing Scheme which is funded by the BTO/JNCC Partnership, The National Parks and Wildlife Service (Ireland) and the ringers themselves.
 

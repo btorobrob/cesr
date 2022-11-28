@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Rob Robinson" />
+
+<meta name="date" content="2022-11-28" />
+
+<title>cesr - Calculating trends from CES data</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">cesr - Calculating trends from CES
+data</h1>
+<h4 class="author">Rob Robinson</h4>
+<h4 class="date">28 November 2022</h4>
+
+
+
+<div id="background" class="section level2">
+<h2>Background</h2>
+<p>The use of marked individuals to study animal populations has a long
+history in ecology and bird ringing has played a central role in this
+history. Although many early bird ringing studies were largely concerned
+with studying site fidelity and migration, attention soon shifted to
+estimating population size and changes in this over time (Baillie 1990,
+2001; DeSante <em>et al.</em> 1995). Three vital rates drive population
+change: birth rate (productivity), survival (or mortality) rate and,
+when the study population is a subset of a larger one, dispersal
+(immigration/emigration) rates. Monitoring of these vital rates
+(demographic monitoring) shifts focus from the population pattern to the
+underlying process and should provide greater accuracy and sensitivity
+in detecting impacts of environmental change. Demographic monitoring of
+many bird species can be effectively accomplished with bird ringing.
+Indeed, application of capture-recapture models to bird ringing data is
+the only reliable method of obtaining estimates of survival and
+dispersal in wild bird populations. By using standard field methods and
+capture effort of bird-ringing studies among sites and between years,
+calculating vital rates, and changes in them, becomes much easier as
+variation due to differences in catchability of individuals is much
+reduced. Such standardisation provides the basis of national and
+international constant-effort (CE) ringing programmes (Robinson <em>et
+al.</em> 2009).</p>
+<p>In Britain, CE ringing as a means of monitoring bird populations
+began in the late 1960’s when ringers, mostly unpaid volunteers, began
+to consider how to increase the value of their ringing; standardising
+mist-netting effort was one obvious way in which to do so. In the late
+1970’s a national CE scheme was proposed, and the CE Sites (CES) scheme
+was formally adopted as part of the BTO’s Integrated Population
+Monitoring Programme in 1986 (Peach <em>et al.</em> 1996). Subsequently,
+CE ringing schemes started in at least 15 European countries
+(co-ordinated through EURING) and in North America. At around the same
+time as CE ringing was being developed in Britain, a scheme was
+initiated in Germany/Austria at three sites (Mettnau, Reit and Illmitz,
+MRI) using year-round CE ringing and provided some of the first evidence
+for declines in migratory bird populations (Berthold <em>et al.</em>
+1986).</p>
+<p>CE programmes can operate at large spatial scales because they rely
+heavily on volunteer input and so can gather detailed demographic data
+in a cost-effective way. Such programmes aim to fulfill three
+complementary and inter-linked goals:</p>
+<ol style="list-style-type: decimal">
+<li><p>Monitoring - to provide long-term estimates or indices of
+abundance, productivity and survival in a range of common species,
+usually in concert with other monitoring schemes.</p></li>
+<li><p>Research - to investigate the contribution of different
+demographic rates in determining population dynamics and their
+relationship with various ecological and environmental drivers.</p></li>
+<li><p>Management - to understand how habitat may best be managed in
+conserving local populations.</p></li>
+</ol>
+<p>CE capture-recapture data fulfill these goals by providing
+information on productivity; recruitment, i.e., number of new adult
+birds entering the breeding population, and adult survival. Because
+recruitment combines aspects of both productivity and over-winter
+survival of first-year birds, by examining patterns of recruitment,
+survival, and productivity measured at the same set of sites, we gain
+unique insights into the relative importance of drivers acting on each
+of the different life-cycle stages in determining population change
+(Julliard 2004; Saracco <em>et al.</em> 2008). This can be essential for
+designing conservation and management plans that can reverse population
+declines and maintain healthy populations as it identifies the key
+stages affecting population change and narrows the range of
+environmental factors to be considered; data from CE sites have been,
+and will continue to be, critical in this regard.</p>
+</div>
+<div id="what-is-cesr" class="section level2">
+<h2>What is cesr?</h2>
+<p>cesr provides tools to perform basic analyses of annual variation in
+abundance, survival and productivity which are suitable for simple
+monitoring purposes, it cannot provide a full suite of methods to do a
+complete analysis of all CES data. It is a collection of tools designed
+to be used with the statistics package R. R has a number of advantages
+for statistical analysis: it is easy to introduce new analyses to it; it
+has good options for summarising and plotting data; and best of all, it
+is free.</p>
+</div>
+<div id="before-you-start" class="section level2">
+<h2>Before you start …</h2>
+<p>To use cesr you first need to download and install R (if it is not
+already installed on your computer). To do this you need to go to <a href="https://cloud.r-project.org/">R homepage</a> and click on the
+‘download R’ link for your system. There are many guides to using R,
+some are easy to understand, others are highly technical and less easy
+to understand. Good places to start are the <a href="http://cran.r-project.org/doc/manuals/R-intro.pdf">introductory
+guide</a> available on the R website, which gives a few basic commands,
+and the <a href="https://www.statmethods.net/r-tutorial/index.html">quick-R</a>
+website. For those who want to undertake some statistical analyses, Mick
+Crawley has written a good introduction<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> , while his <em>R
+Book</em><a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a> is quite comprehensive. For those who need
+more technical details on doing high-level analysis, these books<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a> offer good
+explanations. If you intend to use R a lot, do have a look at the <a href="https://www.rstudio.org">RStudio</a> software which provides a
+nice environment for writing and developing R code.</p>
+<p>The basic R program allows you to do many things, but not everything.
+The beauty of the R system is that people can contribute ‘packages’
+(cesr is one) that add specific extra functionality to the base system.
+The cesr package is now available for download and you can install it
+with the following R commands:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;cesr&quot;</span>, <span class="at">repos=</span><span class="st">&quot;https://btorobrob.r-universe.dev&quot;</span>, <span class="at">dependencies=</span><span class="cn">TRUE</span>)</span></code></pre></div>
+<p>This should copy the cesr package from my cloud account onto your
+computer - you only need to do this once; unless you change computer,
+update R, or you want to update the cesr package itself. This should
+also download all the extra packages cesr needs (notably data.table to
+speed up the data extraction and RMark for the survival analysis) so you
+may see some text whizzing by on the screen. Each time you start R, you
+will need to load, or ‘attach’, the cesr package (there are many
+thousands of packages to do all sorts of different analyses, so for
+efficiency R only loads those you actually want to use). Do this
+using</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(cesr)</span></code></pre></div>
+<pre><code>## Warning: package &#39;cesr&#39; was built under R version 4.1.3</code></pre>
+<pre><code>## Loading required package: data.table</code></pre>
+<pre><code>## Welcome to cesr 0.51, use help(cesr) to get started</code></pre>
+<p>You should get the brief welcome message telling you which version of
+the package you are using.</p>
+<p><strong>One important thing to remember.</strong> You can do very
+little harm by getting things wrong, if you get in a mess just close R
+down and start again.</p>
+<p>R will usually tell you what it thinks has gone wrong. You might
+(will) encounter two types of messages: ‘errors’ and ‘warnings’. Errors
+are serious enough that R will stop what it is doing and you will need
+to fix the problem before carrying on. Warnings arise when it is unsure
+how to proceed, but it can make a guess - sometimes it gets it right,
+others not. You are <em>strongly</em> advised to understand why the
+warning was issued and what R has done to fix the issue. Even though
+calculations may seem to be proceeding, bad things can ensue! The
+messages R gives are intended to be helpful, but can be quite cryptic,
+especially if you are unfamiliar with how it works. I’ve tried to
+translate the commonest ones, if you come across others copy and paste
+the error message from the R window <em>and</em> the command you used
+which generated it into an email to me; I’ll see if I can help.</p>
+</div>
+<div id="a-sample-session" class="section level2">
+<h2>A sample session</h2>
+<p>There are essentially four steps necessary to analyse CES data (or
+indeed any other data) in R: first, one needs to get all the data into a
+form that is ready for analysis; one then needs to select and extract
+the data for the species of interest; then the analysis can be
+performed; finally, you will wish to output the results of the analysis,
+perhaps for publication in an annual report or on a webpage.
+Additionally, it can also be useful to plot and summarise different sets
+of data, both to reveal patterns and to check that mistakes have not
+been made.</p>
+<p>The cesr package is arranged around these four tasks and provides
+functions to perform each of them. A ‘function’ in R is simply a command
+to tell R to perform certain tasks. In order to complete these tasks
+they normally need to be given some information saying, for example,
+where it may find the data to use - these are included in parentheses ‘(
+)’ and each of these is called an ‘argument’. If a function requires
+more than one argument, those given after the first are usually named
+(e.g. species=10990), which means they can be given in any order. So the
+very simplest cesr analysis might look like:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(cesr)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">setwd</span>(<span class="st">&#39;d:/CESdata/&#39;</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>cesdata <span class="ot">=</span> <span class="fu">readces</span>(<span class="st">&#39;filename&#39;</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>ces.sites <span class="ot">=</span> <span class="fu">extract.coverage</span>(cesdata, <span class="at">min.visits=</span><span class="dv">8</span>)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>robin.data <span class="ot">=</span> <span class="fu">extract.data</span>(cesdata, <span class="at">species=</span><span class="dv">10990</span>, <span class="at">plots=</span>ces.sites)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>result <span class="ot">=</span> <span class="fu">index</span>(robin.data)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="fu">plot.trend</span>(result, <span class="at">type=</span><span class="st">&#39;adult&#39;</span>, <span class="at">file=</span><span class="st">&#39;robin_ad.png&#39;</span>)</span></code></pre></div>
+<p>The first line simply loads the cesr package into R. The second line
+(shorthand for ‘set working directory’) points R to the folder where
+your CES data are stored and where you can write the graph images to.
+The next line reads a datafile of CES captures and assigns it to an
+object called ‘cesdata’. An object in R can be thought of as a
+mini-spreadsheet; normally it will contain some rows of data (an
+individual capture of a bird in this case) with some columns, each of
+which contains a particular variable (the date of capture, ring number,
+species type, sex, etc). <strong>It is important</strong> that this
+datafile contains data for <strong>all</strong> species, since the
+program will work out coverage from this, including the sites where a
+particular species is not caught. The next two lines extract the
+specific data necessary for analyses, the years in which each site was
+covered (put into ‘ces.sites’), and the data on captures for a
+particular species (to be found in ‘robin.data’). Then we are ready to
+do the analysis with the function index(). Note that we need to tell
+index() where to find the data containing the species information (the
+object <em>robin.data</em>) and the site coverage information (the
+object <em>ces.sites</em>). This stores indices of the annual abundance
+and productivity in the object <em>result</em> and provides some summary
+output about the model fit to the screen. The final line creates a graph
+of the annual trend in a form that can be used in publications.</p>
+<p>Of course the package can do a bit more than this, and the rest of
+this document will show the range of tools available, and how to use
+them. If you need any more information or are just plain confused about
+what things do at any point, try typing help(function_name). The nice
+thing about R is that you can save these commands as a simple text file
+(usually with a ‘.R’ extension) which means you can easily re-run them,
+or adapt them if you want to do a slightly different analysis (say for a
+different species, just copy the code and change the Euring number and
+species names). Getting into the habit of saving code files is a good
+one, especially if you might later want to re-run the analysis, or
+simply to remember what you did!</p>
+<p>Incidentally, in books about R, you will sometimes see an ‘=’ used to
+assign an object and sometimes a ‘&lt;-’ (a left-bracket, followed by a
+hypen), for almost all purposes they are interchangeable, so I will
+continue to use the ‘=’, feel free to substitute the ‘&lt;-’ in your own
+code. Note also that R is <strong>case sensitive</strong>, so, for
+example, the variables ‘netlength’ and ‘NetLength’ are not the same; in
+most cases you should use only lower case for typing, since R may not
+recognise your commands otherwise. If R says “Error: object not found”,
+for example, check whether you have used capitals or not. On a similar
+note, if you start a line with a hash sign (‘#’) then R will ignore the
+rest of the line; this can be useful to add comments to your code
+explaining to future-you why you did things in a particular way. A good
+general rule is to use more comments than you think necessary -
+experience has taught me that future-you will thank you as you try and
+figure out what you did and why in several months (or years!) time.</p>
+</div>
+<div id="data-preparation" class="section level2">
+<h2>Data Preparation</h2>
+<p>The package comes with some sample data from Britain for Robin
+<em>Erithacus rubecula</em> and Song Thrush <em>Turdus philomelos</em>
+which we will use to demonstrate the use of this package. Often the
+hardest part in any analysis is often getting the data in a form that is
+suitable for analysis, consequently, cesr expects to get the data in a
+particular format. In an effort to reduce the options for things going
+wrong, most of the functions in the package require an object belonging
+the ces ‘class’. These are generated automatically by the functions, so
+in most cases you don’t need to worry about it, it just ensures all the
+necessary information is available and in the correct format. Because of
+this, to avoid problems later on, it is strongly recommended that you
+format your data correctly <a href="https://euring.org/research/ces-europe/methods/data-format-euroces">guidelines
+here</a> and read it in using the readces() function, which sets up the
+correct variables. If you use another method (e.g. read.csv()), even if
+the data are in the right format, R should tell you don’t have ‘a CES
+object’; expect all kinds of pain if you persist!</p>
+<p>Your file should be a comma-separated plain text file with all the
+data for every species caught by one scheme in one file. Schemes should
+screen the data for appropriate sites and years to use and all ringing
+additional to the standard CES effort (either extra nets or visits)
+should be excluded, i.e. the data should be ready to use as is. Each row
+should represent the capture of one bird on a particular day, thus an
+individual bird may appear on multiple rows, both on different dates
+within the same year and if it is recaptured in subsequent years. The
+first row should be column identifiers, and all birds should be included
+even if they include missing data (for example, birds that are unaged,
+that is Euring age-code 0 or 2).</p>
+<p>The first few lines could look a bit like this:</p>
+<pre><code>countryID,Site,coords,habitat,visit,day,month,year,NetLength,scheme,ring_number,species,sex,age
+ES,E001,+425200-0023200,WS,6,17,07,2010,132,ESA,B....90916,11870,M,4
+ES,E001,+425200-0023200,WS,1,01,05,2010,132,ESA,B....90926,11870,F,4</code></pre>
+<p>As of 2022 (cesr v0.51) you can replace the Euring format ‘coords’
+column with separate columns for (decimal) latitude and longitude.</p>
+</div>
+<div id="reading-in-the-data" class="section level2">
+<h2>Reading in the data</h2>
+<p>Before you start, remember to load the cesr package</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(cesr)</span></code></pre></div>
+<p>It is likely to be simpler if you keep a particular folder/directory
+for your data file and results. The first thing to do, then, is tell R
+which folder this is using the command to set the working directory:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">setwd</span>(<span class="st">&#39;d:/data/ces&#39;</span>)</span></code></pre></div>
+<p>where ‘d:/data/ces’ represents the path to your folder<a href="#fn4" class="footnote-ref" id="fnref4"><sup>4</sup></a> With a datafile
+prepared in the correct format and copied into this folder it is easy to
+get the data into R, we will put it into an object called ukdata, but
+you can choose whatever name you like:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>ukdata <span class="ot">=</span> <span class="fu">readces</span>(<span class="st">&#39;ukdata.csv&#39;</span>)</span></code></pre></div>
+<p>If you have already set the working directory (above) and the file is
+in there, you only need to give the filename; if not, you will need to
+give the full path name (for example, ‘d:/data/ces/ukdata.csv’). If this
+works correctly, R will read the data in silently and just give you the
+next prompt. It will do some basic checks of the data (e.g. for invalid
+age codes) and do it’s best to warn you of any problems it finds.</p>
+<p>If you want to follow along with the example data set, just type</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(ukdata)</span></code></pre></div>
+<p>since these data have already been read in and saved in ‘R
+format’.</p>
+<p>Note, if you do not tell it otherwise, R will use scientific names
+for species. To make things easier it is possible to choose which
+language R will report species names, for example:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">setceslang</span>(<span class="st">&#39;English&#39;</span>)</span></code></pre></div>
+<p>The allowable choices currently are ‘Danish’, ‘Dutch’, ‘English’,
+‘Finnish’, ‘French’, ‘German’, ‘Italian’, ‘Norwegian’, ‘Polish’,
+‘Portuguese’, ‘Spanish’ and ‘Swedish’. Note the capitals and the use of
+quotes. In general it does not matter whether you use single (’ ’) or
+double (” “) quotes, but do not use backquotes (<code></code>). For
+rarer species, names may not be available, in this case the EURING
+number will be given; it may be wise to check these EURING numbers to
+ensure that they have been entered into the data file correctly.</p>
+</div>
+<div id="checking-the-data" class="section level2">
+<h2>Checking the data</h2>
+<p>First, to check the data have loaded correctly we can ask for a
+summary of the data:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(ukdata)</span></code></pre></div>
+<pre><code>## 4879 captures from 3737 individual birds of 2 species at 19 sites
+## 
+##  Euring Code     Species Count
+##        10990       Robin  3006
+##        12000 Song Thrush   731</code></pre>
+<p>Thus, in our example dataset, we have capture data on 3,737
+individuals of two species. You can use summary() on any CES object to
+get an idea of what it contains.</p>
+<p>Although it may not be obvious from this, R will normally list
+species in taxonomic (“Voous”) order; that is in order of the EURING
+code number. You can change this by using the sp.order argument:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(ukdata, <span class="at">sp.order=</span><span class="st">&#39;count&#39;</span>)</span></code></pre></div>
+<p>this will list species in descending order of the number of captures,
+you can list species alphabetically using sp.order=‘alpha’, though both
+of these will give the same result in our case! You can also check how
+many young birds were caught:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(ukdata, <span class="at">age=</span><span class="dv">3</span>, <span class="at">sp.order=</span><span class="st">&#39;count&#39;</span>)</span></code></pre></div>
+<pre><code>## 3186 captures from 2737 juvenile birds of 2 species at 19 sites
+## 
+##  Euring Code     Species Count
+##        10990       Robin  2365
+##        12000 Song Thrush   372</code></pre>
+<p>and similarly, how many adult birds by using age=4. Note, in general,
+the first argument is always the CES data object. It is best to include
+the name of the remaining arguments, in which case it does not matter in
+which order they are given.</p>
+<p>If we wish to look a bit more closely at the data we have read in,
+then two commands may be helpful. The first:</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(ukdata, <span class="at">n=</span><span class="dv">4</span>)</span></code></pre></div>
+<pre><code>##   countryID habitat visit day month year netlength scheme    ring species sex
+## 1       GBT      RD     6  23     6 2001       110    GBT K393817   10990   M
+## 2       GBT      RD     9  24     7 2001       110    GBT K393817   10990   M
+## 3       GBT      RD     2   6     5 2001       110    GBT K394567   10990   F
+## 4       GBT      RD     2   6     5 2001       110    GBT K394809   10990   M
+##   age sitename site  race julian      lat      long
+## 1   4      401    1 10990    173 51.51444 -3.743889
+## 2   4      401    1 10990    204 51.51444 -3.743889
+## 3   4      401    1 10990    125 51.51444 -3.743889
+## 4   4      401    1 10990    125 51.51444 -3.743889</code></pre>
+<p>shows the first <em>n</em> lines of data, while the second:</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(ukdata, <span class="at">df=</span><span class="cn">TRUE</span>)</span></code></pre></div>
+<pre><code>##   countryID         habitat       visit            day            month     
+##  Length:4879        DS:2538   Min.   : 1.00   Min.   : 1.00   Min.   :4.00  
+##  Class :character   RD: 722   1st Qu.: 4.00   1st Qu.: 8.00   1st Qu.:6.00  
+##  Mode  :character   WD: 645   Median : 6.00   Median :16.00   Median :7.00  
+##                     WS: 974   Mean   : 6.52   Mean   :15.94   Mean   :6.55  
+##                               3rd Qu.: 9.00   3rd Qu.:24.00   3rd Qu.:8.00  
+##                               Max.   :12.00   Max.   :31.00   Max.   :9.00  
+##                                                                             
+##       year        netlength     scheme         ring            species    
+##  Min.   :2001   Min.   : 67.0   GBT:4879   Length:4879        10990:3960  
+##  1st Qu.:2002   1st Qu.:102.0              Class :character   12000: 919  
+##  Median :2004   Median :113.0              Mode  :character               
+##  Mean   :2004   Mean   :144.8                                             
+##  3rd Qu.:2006   3rd Qu.:158.0                                             
+##  Max.   :2008   Max.   :279.0                                             
+##                                                                           
+##    sex            age           sitename         site           race     
+##  F   : 589   Min.   :3.000   420    : 721   Min.   : 1.000   10990:3960  
+##  M   : 886   1st Qu.:3.000   403    : 667   1st Qu.: 4.000   12000: 919  
+##  NA&#39;s:3404   Median :3.000   417    : 373   Median : 9.000               
+##              Mean   :3.347   408    : 282   Mean   : 8.568               
+##              3rd Qu.:4.000   434    : 267   3rd Qu.:12.000               
+##              Max.   :4.000   405    : 252   Max.   :19.000               
+##                              (Other):2317                                
+##      julian           lat             long        
+##  Min.   :103.0   Min.   :50.91   Min.   :-6.3950  
+##  1st Qu.:155.0   1st Qu.:51.54   1st Qu.:-2.9161  
+##  Median :183.0   Median :52.80   Median :-1.7536  
+##  Mean   :182.7   Mean   :53.27   Mean   :-1.9051  
+##  3rd Qu.:212.0   3rd Qu.:54.37   3rd Qu.:-0.4603  
+##  Max.   :246.0   Max.   :57.07   Max.   : 1.8833  
+## </code></pre>
+<p>gives a summary of each variable. Note there are two ways in which
+variables are summarised: for numeric variables it gives, the minimum,
+quartile, median and maximum values; for character variables it gives a
+frequency count of the commonest entries. Note also that <em>cesr</em>
+has done a little bit of re-arranging of the data, so the columns are
+not quite the same as those required to be read in!</p>
+<p>As with summary(), all CES objects can be ’plot’ted, which will give
+a graphical summary of the information therein, So:</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(ukdata)</span></code></pre></div>
+<p><img src="data:image/png;base64,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" style="display: block; margin: auto;" />
+The top left graph shows the total number of records by species for each
+year. The top right graph, the mean number of captures (across the
+years) in each visit period, the bars give the inter-quartile range
+(i.e. encompassing 25% - 75% of the annual values). The bottom graph
+gives the mean number of captures by species (only 2 in our data set!)
+and site (note not all the site labels are printed here).</p>
+<p>Normally, we will want to analyse the whole dataset to produce a
+national trend, but sometimes we may want to look at only a single site,
+or a group of sites representing a particular region or habitat. There
+is a function select.data() to do this. To use this function we first
+need to create a list of sites to be selected. The best way to do this
+is by using the in-built R function c(), which simply creates (or
+collects) a list of numbers. In our sample dataset we may want to
+include only those sites that were operated in each of the eight years,
+so we might type:</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>sitelist <span class="ot">=</span> <span class="fu">c</span>(<span class="dv">401</span>, <span class="dv">403</span>, <span class="dv">405</span>, <span class="dv">407</span>, <span class="dv">408</span>, <span class="dv">414</span>, <span class="dv">417</span>, <span class="dv">447</span>, <span class="dv">463</span>)</span></code></pre></div>
+<p>we can then select just those sites using:</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>ukcomplete <span class="ot">=</span> <span class="fu">select.data</span>(ukdata, <span class="at">sites=</span>sitelist)</span></code></pre></div>
+<p>We have created a copy of the data (ukcomplete) so we can go back to
+the original dataset (ukdata) at any time. It is important to note that
+if your site codes include a combination of letters and numbers, you
+will have to enclose each site in the list in quotes, like this:</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>sitelist <span class="ot">=</span> <span class="fu">c</span>(<span class="st">&#39;C01&#39;</span>, <span class="st">&#39;C03&#39;</span>, <span class="st">&#39;C05&#39;</span>)</span></code></pre></div>
+<p>Because habitat is a particularly important variable, we can select
+for this directly:</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>ukdata_scrub <span class="ot">=</span> <span class="fu">select.data</span>(ukdata, <span class="at">habitat=</span><span class="st">&#39;DS&#39;</span>)</span></code></pre></div>
+<p>if we wanted only dry/thorn scrub sites; other habitats can be
+selected in the same way. Selection of birds by age will happen a bit
+later on, for the moment we just select the sites of interest. Of
+course, more experienced R users can subset the data directly if
+necessary, which provides more flexibility than this simple method.</p>
+</div>
+<div id="extracting-the-data" class="section level2">
+<h2>Extracting the data</h2>
+<p>Having got just the data we want in the right format, it is now time
+to extract the information we need to do our analysis. First, we have to
+identify which sites were operated in which years , then we need to
+extract the data for the species we are interested in. We only need to
+extract the site data once, then we can look at as many species as we
+like. To extract the site coverage from all the UK data, which we will
+put in an object called uk_sites, type:</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>uk_sites <span class="ot">=</span> <span class="fu">extract.coverage</span>(ukdata, <span class="at">early=</span><span class="fu">c</span>(<span class="dv">6</span>,<span class="dv">4</span>), <span class="at">late=</span><span class="fu">c</span>(<span class="dv">6</span>,<span class="dv">4</span>), <span class="at">all.visits=</span><span class="dv">12</span>)</span></code></pre></div>
+<pre><code>## 19 sites contributed 1321 visits, with 275 visits missing</code></pre>
+<pre><code>## Warning: more than 10% of visits are missing, has all.visits been specified
+## correctly?</code></pre>
+<p>we should specify (using all.visits) how many visits the protocol
+requires (in the UK case 12, one every ten days or so through the
+season). Note R tries to warn you if it thinks something is amiss. In
+this case it has detected a large number of missing visits, this is
+because we are only dealing with a subset of the real data, but it is
+usually worth investigating what has caused the warning to check
+everything is as it should be.</p>
+<p>Most adults will tend to be caught earlier in the season (as they
+disperse after breeding), while most juveniles will tend to be caught
+later in the season. Thus an additional constraint can be imposed in
+that a certain number (y) of the first x visits, and similarly of later
+visits, should also be made. This can be specified using early=c(x,y),
+and similarly late=c(x,y). This has the added advantage that if a site
+is only covered in the early period of the year, say, it can still be
+used for calculating adult abundance. So, in the UK example, four of
+first six visits must be covered early=c(6,4), and four of the last six
+visits late=c(6,4). Note that the early and late period may overlap
+(particularly if your season has an odd number of visits), it doesn’t
+affect the totals, only whether a site is included in the analysis or
+not. A simpler alternative is to just require a certain number of visits
+irrespective of timing (especially in those countries where the season
+has fewer visits in total), just replace the early= and late= arguments
+with min.visits=n, where n is the minimum of visits required, for
+example:</p>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>sites <span class="ot">=</span> <span class="fu">extract.coverage</span>(ukdata, <span class="at">min.visits=</span><span class="dv">8</span>, <span class="at">all.visits=</span><span class="dv">12</span>)</span></code></pre></div>
+<p>As before we can check this has worked by looking at a summary of the
+data and seeing that all is as expected:</p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(uk_sites)</span></code></pre></div>
+<pre><code>## Total number of sites operated: 19 
+## 
+## Number of sites in each year:
+## 
+## 2001 2002 2003 2004 2005 2006 2007 2008 
+##   15   19   19   18   17   15   13   12 
+## 
+## Number of years sites run for:
+## 
+## 2 5 6 7 8 
+## 1 3 2 5 8</code></pre>
+<p>Thus we have 19 sites operated in the eight years for which we have
+data, of which 8 have operated for all eight years and one has only
+operated for two years. Those who are paying close attention might ask
+why only 8, when we listed 9 above? The answer is that only 1 visit was
+made to site 447 in 2007, so although birds were caught there, it
+doesn’t count. We can see similar summary information by using the
+plot() command.</p>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(uk_sites)</span></code></pre></div>
+<p><img src="data:image/png;base64,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" style="display: block; margin: auto;" />
+The figure has four panels, the top two illustrate the frequency of
+sites in each year, and the number of years that sites have run. The
+bottom two illustrate the evolution of sites contributing to the scheme,
+that is the cumulative number of sites that have started operating by
+each year<a href="#fn5" class="footnote-ref" id="fnref5"><sup>5</sup></a> and the cumulative number of sites operated
+for a certain number of years. In our example, six sites have operated
+for six years or fewer and eight sites for all eight years.</p>
+<p>Finally, we might want to plot a map of where our sites are, we can
+do this using the map.ces() command. To plot a map simply use:</p>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">map.ces</span>(ukdata) </span></code></pre></div>
+<p><img src="data:image/png;base64,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" style="display: block; margin: auto;" />
+If you give a filename, R will print the map to a file for later use<a href="#fn6" class="footnote-ref" id="fnref6"><sup>6</sup></a>, if not,
+it will simply print it to the screen. If you are using these maps in
+publications then you may wish to specify the size (in pixels) by also
+using the height= and width= arguments<a href="#fn7" class="footnote-ref" id="fnref7"><sup>7</sup></a>; the size otherwise
+will be 640 by 480 pixels. Unless you say otherwise, the sites will be
+plotted onto a map of Europe, to zoom into a smaller area use the xlim=
+and ylim= arguments to specify longitude and latitude bounds
+respectively<a href="#fn8" class="footnote-ref" id="fnref8"><sup>8</sup></a>. For example, this will draw a map of
+Britain and Ireland:</p>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">map.ces</span>(uk_sites, <span class="at">xlim=</span><span class="fu">c</span>(<span class="sc">-</span><span class="dv">10</span>,<span class="dv">2</span>), <span class="at">ylim=</span><span class="fu">c</span>(<span class="dv">50</span>,<span class="dv">60</span>), <span class="at">file=</span><span class="st">&#39;sitemap.png&#39;</span>) </span></code></pre></div>
+<p>Note the use of c() again to concatenate the minimum and maximum
+bounds into one R object. In this case, sites are identified as current
+(red) or no longer operating (white), you can also colour sites by the
+number of years they have operated (use type=‘n’) or habitat (type=‘h’),
+in which case you can specify up to 4 colours using the col=c(…)
+argument. For more details, use help(map.ces) or its shorthand ?map.ces;
+these, of course, work for almost all R functions.</p>
+<p>Having extracted the site coverage data, we can now extract the
+species data using extract.data(). Normally, we will want to extract
+data for both adults and juveniles together, but if for some reason just
+one of these is needed, then you can use the age= argument (where age
+may be either 3 for juveniles of 4 for adults). To extract the Robin
+data from our ukdata object we would type:</p>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>robin.dat <span class="ot">=</span> <span class="fu">extract.data</span>(ukdata, <span class="at">species=</span><span class="dv">10990</span>, <span class="at">plots=</span>uk_sites)</span></code></pre></div>
+<pre><code>## Extracted 2251 juvenile and 856 adult captures</code></pre>
+<p>Note that we use the Euring code number to tell R which species we
+want, and the plots argument inform it about which sites are covered and
+which we extracted earlier. The Robin data are now in the robin.dat
+object. As before we can see a summary of these data using:</p>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(robin.dat)</span></code></pre></div>
+<pre><code>## Total number of Robin caught: 856 adults and 2251 juveniles
+## 
+## Number of adults caught each year:
+## 2001 2002 2003 2004 2005 2006 2007 2008 
+##   89   93  102  138  133   92  121   88 
+## 
+## Number of juveniles caught each year:
+## 2001 2002 2003 2004 2005 2006 2007 2008 
+##  286  357  314  351  290  261  236  156</code></pre>
+<p>As you can see, when we do this R gives some basic summary
+information about how many individuals have been caught. It is worth
+checking that these are what you expected.</p>
+<p>We can also get some summary plots of the data</p>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(robin.dat)</span></code></pre></div>
+<p><img src="data:image/png;base64,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" style="display: block; margin: auto;" />
+This will again give four graphs, the top two give the number of adult
+and juvenile birds caught in each year. The grey bars represent those
+actually caught, the black tops to the bars represent the additional
+number of birds that would have been caught on the missed visits. In the
+bottom two graphs, sites are ranked (from highest to lowest) by the
+number of birds caught and the total number of birds caught on sites of
+that rank or greater is plotted. This gives an indication of how birds
+are distributed across sites: if a few birds are caught at many sites,
+the graph will look more like a straight line (each site catches a
+similar number of birds so adding each site causes a roughly increase),
+if many birds are caught at a few sites (as might be the case for a
+habitat specialist like Reed Warbler <em>Acrocephalus scirpaceus</em>)
+the line will increase steeply before flattening out.</p>
+</div>
+<div id="indices-of-abundance-and-productivity" class="section level2">
+<h2>Indices of Abundance and Productivity</h2>
+<p>Now that we have all the data in place, we can calculate annual
+indices of abundance and productivity at the same time using:</p>
+<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>robin.res <span class="ot">=</span> <span class="fu">index</span>(robin.dat)</span></code></pre></div>
+<pre><code>## Adult Abundance (Robin)
+## Model Fit: Dispersion parameter is 0.78 (resid. deviance  70.4 on    88 d.f.)
+## Change between 2001 and 2008: 29.2%
+## 
+## Juvenile Abundance (Robin)
+## Model Fit: Dispersion parameter is 1.28 (resid. deviance 119.7 on    95 d.f.)
+## Change between 2001 and 2008: -21.9%
+## 
+## Productivity (Robin)
+## Model Fit: Dispersion parameter is 0.14 (resid. deviance  11.7 on    81 d.f.)
+## Change between 2001 and 2008: -9.3%</code></pre>
+<p>Assuming data for both adults and juveniles were extracted with
+extract.data() then index will analyse both adult and juvenile
+abundances and productivity (the ratio of juvenile to adult birds
+caught, see below) and produce a simple summary of the results for each.
+The change values are just that, so the number of adult robins caught
+increased by nearly 30%, whereas the number of juveniles caught
+decreased by (very nearly) 20%. The dispersion parameter (calculated by
+dividing the deviance by the degrees of freedom) is a quick way of
+assessing how well the model we have fitted fits our data, if the model
+fit is good then it should approximately equal 1, though values of up to
+2 or 3 are acceptable; for more details, see the description about the
+models fitted below<a href="#fn9" class="footnote-ref" id="fnref9"><sup>9</sup></a>. You will also see printed the change
+between the first and last years for which there are data. Note, unless
+you say otherwise, the function will attempt to correct for missing
+visits using the standard BTO method (see Peach <em>et al.</em> 1996;
+Robinson <em>et al.</em> 2007), if you do not want this you can use the
+argument visit.corr:</p>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>robin.res <span class="ot">=</span> <span class="fu">index</span>(robin.dat, <span class="at">visit.corr=</span><span class="cn">FALSE</span>)</span></code></pre></div>
+<p>From analyses of BTO data, it seems that the typical level of missing
+visits (at least in Britain) makes relatively little difference to the
+final indices in any case (Miles <em>et al.</em> 2007; Cave <em>et
+al.</em> 2009).</p>
+<p>For a quick look at the annual indices from these models, simply
+type:</p>
+<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(robin.res)</span></code></pre></div>
+<p><img src="data:image/png;base64,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" style="display: block; margin: auto;" />
+which should yield two columns of, probably, three plots (assuming you
+extracted data for both adult and juvenile birds, otherwise fewer will
+be presented). In this view the graphs down the left-hand side (and
+probably most useful) are plots of the annual indices, those down the
+right-hand side, the actual (transformed) parameter indices from the
+fitted model, in almost all cases though the pattern through the years
+will look similar.</p>
+<p>In most cases, however, we will be interested in producing a graph of
+a particular trend for inclusion in a paper or presentation. To do this,
+use the plot.trend() command and specify which trend you wish to plot
+and, optionally, a filename, thus:</p>
+<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot.trend</span>(robin.res, <span class="at">type=</span><span class="st">&#39;adult&#39;</span>)</span></code></pre></div>
+<p><img src="data:image/png;base64,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" style="display: block; margin: auto;" />
+will print a simple graph showing the annual variation in adult
+abundance index to the file “adults.png”. To get a similar graph for the
+number of juveniles use graph=‘juvenile’ and for the productivity index,
+use graph=‘productivity’; you can shorten these to just the first letter
+(‘a’, ‘j’, or ‘p’) if you wish. Use “file=” to send the graph to a file
+with an appropriate extension<a href="#fn10" class="footnote-ref" id="fnref10"><sup>10</sup></a>. The graph produced is quite a simple
+one, but you can tweak various aspects by using standard R arguments.
+For example, to change the colour of the lines, use add lcol=‘…’ (where
+… is the name of a colour, e.g. lcol=‘red’); to change the thickness use
+lwd=x; to change the y-axis title (perhaps to something in a non-English
+language) by using ylab=‘…’); see the helpfile for all the options.</p>
+<p>For those who are used to drawing graphs in R, plot.trend() returns a
+dataframe which can be captured into an object:</p>
+<div class="sourceCode" id="cb46"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>robin.trend <span class="ot">=</span> <span class="fu">plot.trend</span>(robin.res, <span class="at">type=</span><span class="st">&#39;adult&#39;</span>)</span></code></pre></div>
+<p>This has six columns, the models parameter estimates (and their
+standard errors) and the annual index values (with lower and upper
+confidence limits). So, for example</p>
+<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(robin.trend) </span></code></pre></div>
+<pre><code>##   years        parm        se     index       lcl       ucl
+## 1  2001 -0.25594340 0.1373618 0.7741858 0.5914563 1.0133693
+## 2  2002 -0.41352366 0.1352791 0.6613159 0.5072933 0.8621022
+## 3  2003 -0.31849413 0.1329738 0.7272433 0.5603924 0.9437724
+## 4  2004 -0.11585597 0.1235721 0.8906035 0.6990361 1.1346689
+## 5  2005 -0.07429415 0.1256581 0.9283986 0.7257284 1.1876673
+## 6  2006 -0.29915995 0.1342303 0.7414408 0.5699272 0.9645696</code></pre>
+<p>These can then be plotted using the any of the R plotting tools, or
+“copy and pasted” into a spreadsheet like Microsoft’s Excel or
+OpenOffice’s Calc and a graph drawn there (hint: you may find the ‘Text
+to Columns’ tool useful).</p>
+<p>You will note in the graph that the final year is set 1. This is
+because we can only estimate an index of abundance, not actual
+abundance, and all the annual indices are relative to a given year. You
+may prefer to have the trend starting at 1, rather than finishing at 1,
+this easy to do:</p>
+<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>robin.res <span class="ot">=</span> <span class="fu">index</span>(robin.dat, <span class="at">year=</span><span class="dv">2001</span>)</span></code></pre></div>
+<pre><code>## Adult Abundance (Robin)
+## Model Fit: Dispersion parameter is 0.78 (resid. deviance  70.4 on    88 d.f.)
+## Change between 2008 and 2001: 29.2%
+## 
+## Juvenile Abundance (Robin)
+## Model Fit: Dispersion parameter is 1.28 (resid. deviance 119.7 on    95 d.f.)
+## Change between 2008 and 2001: -21.9%
+## 
+## Productivity (Robin)
+## Model Fit: Dispersion parameter is 0.14 (resid. deviance  11.7 on    81 d.f.)
+## Change between 2008 and 2001: -9.3%</code></pre>
+<div class="sourceCode" id="cb51"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot.trend</span>(robin.res, <span class="at">type=</span><span class="st">&#39;a&#39;</span>)</span></code></pre></div>
+<p><img src="data:image/png;base64,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" style="display: block; margin: auto;" />
+The results are the same as before, only the graph is ‘shifted-up’ the
+y-axis. Note that you can abbreviate the graph type to just the first
+letter if you wish.</p>
+<p>Clearly, Robin abundance varies between years, but are these
+differences significant? One quick visual check can be done by looking
+for overlapping confidence intervals. You can check whether any year is
+different from the reference year just by looking to see whether the
+confidence limits overlap 1, either graphically, or by inspecting
+robin.res (as it is called in this case). But what if you wish to look
+between years other than the reference year? Looking for overlap in the
+95% confidence limits will result in too stringent a test, Payton <em>et
+al.</em> (2003) showed that actually the 83% confidence intervals will
+overlap with a probability of (approximately) 0.05. We can get these
+using the cl= argument</p>
+<div class="sourceCode" id="cb52"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>robin.res83 <span class="ot">=</span> <span class="fu">index</span>(robin.dat, <span class="at">year=</span><span class="dv">2001</span>, <span class="at">cl=</span><span class="fl">0.83</span>)</span></code></pre></div>
+<pre><code>## Adult Abundance (Robin)
+## Model Fit: Dispersion parameter is 0.78 (resid. deviance  70.4 on    88 d.f.)
+## Change between 2008 and 2001: 29.2%
+## 
+## Juvenile Abundance (Robin)
+## Model Fit: Dispersion parameter is 1.28 (resid. deviance 119.7 on    95 d.f.)
+## Change between 2008 and 2001: -21.9%
+## 
+## Productivity (Robin)
+## Model Fit: Dispersion parameter is 0.14 (resid. deviance  11.7 on    81 d.f.)
+## Change between 2008 and 2001: -9.3%</code></pre>
+<div class="sourceCode" id="cb54"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>robin.trend <span class="ot">=</span> <span class="fu">plot.trend</span>(robin.res83, <span class="at">type=</span><span class="st">&#39;a&#39;</span>)</span></code></pre></div>
+<p><img src="data:image/png;base64,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" style="display: block; margin: auto;" />
+and again looking at the graph, or by typing robin.trend to look at a
+table of the annual estimates. This suggests, for example, that numbers
+in 2007/08 on these sites were significantly higher than in 2001/02 (the
+lower confidence limit, lcl, for 2007/08 is greater than the upper
+confidence limit, ucl, for 2001/02), but not other years (note this will
+be slightly sensitive to which year is set as the reference year). If
+you are doing multiple analyses, you can check which limits have been
+used by typing:</p>
+<div class="sourceCode" id="cb55"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>robin.res83<span class="sc">$</span>limits</span></code></pre></div>
+<pre><code>## [1] 0.83</code></pre>
+<p>though in this case it should be obvious from the name.</p>
+<p>More commonly, you might want to check whether this year’s results
+are higher (or lower) than over some previous time period (say the last
+five years) or whether there is a trend over time. You can use index()
+to do this too. To look at a (linear) time trend, use the trend=
+argument, for example:</p>
+<div class="sourceCode" id="cb57"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>robin.trend <span class="ot">=</span> <span class="fu">index</span>(robin.dat, <span class="at">trend=</span><span class="dv">8</span>, <span class="at">year=</span><span class="dv">2005</span>)</span></code></pre></div>
+<pre><code>## Adult Abundance (Robin)
+## Model Fit: Dispersion parameter is 0.84 (resid. deviance  82.5 on    94 d.f.)
+## Slope for past 8 years is 0.06 ± 0.02 (t=3.650, P=0.002) 
+## 
+## Juvenile Abundance (Robin)
+## Model Fit: Dispersion parameter is 1.65 (resid. deviance 167.4 on   101 d.f.)
+## Slope for past 8 years is -0.01 ± 0.01 (t=-0.976, P=0.341) 
+## 
+## Productivity (Robin)
+## Model Fit: Dispersion parameter is 0.16 (resid. deviance  13.7 on    87 d.f.)
+## Slope for past 8 years is -0.02 ± 0.01 (t=-2.759, P=0.012)</code></pre>
+<p>In this case we have asked for the trend to be calculated over our
+entire time-series (8 years from 2001-08), you can estimate the trend
+over a shorter period (working back from the current year) by entering a
+smaller number. Note you can still set the reference year to be any year
+(here we’ve set it to 2005, roughly halfway through the period, try
+plotting the adult and juvenile trends in robin.trend and see what they
+look like). To compare this year’s results to the previous n years, use
+compare=n instead of trend=n.</p>
+<div class="sourceCode" id="cb59"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>robin.compare <span class="ot">=</span> <span class="fu">index</span>(robin.dat, <span class="at">compare=</span><span class="dv">3</span>)</span></code></pre></div>
+<pre><code>## Adult Abundance (Robin)
+## Model Fit: Dispersion parameter is 0.80 (resid. deviance  75.3 on    90 d.f.)
+## Last year is 112.4% that in previous  3 years: Estimate=0.12 ± 0.11 (t=1.062, P=0.299) 
+## 
+## Juvenile Abundance (Robin)
+## Model Fit: Dispersion parameter is 1.27 (resid. deviance 121.4 on    97 d.f.)
+## Last year is 79.5% that in previous  3 years: Estimate=-0.23 ± 0.10 (t=-2.279, P=0.032) 
+## 
+## Productivity (Robin)
+## Model Fit: Dispersion parameter is 0.14 (resid. deviance  11.8 on    83 d.f.)
+## Last year is 90.3% that in previous  3 years: Estimate=-0.10 ± 0.04 (t=-2.272, P=0.032)</code></pre>
+<p>index() also calculates a measure of productivity from the ratio of
+juveniles to adults that are caught each year. To see these results, use
+type=‘p’ when using plot.trend(). Note this is probably not a good
+measure, even relatively, of the number of young produced exactly on a
+CES site since young birds can disperse some distance even at a
+relatively young age. For example, wetland sites typically have a higher
+productivity than drier sites since birds may congregate there to
+forage. Thus this measure of productivity is better thought of as a
+measure the number of young fledging from the wider area surrounding the
+site; how far this will be will depend on the site. Note also that,
+following Peach <em>et al.</em> (1996) and Robinson <em>et al.</em>
+(2007), the index is expressed in terms of the number of juveniles per
+adult, rather than simply the proportion of juveniles<a href="#fn11" class="footnote-ref" id="fnref11"><sup>11</sup></a></p>
+</div>
+<div id="calculating-adult-survival" class="section level2">
+<h2>Calculating Adult Survival</h2>
+<p>To estimate survival probabilities, we first need to extract capture
+histories for individual birds, we can do this for adult birds
+using:</p>
+<div class="sourceCode" id="cb61"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a>robin.ch <span class="ot">=</span> <span class="fu">extract.ch</span>(ukdata, <span class="at">species=</span><span class="dv">10990</span>, <span class="at">plots=</span>uk_sites)</span></code></pre></div>
+<p>(The data are required in a different format, hence the need for a
+different extract command). Use summary() to see how many individuals we
+histories for</p>
+<div class="sourceCode" id="cb62"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(robin.ch)</span></code></pre></div>
+<pre><code>## 725 adults of Robin captured on 8 occasions, at 19 sites starting in 2001 
+## 
+## Number of birds first ringed in each year
+## 2001 2002 2003 2004 2005 2006 2007 2008 
+##   89   85   86  119  104   72  102   68 
+## 
+## Number of times individuals have been recaptured
+##   0   1   2   3   4 
+## 508 168  34  11   4 
+## 
+## Number of individuals captured at each site
+##   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19 
+##  36  90  55  23  37  32  21  24  41 126  40  24  13  59  43  30  21   5   5</code></pre>
+<p>As with all ces objects you can plot this to get an idea of what the
+data look like</p>
+<div class="sourceCode" id="cb64"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(robin.ch, <span class="at">sitelist=</span><span class="fu">c</span>(<span class="st">&#39;417&#39;</span>, <span class="st">&#39;420&#39;</span>, <span class="st">&#39;463&#39;</span>))</span></code></pre></div>
+<p><img src="data:image/png;base64,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" style="display: block; margin: auto;" /></p>
+<p>Each line represents a particular capture history, grouped by site.
+Blue indicates occasions when those birds were captured, red when they
+were not; darker colours indicate more frequently occurring histories
+(i.e. representing more individuals). We’ve chosen to plot just three
+sites simply to make the example a bit clearer. Working from the top of
+the plot, the first two groups of birds were caught in each of the first
+three and two years respectively. The third group, were caught twice in
+the first year, not in the second, and again in the third. Note there
+are <em>two</em> capture occasions in the first year (hence the x-axis
+label not being year). Several individuals caught in the fourth year on
+this site were caught both again in that year and in each of the
+subsequent three years (the dark blue bar, halfway down).</p>
+<p>Survival probabilities for adults are estimated using function
+mark.ces(). This runs Program MARK (White &amp; Burnham 1999) through
+the RMark package (Laake &amp; Rexstad 2008) to fit a form of the
+standard CJS mark-recapture model modified to account for transients
+(after the manner of Pradel <em>et al.</em> 1997), see below for
+details<a href="#fn12" class="footnote-ref" id="fnref12"><sup>12</sup></a>. Briefly, this allows us to account for
+individuals that are only caught once, either because they are migrating
+through the area, or because they are breeding a fair distance from the
+nets and so are much less likely to be caught than those with nests
+close to the net locations.</p>
+<div class="sourceCode" id="cb65"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a>robin.surv <span class="ot">=</span> <span class="fu">mark.ces</span>(robin.ch)</span></code></pre></div>
+<pre><code>## Warning: some sites have near zero recapture probabilities: 656</code></pre>
+<pre><code>## Warning: some sites have improbably high recapture probabilities: 447</code></pre>
+<p>(If you see the error message: Error in setwd(“markfiles”): cannot
+change working directory, you probably need to use setwd() to change the
+working folder to one you have permission to write to.)</p>
+<p>This will estimate a number of quantities, which again we can see by
+using summary()</p>
+<div class="sourceCode" id="cb68"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(robin.surv)</span></code></pre></div>
+<pre><code>## Probability of residency: 0.590 ± 0.059 
+## Annual survival varies between 0.436 and 0.670 with an average of 0.520 
+## Recapture probabilities vary between 0.000 and 1.000</code></pre>
+<p>The probability of residency is, loosely, the proportion of birds
+caught on the site that is likely to be resident and breeding there.
+Adult survival rates are estimated annually and assumed to be the same
+across all sites (this could be relaxed by using the group= option when
+extracting the data and re-running mark.ces). The recapture
+probabilities are site-specific, but constant through time (reflecting
+constant effort!). In this case the summary of recapture probabilities
+isn’t very informative, but R has identified that sites 447 and 656 have
+poorly estimated recapture probabilities, so we may wish exclude them,
+using the exclude= argument to mark.ces:</p>
+<div class="sourceCode" id="cb70"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a>robin.surv <span class="ot">=</span> <span class="fu">mark.ces</span>(robin.ch, <span class="at">exclude=</span><span class="fu">c</span>(<span class="dv">656</span>,<span class="dv">447</span>))</span></code></pre></div>
+<p>which gives similar results:</p>
+<div class="sourceCode" id="cb71"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(robin.surv)</span></code></pre></div>
+<pre><code>## Probability of residency: 0.571 ± 0.060 
+## Annual survival varies between 0.437 and 0.663 with an average of 0.522 
+## Recapture probabilities vary between 0.083 and 0.737</code></pre>
+<p>It can also be informative to look at a graph of the annual survival
+estimates and site-specific recaptures, by simply :</p>
+<div class="sourceCode" id="cb73"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(robin.surv)</span></code></pre></div>
+<p><img src="data:image/png;base64,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" style="display: block; margin: auto;" />
+You can also use plot.trend as before, but with type=‘survival’ (or ‘s’
+for short), to get the survival trend for presentation in a paper or
+report.</p>
+</div>
+<div id="site-reporting" class="section level2">
+<h2>Site Reporting</h2>
+<p>Providing feedback to volunteers is key, and all ringers like to know
+how their site is doing relative to others. By harnessing the power of
+the RMarkdown package, R can summarise data, format it and write it
+directly to a word/pdf/html file. Using R’s ability to subset data it is
+‘simple’ to run a basic report for each site that operated in a year.
+The example does this for just two sites, but if you don’t specify
+‘sitelist=’, it’ll do it for all sites operating in the year.</p>
+<div class="sourceCode" id="cb74"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sitereport</span>(ukdata, <span class="at">sitelist=</span><span class="fu">c</span>(<span class="dv">401</span>, <span class="dv">420</span>), <span class="at">year=</span><span class="dv">2007</span>)</span></code></pre></div>
+<p>However. Setting up the report format does take a bit of effort and
+care. I’ve provided the template that we use at the BTO as a starting
+point. It will look a bit daunting initially, but once you understand
+how it works hopefully it is more straightforward than it looks. The
+first thing to do is locate the template files. There are three
+(“CES-template.Rmd”, “word_styles.docx”, and “example_site.doc”), and
+they are in the ‘exec’ subfolder of the package. You can use the
+.libPaths() function to find were R has installed the package on your
+computer (note the initial period and the capital ‘P’) or you can grab
+them from the <a href="https://github.com/btorobrob/cesr/tree/master/exec">cesr
+github</a> pages. Save them where you can easily find them and read on
+for a Markdown crash course…</p>
+<p>Once you have the files, open the “example_site.doc” and familiarise
+yourself with its content, it contains some graphs showing how catches
+at this site compared to other sites, with figure captions that are
+specific to the site, and then some more generic explanatory text
+towards the end. This was all produced from “CES-template.Rmd”, which is
+an RMarkdown file. Markdown files are simple text files that use tags to
+style the different elements; rather brilliantly, these tags also allow
+one to incorporate the output from R commands. There’s a basic Markdown
+tutorial on the <a href="https://rmarkdown.rstudio.com/lesson-1.html">Rstudio</a> site.</p>
+<p>Open up the Markdown file (“CES-template.Rmd”), have a look and
+compare it with the Word file. You should see how at least some of the
+elements match directly to those in the Word file. But let’s work
+through it. The first seven lines (bounded by the three dashes ‘—’)
+set-up the file as Word document. It is possible to produce pdf, html,
+even Powerpoint files, but we chose Word since it makes it easy to add a
+sentence or two of more personalised text in the explanatory notes at
+the end, before ‘printing’ it as pdf for sending to the ringer.</p>
+<p>The next line (starting ‘#’) generates the title. The ‘#’ signifies a
+Level 1 Heading (two ‘##’ a Level 2 Heading, for example the next line
+down, and so on); we’ll come on to how these are defined in a bit. The
+title is actually a bit of R code that pulls in the site number and year
+(generated within the sitereport() function). To include one line of R
+code, simply preface the code (in this case the paste() function) with
+an ‘r’ and enclose the whole line in backquotes (‘`’); note: these
+<em>must</em> be backquotes, not single quotes (on English keyboards
+they are often found at the top left). The following line (starting
+‘##’) prints a second level heading.</p>
+<p>The ‘chunk’, or block, of lines enclosed by three backquotes (```)
+prints the first graph and caption. The ‘{r}’ identifies a block of R
+commands, and we’ve indicated we don’t want these commands to be printed
+to the file, just the output of them (that’s the ‘echo=FALSE’ bit) and
+we want all the output to come together (‘hold=TRUE’, strictly, I
+suspect this may be unnecessary). The R data objects referred to in the
+code are generated within the sitereport() function. We then put a rule
+across the page (with ’***‘), another heading (’##’), some more R code
+to print the next graph, and so on.</p>
+<p>You should be able to see how you can alter the text elements to say
+something more pertinent, even if only because it is in a more
+appropriate language! The text is styled (not unsurprisingly) according
+to the ‘word-styles.docx’, this file must sit in the same directory as
+the Rmd file. In it you will see words that identify each of the
+different header levels, styled accordingly. To change these, highlight
+the relevant text and right-click on the appropriate ‘style’ button then
+select “Modify…” (at least in Windows 10). Save this file, but do not
+change its name (or, if you do, alter the entry in the top of the ‘.Rmd’
+file to match)</p>
+<p>Once you’ve altered the Markdown file, save it (you can give it a
+different name) and then you can run the sitereport command above. Use
+the template_file= argument to tell R where to find your new template,
+if it is in the working directory you can use just the filename,
+otherwise give the whole path.</p>
+<div class="sourceCode" id="cb75"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sitereport</span>(ukdata, <span class="at">year=</span><span class="dv">2017</span>, <span class="at">template_file=</span><span class="st">&#39;new_filename&#39;</span>)</span></code></pre></div>
+<p>Making small changes to the R code output (rather than simply the
+text) is probably possible, but major changes (i.e. if you need
+different summaries, or you want pdf output directly) will probably
+require altering the sitereport() function, which is beyond what we can
+do here, but feel free to create a copy of the function and have a go.
+If you get stuck drop me a line and I’ll help if I can.</p>
+<p>Good luck!</p>
+</div>
+<div id="references" class="section level2">
+<h2>References</h2>
+<p><strong>Baillie, SR</strong> (1990) Integrated population monitoring
+of breeding birds in Britain and Ireland. <em>Ibis</em> 132:151-161.</p>
+<p><strong>Baillie, SR</strong> (2001) The contribution of ringing to
+the conservation and management of bird populations: a review.
+<em>Ardea</em> 89:S167-184.</p>
+<p><strong>Berthold, P, Fliege, G, Querner, U &amp; Winkler, H</strong>
+(1986) The development of songbird populations in central Europe:
+analysis of trapping data. <em>Journal fur Ornithologie</em>
+127:397-437.</p>
+<p><strong>Bolker, BM</strong> (2008) <em>Ecological models and data in
+R.</em> Princeton University Press.</p>
+<p><strong>Cave, VM, Freeman, SN, Brooks, SP, King, R &amp; Balmer,
+DE</strong> (2009) On adjusting for missed visits in the indexing of
+abundance from ‘constant effort’ ringing. <em>Environmental and
+Ecological Statistics</em> 3:949-963.</p>
+<p><strong>DeSante, DF, Burton, KM, Saracco, JF &amp; Walker,
+BL</strong> (1995) Productivity indices and survival rate estimates from
+MAPS, a continent-wide programme of constant-effort mist netting in
+North America. <em>Journal Applied Statistics</em> 22:935-947.</p>
+<p><strong>Julliard, R</strong> (2004) Estimating the contribution of
+survival and recruitment to large scale population dynamics. <em>Animal
+Biodiversity &amp; Conservation</em> 27:417-426.</p>
+<p><strong>Laake, J. &amp; Rexstad, E.</strong> (2008) RMark - an
+alternative approach to building linear models in MARK. In Cooch, E.
+&amp; White, G.C. (eds) <a href="www.phidot.org/software/mark/docs/book">Mark - a gentle
+introduction.</a>.</p>
+<p><strong>Miles, W, Freeman, SN, Harrison, NM &amp; Balmer, DE</strong>
+(2007) Measuring passerine productivity using constant effort sites: the
+effect of missed visits. <em>Ringing &amp; Migration</em>
+23:231-237.</p>
+<p><strong>Payton, ME, Greenstone, MH &amp; Schenker, N</strong> (2003)
+Overlapping confidence intervals or standard error intervals: What do
+they mean in terms of statistical significance? <em>Journal of Insect
+Science</em> 3:34.</p>
+<p><strong>Peach, WJ, Buckland, ST &amp; Baillie, SR</strong> (1996) The
+use of constant effort mist-netting to measure between-year changes in
+abundance and productivity of common passerines. <em>Bird Study</em>
+43:142-156.</p>
+<p><strong>Pradel, R, Hines, JE, Lebreton, JD, &amp; Nichols,
+JD</strong> (1997) Capture-recapture survival models taking account of
+transients. <em>Biometrics</em> 53:60-72.</p>
+<p><strong>Robinson, RA, Freeman, SN, Balmer, DE &amp; Grantham,
+MJ</strong> (2007) Cetti’s warbler Cettia cetti: analysis of an
+expanding population. <em>Bird Study</em> 54:230-235.</p>
+<p><strong>Robinson, RA, Julliard, R &amp; Saracco, JF</strong> (2009)
+Constant effort: studying avian population processes using standardized
+ringing. <em>Ringing &amp; Migration</em> 24:199-204.</p>
+<p><strong>Saracco, JF, DeSante, DF &amp; Kaschube, DR</strong> (2008)
+Assessing landbird monitoring programs and demographic causes of
+population change. <em>Journal of Wildlife Management</em>
+72:1665-1673.</p>
+<p><strong>Venables, WN &amp; Ripley, BD</strong> (2002) <em>Modern
+applied statistics with S, 4th ed.</em> Springer, Berlin.</p>
+<p><strong>White, GC &amp; Burnham, KP</strong> (1999) Program MARK:
+survival estimation from populations of marked animals. <em>Bird
+Study</em> 46:S120-S139.</p>
+<p><strong>Wood, SN</strong> (2006) <em>Generalized additive models in
+R.</em> Chapman &amp; Hall, London.</p>
+<p><strong>Zuur, AF, Ieno, EN &amp; Smith, GM</strong> (2007)
+<em>Analyzing ecological data.</em> Springer, Berlin.</p>
+</div>
+<div class="footnotes footnotes-end-of-document">
+<hr />
+<ol>
+<li id="fn1"><p>Crawley, M. (2005) Statistics: an introduction using R.
+Wiley-Blackwell, London.<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
+<li id="fn2"><p>Crawley, M. (2007). The R book. Wiley-Blackwell,
+London.<a href="#fnref2" class="footnote-back">↩︎</a></p></li>
+<li id="fn3"><p>Try Bolker (2008) or Zuur <em>et al.</em> (2007), both
+of which use ecology examples, or Venables &amp; Ripley (2002), which is
+more general; Wood (2006) is more advanced but explains the background
+statistics well<a href="#fnref3" class="footnote-back">↩︎</a></p></li>
+<li id="fn4"><p>If you are using Windows, note that R uses a forward
+slash ‘/’ to separate directory levels rather than the usual backslash
+’&#39;.<a href="#fnref4" class="footnote-back">↩︎</a></p></li>
+<li id="fn5"><p>In our abbreviated example, 16 sites started in 2001,
+and the remaining three in 2002, the second year, so the graph is not
+terribly informative!<a href="#fnref5" class="footnote-back">↩︎</a></p></li>
+<li id="fn6"><p>the format will be determined by the file extension;
+‘.jpg’, ‘.tif’ or ‘.pdf’ will also work<a href="#fnref6" class="footnote-back">↩︎</a></p></li>
+<li id="fn7"><p>More detailed maps are possible using the maprec
+package, or other R map plotting packages<a href="#fnref7" class="footnote-back">↩︎</a></p></li>
+<li id="fn8"><p>if R tries to ‘prettify’ these too much try using
+lforce=‘e’, which asks it to use those ’e’xact limits<a href="#fnref8" class="footnote-back">↩︎</a></p></li>
+<li id="fn9"><p>not yet written!<a href="#fnref9" class="footnote-back">↩︎</a></p></li>
+<li id="fn10"><p>‘.jpg’, ‘.png’, ‘.pdf’, ‘.svg’ should all work<a href="#fnref10" class="footnote-back">↩︎</a></p></li>
+<li id="fn11"><p>This is achieved by using a log rather than a logistic
+back-transform to create the annual indices, see Peach <em>et al.</em>
+(1996) for details.<a href="#fnref11" class="footnote-back">↩︎</a></p></li>
+<li id="fn12"><p>not yet written!<a href="#fnref12" class="footnote-back">↩︎</a></p></li>
+</ol>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

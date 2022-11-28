@@ -20,13 +20,15 @@ function(cesdata, sitelist=NULL, year=0, template_file=NULL, outdir=getwd(), no.
 
   cesdata <- data.table::data.table(cesdata) # for quicker summarising
 
-  if( is.null(sitelist) | sitelist[1] == 'all' )
-    sitelist <- unique(subset(cesdata, year == thisyr, select=sitename))[ , 1] # subset returns a df
+  if( is.null(sitelist) ){
+    sitelist <- unique(subset(cesdata, year == thisyr, select=sitename))$sitename # subset returns a df
+  }  else if ( sitelist[1] == 'all' ){
+    sitelist <- unique(subset(cesdata, year == thisyr, select=sitename))$sitename # subset returns a df
+  }
   
   DT <- data.table(cesdata, key = 'sitename') # get netlength per site
   DT <- DT[ , head(.SD, 1), by = key(DT)]
-  netL <- DT[sitename %in% sitelist, .(sitename, netlength)] 
-  
+
   # create summary datasets for all sites 
   yrdata <- siteplot(data = cesdata, effort=TRUE, plot=FALSE)
   sppjdatay <- siteplot(data = cesdata, age=3, year = thisyr, effort=TRUE, plot=FALSE)
@@ -36,15 +38,15 @@ function(cesdata, sitelist=NULL, year=0, template_file=NULL, outdir=getwd(), no.
   
   for( i in 1:length(sitelist) ){
     
-    thissite <- netL$sitename[i]
-    netlen <- netL$netlength[i]
+    thissite <- DT$sitename[i]
+    netlen <- DT$netlength[i]
     
     if( cesdata[(sitename==thissite & year==thisyr), .N] == 0 ){
-      message('no data for site ', thissite, ' skipped')
+      message('no data for site: ', thissite, ' skipped')
       next
     }
     if( is.na(netlen) ){
-      message('no netlength for site ', thissite, ' skipped')
+      message('no netlength for site: ', thissite, ' skipped')
       next
     }
 
@@ -59,7 +61,6 @@ function(cesdata, sitelist=NULL, year=0, template_file=NULL, outdir=getwd(), no.
     rmarkdown::render(input = template_file, output_file = output_file, output_dir = outdir, quiet = TRUE)
     if( verbose ) 
       message('report for site ', thissite, ' written')
-    
   }   
 
 }

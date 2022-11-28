@@ -5,16 +5,16 @@ date: "`r format(Sys.Date(), '%d %B %Y')`"
 #output: rmarkdown::html_vignette
 output: rmarkdown::pdf_document
 urlcolor: blue
-vignette: 
-  \VignetteIndexEntry{cesr-intro}
-  \VignetteEngine{knitr::rmarkdown}
-  \VignetteEncoding{UTF-8}
+vignette: >
+  %\VignetteIndexEntry{cesr-intro}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include = FALSE}
-#knitr::opts_chunk$set(
-#  collapse = TRUE,
-#  comment = "#>")
+  knitr::opts_chunk$set(
+    collapse = TRUE,
+    comment = "#>")
 ```
 
 ## Background

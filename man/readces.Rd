@@ -18,7 +18,7 @@ readBTO(file, species)
 A valid filename
 }
   \item{visits}{
-Either 'std' to include only standard (numbered) visits, or a (character) vector listing allowed visit identifiers.  
+Either 'std' to include only standard (numbered up to 12) visits, or a (character) vector listing allowed visit identifiers.  
 }
   \item{species}{
 A numeric Euring species code
@@ -35,9 +35,11 @@ For details of the file specification see the CES pages of the Euring website, t
 
 If fix=TRUE then the function will change records as follows: 
 - sex of all encounters for an individual will be assigned the commonest sex recorded for that species (if the sex on encounter is recorded as unknown, or the other sex).
+- records aged as 3 in any year other than that of first encounter will be changed to 4.
+where possible the function will indicate how many records have been fixed.
 }
 \value{
-A dataframe with (at a minimum) the following columns: countryID (where the scheme is), sitename(as referred by the scheme), site (a sequential numeric identifier), habitat, visit (number), day, month, year, netlength, scheme (of the ring), ring, species, sex, age, race, julian, lat, long. Unrecognised columns in the datafile will be removed. 
+A dataframe with (at a minimum) the following columns: countryID (where the scheme is), sitename(as referred by the scheme), site (a sequential numeric identifier), habitat, visit (number), day, month, year, netlength, scheme (of the ring), ring, species, sex, age, race, julian (day), lat, long. Unrecognised columns in the datafile will be removed. 
 
 Latitude and longitude are in decimal degrees. Race will usually be the same as species (i.e. a Euring number), unless particular races were identified in the data file (e.g. as for Motacilla alba alba/yarrelli, see group.race=). The column 'julian' gives the day of year from 1 Jan (including 29 Feb in leap years). The function does some basic error-checking and will try to give informative messages where it detects a problem. Where records are deleted or values set to NA (missing) a warning will be given.  
 }

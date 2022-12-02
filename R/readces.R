@@ -43,10 +43,10 @@ function(file=NULL, visits='std', fix=FALSE, group.race=TRUE){
   }
   
   # Check for unknown species
-  unknown_spp <- sum(result$species==0, na.rm=TRUE)
+  unknown_spp <- nrow(result[species==0 | species==99999, ])
   if( unknown_spp > 0 ){
-    result <- result[species > 0, ]
-    wmessage <- paste(unknown_spp, 'unknown species (0) records removed')
+    result <- result[!(species==0 | species==99999), ]
+    wmessage <- paste(unknown_spp, 'records with no species have been removed')
     warning(wmessage, call.=FALSE)
   }
   
@@ -54,13 +54,12 @@ function(file=NULL, visits='std', fix=FALSE, group.race=TRUE){
   result[ , race := species]  # just so we know it is there
   if( group.race ){
     result[ , species := (10 * floor(as.numeric(as.character(species))/10))]  # concatenate races, original code now in race
-    wmessage <- paste("Subspecies have been grouped in the 'species' column, use the 'race' column',",
+    wmessage <- paste("Subspecies have been grouped in the 'species' column, use the 'race' column,",
                       "or group.race=FALSE if this is not desired")
-    warning(wmessage, call.=FALSE)
+    message(wmessage)
   }
   
   # check species are valid Euring codes
-  result[ , species := as.factor(species)]
   int_spp <- suppressWarnings(as.integer(as.character(result$species)))  # force them to be integer
   char_spp <- unique(as.character(result$species[is.na(int_spp)])) # select the rejected records
   if( length(char_spp) > 0 ){
@@ -71,10 +70,11 @@ function(file=NULL, visits='std', fix=FALSE, group.race=TRUE){
   # now check if they are likely CES species
   dodgy <- unique(int_spp[!(int_spp %in% cesnames$spp) & !is.na(int_spp)])
   if( length(dodgy) > 0 ){
-    wmessage <- paste('Surprising species codes encountered:', paste(dodgy,collapse=', '), ', consider checking these')
-    warning(wmessage, call.=FALSE)
+    wmessage <- paste('Unrecognised species codes encountered:', paste(dodgy,collapse=', '), ', consider checking them')
+    message(wmessage)
   }
-
+  result[ , species := as.factor(species)]
+  
   # check that ages are all 3/4 for simplicity later on...
   if( length(result$age[!result$age %in% c(2, 3, 4)]) > 0 ){
     result[ , age1 := as.character(age)]
@@ -89,33 +89,44 @@ function(file=NULL, visits='std', fix=FALSE, group.race=TRUE){
     result[ , age1 := NULL]
     ages <- ages[!ages %in% c('2','3','3J','4','5','6')] # check for non 3/4 age codes
     if( length(ages) > 0 ){
-      age.warning <- paste('Unexpected age-codes:', paste(ages, collapse=','), 'encountered; recoded as 4 or deleted')
-      warning(age.warning, call. = FALSE)
+      wmessage <- paste('Age-codes:', paste(ages, collapse=','), 'have been recoded as 4 or deleted')
+      message(wmessage)
     }
   }
   result[ , age := as.integer(age)]
   # check for juveniles not in first year of ringing
   dodgy <- merge(result[ , min(year), by=ring], result[age==3, max(year), by=ring], by='ring')
   names(dodgy) <- c('ring', 'min', 'minj')
+  result <- merge(result, dodgy, by='ring', all.x=TRUE)
   dodgy <- dodgy[minj > min, ]
   if( nrow(dodgy) > 0 ){
     rings <- unique(dodgy$ring)
-    age.warning <- paste('Individuals aged 3 after first year of ringing:', paste(rings, collapse=','))
-    warning(age.warning, call. = FALSE)
+    if ( fix ){
+      result[(age==3 & year>min), age := 4]
+      wmessage <- paste(nrow(dodgy), 'age records corrected, these aged 3 after first year of ringing:', paste(rings, collapse=','))
+      warning(wmessage, call. = FALSE)
+    } else {
+      wmessage <- paste('Individuals aged 3 after first year of ringing:', paste(rings, collapse=','))
+      warning(wmessage, call. = FALSE)
+    }
   }
+  result <- result[ , ':='(min=NULL, minj=NULL)] # no longer needed
   
   # tidy up sex
-  result$sex[result$sex %in% c('1','3','5','8','m','M')] <-'M'
-  result$sex[result$sex %in% c('2','4','6','9','f','F')] <-'F'
-  result$sex[result$sex %in% c('0','7','-','U')] <- NA
+  result[sex %in% c('1','3','5','8','m','M'), sex := 'M'] 
+  result[sex %in% c('2','4','6','9','f','F'), sex := 'F'] 
+  result[sex %in% c('0','7','-','U'), sex := "-"] 
+  result[!(sex %in% c('F', 'M')), sex:= "-"]
   if( fix ){
     # fill in M/F (according to which is most commonly recorded)
     sexes <- setDT(result)[sex%in%c('F','M'), .N, by=.(sex,ring)][order(-N), .(sex_t=sex[1L]), keyby=ring]
     result <- merge(result, sexes, by='ring', all.x=TRUE)
     nch1 <- sum(result$sex != result$sex_t, na.rm = TRUE)
     nch2 <- sum(result$sex[result$sex%in%c("F","M")] != result$sex_t[result$sex%in%c("F","M")], na.rm = TRUE)
-    warning(paste(nch1, 'sexes fixed, of which', nch2, 'records changed sex'), call.=FALSE)
+    wmessage <- paste(nch1, 'sexes fixed, of which', nch2, 'records changed sex')
+    warning(wmessage, call.=FALSE)
     result$sex[!is.na(result$sex_t)] <- result$sex_t[!is.na(result$sex_t)]
+    result <- result[ , sex := as.factor(sex)]
     result$sex_t <- NULL    
   }
 
@@ -142,7 +153,7 @@ function(file=NULL, visits='std', fix=FALSE, group.race=TRUE){
       result <- result[visit %in% stdv]
       result[ , visit := as.integer(visit)]
     } else if ( length(visits) > 1 )
-      result$visit <- result$visit[visits]
+      result <- result[visit %in% visits, ]
       ## Note this means that visit might be either numeric or character!
   } 
   
@@ -265,10 +276,12 @@ function(file=NULL, visits='std', fix=FALSE, group.race=TRUE){
   
   # check NetLengths
   if( !is.integer(result$netlength) ){
+    netl <- unique(result$netlength)
     suppressWarnings(result[ , netlength := as.integer(netlength) ])
     nmiss <- sum(is.na(result$netlength))
     if( nmiss > 0 ){
-      wmessage <- paste('non-numeric net lengths detected in', nmiss, 'records')
+      netl <- netl[is.na(suppressWarnings(as.integer(netl)))]
+      wmessage <- paste0('non-numeric net lengths (', paste(sprintf("'%s'", netl), collapse=","), ') detected in ', nmiss, ' records')
       warning(wmessage, call.=FALSE)
     }
   }

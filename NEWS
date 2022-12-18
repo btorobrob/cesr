@@ -1,3 +1,8 @@
+Changes in version 1.0.0
+==============
+- 16122022 - major bug fixed in productivity trend
+- 16122022 - add error log to readces() to facilitate review of errors
+
 Changes in version 0.51.1
 ==============
 - 09052022 - readces() will cope with decimal degrees in the coordinates column

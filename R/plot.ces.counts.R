@@ -11,14 +11,14 @@ function(x, sites=FALSE){
     jv.num <- tapply(x$jv.data$site[x$jv.data$corrcaps>0], x$jv.data$year[x$jv.data$corrcaps>0], luniq)
   }
   else {
-    ad.num <- tapply(x$ad.data$totcaps, x$ad.data$year, sum)
-    jv.num <- tapply(x$jv.data$totcaps, x$jv.data$year, sum)
-    ad.numc <- tapply(x$ad.data$corrcaps, x$ad.data$year, sum)
-    jv.numc <- tapply(x$jv.data$corrcaps, x$jv.data$year, sum)
+    ad.num <- tapply(x$ad.data$totcaps, x$ad.data$year, sum, na.rm=TRUE)
+    jv.num <- tapply(x$jv.data$totcaps, x$jv.data$year, sum, na.rm=TRUE)
+    ad.numc <- tapply(x$ad.data$corrcaps, x$ad.data$year, sum, na.rm=TRUE)
+    jv.numc <- tapply(x$jv.data$corrcaps, x$jv.data$year, sum, na.rm=TRUE)
   }
 
-  ad.site <- tapply(x$ad.data$corrcaps, x$ad.data$site, sum)
-  jv.site <- tapply(x$jv.data$corrcaps, x$jv.data$site, sum)
+  ad.site <- tapply(x$ad.data$corrcaps, x$ad.data$site, sum, na.rm=TRUE)
+  jv.site <- tapply(x$jv.data$corrcaps, x$jv.data$site, sum, na.rm=TRUE)
   ad.srt <- cumsum(sort(ad.site, decreasing=TRUE))
   jv.srt <- cumsum(sort(jv.site, decreasing=TRUE))
 

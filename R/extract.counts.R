@@ -57,8 +57,8 @@ function(cesobj, species=0, age=0, plots=NULL){
   # need to get totals for all sites including the zero catches 
   catch.totals <- merge(catch.totals, include, by='sy', all.y=TRUE)
   # neat way of adding multiple columns, need to make sure all records have a site and year... 
-  catch.totals[ , `:=`(site=ifelse(is.na(site.x),site.y, site.x), 
-                       year=ifelse(is.na(year.x),year.y, year.x))]
+  catch.totals[ , `:=`(site=ifelse(is.na(site.x), site.y, site.x), 
+                       year=ifelse(is.na(year.x), year.y, year.x))]
   catch.totals[is.na(totcaps), totcaps := 0]
   # remove extraneous variables
   catch.totals[ , c('site.x', 'year.x', 'site.y', 'year.y', 'early', 'late') := NULL]
@@ -76,36 +76,30 @@ function(cesobj, species=0, age=0, plots=NULL){
       warning("no adult birds caught on complete visits", call.=FALSE)
     return(NULL)
   }
-  # set up the results dataframe
-  years <- c(min(data.in$year), max(data.in$year))
-  res <- data.table::data.table(expand.grid(unique(include$site), years[1]:years[2]))
-  data.table::setnames(res, c('site', 'year'))
-  res <- merge(res, catch.totals, by=c('site','year'), all.y=TRUE) # all.y should drop non-existent combinations
 
   missing.visits <- data.table::data.table(plots$missing.visits, key=c('site','year'))
   sites <- data.table(site=unique(data.in$site))
   complete_sites <- unique(data.complete$site)
   # sites with more than 25 individuals get a specific corr factor
   sites <- merge(sites, data.complete[ , .N, by=site][N >= 25], by='site', all.x=TRUE) 
-  sites[is.na(N), N :=0 ] # sites with no complete visits
+  sites[is.na(N), N := 0 ] # sites with no complete visits
   
   data.complete[ , ring:=paste0(site,year,ring)] # ugly, but o/wise duplicated doesnt work when birds move sites!
   ninds <- data.complete[!duplicated(ring) , .N, by=site]
   sites <- merge(sites, ninds, by='site', all.x=TRUE)
   names(sites) <- c('site', 'ncaps', 'N')
   
-  res <- merge(res, sites, by='site', all.x=TRUE)
+  res <- merge(catch.totals, sites, by='site', all.x=TRUE)
   n.small <- data.complete[!duplicated(ring) , .N, ]
   data.complete[ , ring := as.numeric(as.factor(ring))]
   data.complete <- data.complete[!is.na(visit), ] # not sure this is needed?
-  n.prime <- calcNprime(as.data.frame(data.complete),as.data.frame(missing.visits), as.data.frame(sites) )
+  n.prime <- calcNprime(as.data.frame(data.complete), as.data.frame(missing.visits), as.data.frame(sites))
   years <- c(min(data.complete$year), max(data.complete$year))
   n.prime.df <- data.frame(site = rep(sites$site, length(seq(years[1],years[2]))),
                            year = rep(seq(years[1],years[2]), each=uniqueN(sites$site)),
                            nprime = c(n.prime))
   res <- merge(res, n.prime.df, by=c('site', 'year'), all.x=TRUE)
-  res$totcaps[is.na(res$totcaps)] <- 0 # no birds caught, shouldn't happen, but just in case
-  res[is.na(res$N), N := n.small] # use global correction for those no complete data
+  res[is.na(res$totcaps), totcaps := 0] # no birds caught, shouldn't happen, but just in case
   res[(N<25 & ncaps==0), N := n.small] # use global correction for those no complete data
   res[ , corrcaps := totcaps * (N/nprime)]
   

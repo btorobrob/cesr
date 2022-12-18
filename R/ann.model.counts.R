@@ -12,9 +12,9 @@ function(x, year=-1, offset=TRUE, cl=0.95){
   }
  
   if( length(table(x$site)) > 1 ) 
-    x.lm <- glm(totcaps ~ as.factor(site) + year, family=quasipoisson, offset=offset, data=x)
+    x.lm <- glm(totcaps ~ as.factor(site) + year, family="quasipoisson", offset=offset, data=x)
   else
-    x.lm <- glm(totcaps ~ year, family=quasipoisson, offset=offset, data=x)
+    x.lm <- glm(totcaps ~ year, family="quasipoisson", offset=offset, data=x)
   
 
   years <- names(coef(x.lm))

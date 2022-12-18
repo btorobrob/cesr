@@ -17,9 +17,9 @@ function(x, compare=1, offset=TRUE, cl=0.95){
   yearf <- relevel(factor(yearf), 1)
   
   if( length(table(x$site)) > 1 )
-    x.lm <- glm(totcaps ~ as.factor(site) + as.factor(yearf) - 1, family=quasipoisson, offset=offset, data=x)
+    x.lm <- glm(totcaps ~ as.factor(site) + as.factor(yearf) - 1, family="quasipoisson", offset=offset, data=x)
   else
-    x.lm <- glm(totcaps ~ as.factor(yearf) - 1, family=quasipoisson, offset=offset, data=x)
+    x.lm <- glm(totcaps ~ as.factor(yearf) - 1, family="quasipoisson", offset=offset, data=x)
   
   if( (compare+1) < nyrs )
     yearf1 <- c(min(x$year):ybreak, rep(1,compare), max(x$year))

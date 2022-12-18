@@ -9,7 +9,7 @@ Read in CES data
 Reads in CES data from a text file in EuroCES format
 }
 \usage{
-readces(file, visits='std', fix=FALSE, group.race=TRUE)
+readces(file, visits='std', group.race=TRUE, fix=FALSE, verbose=FALSE)
 readBTO(file, species)
 }
 %- maybe also 'usage' for other objects documented here.
@@ -20,14 +20,16 @@ A valid filename
   \item{visits}{
 Either 'std' to include only standard (numbered up to 12) visits, or a (character) vector listing allowed visit identifiers.  
 }
-  \item{species}{
-A numeric Euring species code
-}
-  \item{fix}{
-Should presumed errors be fixed? See details.
-}
   \item{group.race}{
 Aggregate records of different races (i.e. those where the last digit of the Euring code is not zero)?
+}
+  \item{fix}{
+Logical, should presumed errors be fixed? See details.
+}
+  \item{verbose}{
+Logical, produce a file listing records with (currently species/age/sex) errors to be fixed? }
+  \item{species}{
+A numeric Euring species code
 }
 }
 \details{
@@ -51,14 +53,14 @@ Euring CES pages: https://euring.org/research/ces-europe/
 Rob Robinson
 }
 \note{
-The CES programs expect birds aged as either juvenile (3) or adult (4), the function will recode ages where it can, 2 is also allowed; records with other ages (0, 1) will be deleted. Expect some warnings, most are there for information only- they do not necessarily indicate an error. 
+The CES programs expect birds aged as either juvenile (3) or adult (4), the function will recode ages where it can, 2 is also allowed; records with other ages (0, 1) will be deleted. Expect some warnings, some are for information only - they do not necessarily indicate an error. 
 
 readBTO() is provided for reading in BTO '.all' fixed format files, variables not included in this format (eg habitat, NetLength) are simply set to NA.
 }
 
 \examples{
 \dontrun{
-ukdata <- readces("d:/data/ces/ukdata.csv")
+ukdata <- readces("d:/data/ces/ukdata.csv", fix=TRUE)
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

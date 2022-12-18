@@ -1,6 +1,11 @@
 readces <-
-function(file=NULL, visits='std', fix=FALSE, group.race=TRUE){
+function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, verbose=FALSE){
   
+  # create a blank vector for collecting dodgy records, set here so we know it exists
+  rows2corr <- numeric()
+  report.cols <- c("RowNo", "ring", "species", "age_in", "sex_in", "day", "month", "year")
+  warning.flag <- 0 # if any warnings arise (probable) suggest setting verbose to TRUE
+
   if( is.null(file) )
     file <- file.choose()
   
@@ -33,12 +38,14 @@ function(file=NULL, visits='std', fix=FALSE, group.race=TRUE){
   result <- suppressWarnings(data.table::fread(file))
   # use suppressWarnings to avoid messages about bumping col classes late in the data
   setnames(result, col.names)
+  result <- result[ , RowNo:=row.names(.SD)]
+  setcolorder(result, "RowNo")
 
   # duplicates indicate something is amiss
   duplicated.cols <- which(duplicated(col.names))
   if( any(duplicated.cols) == TRUE ){ 
     wmsg <- paste('Unrecognised columns', paste(duplicated.cols, collapse=', '), 'removed')
-    warning(wmsg, call. = FALSE)
+    warning(wmsg, call.=FALSE, immediate.=TRUE)
     result <- subset(result, select=col.names[-duplicated.cols])
   }
   
@@ -46,8 +53,8 @@ function(file=NULL, visits='std', fix=FALSE, group.race=TRUE){
   unknown_spp <- nrow(result[species==0 | species==99999, ])
   if( unknown_spp > 0 ){
     result <- result[!(species==0 | species==99999), ]
-    wmessage <- paste(unknown_spp, 'records with no species have been removed')
-    warning(wmessage, call.=FALSE)
+    wmessage <- paste(unknown_spp, 'records with no species ("0", "99999") have been removed')
+    warning(wmessage, call.=FALSE, immediate.=TRUE)
   }
   
   # remove races if required
@@ -63,8 +70,11 @@ function(file=NULL, visits='std', fix=FALSE, group.race=TRUE){
   int_spp <- suppressWarnings(as.integer(as.character(result$species)))  # force them to be integer
   char_spp <- unique(as.character(result$species[is.na(int_spp)])) # select the rejected records
   if( length(char_spp) > 0 ){
-    wmessage <- paste('Non-numeric species codes:', paste(char_spp,collapse=', '), 'will be ignored')
-    warning(wmessage, call.=FALSE)
+    if( verbose )
+      rows2corr <- c(rows2corr, result$RowNo[result$species %in% char_spp])
+    wmessage <- paste('Non-numeric species codes:', paste(char_spp,collapse=', '), 'will be deleted')
+    warning(wmessage, call.=FALSE, immediate.=TRUE)
+    warning.flag <- 1
     result <- result[!is.na(int_spp), ]
   }
   # now check if they are likely CES species
@@ -76,6 +86,7 @@ function(file=NULL, visits='std', fix=FALSE, group.race=TRUE){
   result[ , species := as.factor(species)]
   
   # check that ages are all 3/4 for simplicity later on...
+  result[ , age_in := age] # keep a copy of the original for error reports
   if( length(result$age[!result$age %in% c(2, 3, 4)]) > 0 ){
     result[ , age1 := as.character(age)]
     result[ , age := NULL] # sometimes it is character, so start from scratch
@@ -101,38 +112,54 @@ function(file=NULL, visits='std', fix=FALSE, group.race=TRUE){
   dodgy <- dodgy[minj > min, ]
   if( nrow(dodgy) > 0 ){
     rings <- unique(dodgy$ring)
+    if (verbose )
+      rows2corr <- c(rows2corr, result$RowNo[result$ring %in% rings])
     if ( fix ){
       result[(age==3 & year>min), age := 4]
-      wmessage <- paste(nrow(dodgy), 'age records corrected, these aged 3 after first year of ringing:', paste(rings, collapse=','))
-      warning(wmessage, call. = FALSE)
+      wmessage <- paste(nrow(dodgy), "age records of impossible 3's corrected")
+      warning(wmessage, call.=FALSE, immediate.=TRUE)
     } else {
-      wmessage <- paste('Individuals aged 3 after first year of ringing:', paste(rings, collapse=','))
-      warning(wmessage, call. = FALSE)
+      wmessage <- paste(nrow(dodgy), 'individuals aged 3 after first year of ringing')
+      warning(wmessage, call.=FALSE, immediate.=TRUE)
     }
+    warning.flag <- 1
   }
-  result <- result[ , ':='(min=NULL, minj=NULL)] # no longer needed
+  result[ , ':='(min=NULL, minj=NULL)] # no longer needed
   
   # tidy up sex
+  result[ , sex_in := sex] # keep a copy of the original for error reports
   result[sex %in% c('1','3','5','8','m','M'), sex := 'M'] 
   result[sex %in% c('2','4','6','9','f','F'), sex := 'F'] 
-  result[sex %in% c('0','7','-','U'), sex := "-"] 
-  result[!(sex %in% c('F', 'M')), sex:= "-"]
-  if( fix ){
-    # fill in M/F (according to which is most commonly recorded)
-    sexes <- setDT(result)[sex%in%c('F','M'), .N, by=.(sex,ring)][order(-N), .(sex_t=sex[1L]), keyby=ring]
-    result <- merge(result, sexes, by='ring', all.x=TRUE)
-    nch1 <- sum(result$sex != result$sex_t, na.rm = TRUE)
-    nch2 <- sum(result$sex[result$sex%in%c("F","M")] != result$sex_t[result$sex%in%c("F","M")], na.rm = TRUE)
-    wmessage <- paste(nch1, 'sexes fixed, of which', nch2, 'records changed sex')
-    warning(wmessage, call.=FALSE)
-    result$sex[!is.na(result$sex_t)] <- result$sex_t[!is.na(result$sex_t)]
-    result <- result[ , sex := as.factor(sex)]
-    result$sex_t <- NULL    
+  result[sex %in% c('0','7','-','U'), sex := "-"] # just for the record 
+  result[!(sex %in% c('F', 'M')), sex:= "-"] # pick up any other entries
+  
+  sexes <- setDT(result)[sex%in%c('F','M'), .N, by=.(sex,ring)][order(-N), .(sex_t=sex[1L]), keyby=ring]
+  result <- merge(result, sexes, by='ring', all.x=TRUE)
+  nch1 <- sum(result$sex != result$sex_t, na.rm = TRUE)
+  nch2 <- sum(result$sex[result$sex%in%c("F","M")] != result$sex_t[result$sex%in%c("F","M")], na.rm = TRUE)
+  if( nch2 > 0 )
+    warning.flag <- 1
+  if( nch2 > 0 & verbose ){
+    dodgy <- unique(result[sex!=sex_t & sex_t!="-" & sex!="-", ][ , ring])
+    # this construction saves having to use result$ on every variable - neat!
+    wmessage <- paste(nch2, 'records changed sex')
+    warning(wmessage, call.=FALSE, immediate.=TRUE)
+    rows2corr <- c(rows2corr, result[ring %in% dodgy][ , RowNo])
   }
-
+  if( nch1 > 0 & fix ){
+    # fill in M/F (according to which is most commonly recorded)
+    wmessage <- paste(nch1, 'sexes fixed, of which', nch2, 'records changed sex')
+    warning(wmessage, call.=FALSE, immediate.=TRUE)
+    result$sex[!is.na(result$sex_t)] <- result$sex_t[!is.na(result$sex_t)]
+  }
+  result[ , sex := as.factor(sex)]
+  result[ , sex_t := NULL]    
+  
   # set site names
-  if( length(grep("[#]", as.character(result$siteID))) > 0 ) # yes, really - thanks to Arizaga
-    warning("Using the '#' sign in sitenames confuses Mark, rename your sites!", call.=FALSE)
+  if( length(grep("[#]", as.character(result$siteID))) > 0 ){ # yes, really - thanks to Arizaga
+    wmessage <- "Using the '#' sign in sitenames confuses Mark, rename your sites!"
+    warning(wmessage, call.=FALSE, immediate.=TRUE)
+  }
   result[ , sitename := as.factor(siteID)] 
   result[ , site := as.numeric(as.factor(siteID))]
   result[ , siteID := NULL] # no longer needed
@@ -140,9 +167,12 @@ function(file=NULL, visits='std', fix=FALSE, group.race=TRUE){
   # check for duplicated rings on different species (yes, really!)
   dup_spp <- unique(result[ , c('species','ring')], by=c('species', 'ring')) 
   dup_ndx <- duplicated(dup_spp, by=c('ring'))
-  if( sum(dup_ndx) > 0 ){
-    wmessage <- paste('Rings associated with more than one species code:', paste(dup_spp$ring[dup_ndx],collapse=', '))
-    warning(wmessage, call.=FALSE)
+  n.duplicated <- sum(dup_ndx)
+  if( n.duplicated > 0 ){
+    if( verbose )
+      rows2corr <- c(rows2corr, result[ring %in% unique(dup_spp$ring[dup_ndx]), ][ , RowNo])
+    wmessage <- paste(n.duplicated, 'ring numbers are associated with more than one species code')
+    warning(wmessage, call.=FALSE, immediate.=TRUE)
   }
   
   # check visits
@@ -174,17 +204,23 @@ function(file=NULL, visits='std', fix=FALSE, group.race=TRUE){
   count <- sum((nmissd + nmissm + nmissy) > 0)
   if( count > 0 ){
     wmessage <- paste('Non-numeric dates detected in', count, 'records')
-    warning(wmessage, call.=FALSE)
+    warning(wmessage, call.=FALSE, immediate.=TRUE)
   }
   inv.days <- nrow(result[day < 1 | day > 31])
   if( inv.days > 0 ){
+    if( verbose )
+      rows2corr <- c(rows2corr, result[day < 1 | day > 31, ][ , RowNo])
     wmessage <- paste(inv.days, 'day values outside the range 1-31 detected')
-    warning(wmessage, call.=FALSE)
+    warning(wmessage, call.=FALSE, immediate.=TRUE)
+    warning.flag <- 1
   }
-  non.summer <- nrow(result[month<4 | month>9])
+  non.summer <- nrow(result[month < 4 | month > 9])
   if( non.summer > 0 ){
+    if( verbose )
+      rows2corr <- c(rows2corr, result[month < 4 | month > 9, ][ , RowNo])
     wmessage <- paste(non.summer, 'records outside the period April to September, is this expected?')
-    warning(wmessage, call.=FALSE)
+    warning(wmessage, call.=FALSE, immediate.=TRUE)
+    warning.flag <- 1
   }
   # now create a Julian day column for doing phenology things
   # create jday first to avoid an error about using $ with atomic vectors
@@ -194,25 +230,27 @@ function(file=NULL, visits='std', fix=FALSE, group.race=TRUE){
   # convert co-ordinates if necessary
   if( any(colnames(result)=="coords") ){
 
-    if( !is.character(result$coords) )
-      warning(paste0('Coordinates not in Euring format "+ddmmss', quote("\uB1"), 'dddmmss"'), call.=FALSE)
-
+    if( !is.character(result$coords) ){
+      wmessage <- paste0('Coordinates not in Euring format "+ddmmss', quote("\uB1"), 'dddmmss"')
+      warning(wmessage, call.=FALSE, immediate.=TRUE)
+    }
     coords <- result$coords
     # first check to see whether they are the right length (14, 15 characters)
-    llfmt <- mean(nchar(coords), na.rm  = TRUE) 
+    llfmt <- mean(nchar(coords), na.rm=TRUE) 
     if( !llfmt %in% c(14, 15) ){
       err <- which(!nchar(coords) %in% c(14, 15))
       if( length(err) == 0 )
         wmessage <- "Check coordinates field - a mix of lengths detected?"
       else
         wmessage <- paste("Unrecognised coordinate format in sites:", paste(unique(result$sitename[err]), collapse=', '))
-      warning(wmessage, call.=FALSE)
+      warning(wmessage, call.=FALSE, immediate.=TRUE)
       llfmt <- round(llfmt, 0)
     }
     
     # first check for decimal degrees
     if( any(as.numeric(substr(coords,4,4)) > 5) ){ # i.e. there are minutes > 50
-      warning('Reading in coordinates as decimal degrees', call. = FALSE)
+      message <- 'Reading in coordinates as decimal degrees'
+      message(wmessage)
 
       result [ , lat := as.integer(substr(coords,1,7))/10000]
       result [ , long := as.integer(substr(coords,8,20))/10000]
@@ -224,29 +262,47 @@ function(file=NULL, visits='std', fix=FALSE, group.race=TRUE){
       c1 <- suppressWarnings(as.integer(substr(coords,1,3))) # avoid cryptic warning about coerced NAs
       c2 <- suppressWarnings(as.integer(substr(coords,4,5))/60)
       c3 <- suppressWarnings(as.integer(substr(coords,6,7))/3600)
-      if( anyNA(c(c1, c2, c3)) )
-        warning("missing values generated for latitude, are all the coordinates 15 characters long?", call.=FALSE)
+      if( anyNA(c(c1, c2, c3)) ){
+        wmessage <- "missing values generated for latitude, are all the coordinates 15 characters long?"
+        warning(wmessage, call.=FALSE, immediate.=TRUE)
+      }
+      if( max(c2, c3, na.rm=TRUE) > 60 ){
+        wmessage <- "values greater than 60 detected in latitude minutes/seconds, check coordinate format"
+        warning(wmessage, call.=FALSE, immediate.=TRUE)
+      }
       result[ , lat := c1 + c2 + c3]
       
       # now the longitudes
       ew <- ifelse(substr(coords,8,8) == '-', -1 , 1) # hemisphere
       if ( llfmt == 15 ){   # Euring code specifies 15 chars, but just in case long deg is 2 digits rather than 3
-        if( anyNA(as.integer(substr(coords,9,11))) | anyNA(as.integer(substr(coords,12,13))) | anyNA(as.integer(substr(coords,14,15))) )
-          warning("missing values generated in longitude, check for stray non-numeric characters", call.=FALSE)
+        if( anyNA(as.integer(substr(coords,9,11))) | 
+            anyNA(as.integer(substr(coords,12,13))) | 
+            anyNA(as.integer(substr(coords,14,15))) ){
+          wmessage <- "missing values generated in longitude, check for stray non-numeric characters"        
+          warning(wmessage, call.=FALSE, immediate.=TRUE)
+        }
         c1 <- suppressWarnings(as.integer(substr(coords,9,11)))
         c2 <- suppressWarnings(as.integer(substr(coords,12,13)))/60
         c3 <- suppressWarnings(as.integer(substr(coords,14,15)))/3600
-        if( max(c2, c3, na.rm=TRUE) > 60 )
-          warning("values greater than 60 detected in latitude minutes/seconds, check coordinate format", call.=FALSE)
+        if( max(c2, c3, na.rm=TRUE) > 60 ){
+          wmessage <- "values greater than 60 detected in longtitude minutes/seconds, check coordinate format"
+          warning(wmessage, call.=FALSE, immediate.=TRUE)
+        }
         result [ , long := ew * (c1 + c2 + c3)]
       } else if ( llfmt == 14 ){
-        if( anyNA(as.integer(substr(coords,9,10))) | anyNA(as.integer(substr(coords,11,12))) | anyNA(as.integer(substr(coords,13,14))) )
-          warning("missing values generated in longitude, check for possible stray non-numeric characters", call.=FALSE)
+        if( anyNA(as.integer(substr(coords,9,10))) | 
+            anyNA(as.integer(substr(coords,11,12))) | 
+            anyNA(as.integer(substr(coords,13,14))) ){
+          wmessage <- "missing values generated in longitude, check for possible stray non-numeric characters" 
+          warning(wmessage, call.=FALSE, immediate.=TRUE)
+        }
         c1 <- suppressWarnings(as.integer(substr(coords,9,10)))
         c2 <- suppressWarnings(as.integer(substr(coords,11,12))/60)
         c3 <- suppressWarnings(as.integer(substr(coords,13,14))/3600)
-        if( max(c2, c3, na.rm=TRUE) > 60 )
-          warning("values greater than 60 detected in longitude minutes/seconds, check coordinate format", call.=FALSE)
+        if( max(c2, c3, na.rm=TRUE) > 60 ){
+          wmessage <- "values greater than 60 detected in longitude minutes/seconds, check coordinate format"
+          warning(wmessage, call.=FALSE, immediate.=TRUE)
+        }
         result [ , long := ew * (c1 + c2 + c3)]
       } else {
         result [ , long := NA]
@@ -260,7 +316,7 @@ function(file=NULL, visits='std', fix=FALSE, group.race=TRUE){
   # now do a final check
   if( sum(colnames(result) %in% c("lat","long")) != 2 ) {
     wmessage <- paste('Coordinates not recognised, check you have either a coords or lat & long columns')
-    warning(wmessage, call.=FALSE)
+    warning(wmessage, call.=FALSE, immediate.=TRUE)
   }    
 
   # now check that sites have only one set of coordinates
@@ -268,10 +324,10 @@ function(file=NULL, visits='std', fix=FALSE, group.race=TRUE){
   if( length(table(check.sites)) > 1 ){
     dodgy <- dimnames(check.sites)[[1]][check.sites > 1]
     if( length(dodgy) == 1 )
-      wmessage <- paste("Site", paste(dodgy, collapse=', '), "has multiple coordinates")
+      wmessage <- paste("Site", dodgy, "has multiple coordinates")
     else
       wmessage <- paste("Sites:", paste(dodgy, collapse=', '), "have multiple coordinates")
-    warning(wmessage, call.=FALSE)
+    warning(wmessage, call.=FALSE, immediate.=TRUE)
   }
   
   # check NetLengths
@@ -282,14 +338,14 @@ function(file=NULL, visits='std', fix=FALSE, group.race=TRUE){
     if( nmiss > 0 ){
       netl <- netl[is.na(suppressWarnings(as.integer(netl)))]
       wmessage <- paste0('non-numeric net lengths (', paste(sprintf("'%s'", netl), collapse=","), ') detected in ', nmiss, ' records')
-      warning(wmessage, call.=FALSE)
+      warning(wmessage, call.=FALSE, immediate.=TRUE)
     }
   }
   nzero <- result[netlength == 0, .N]
   if( nzero > 0 ){
     result[netlength == 0, netlength := NA]
     wmessage <- paste('net length of zero detected in', nzero, 'records; these set to NA')
-    warning(wmessage, call.=FALSE)
+    message(wmessage)
   }
 
   # habitats
@@ -299,29 +355,75 @@ function(file=NULL, visits='std', fix=FALSE, group.race=TRUE){
   dodgy <- unique(result$habitat[!(result$habitat %in% c('DS','FA','GN','RB','WD','WS'))])
   if( length(dodgy) > 0 ){
     wmessage <- paste("unrecognised habitat codes:", paste(dodgy, collapse=', '))
-    warning(wmessage, call.=FALSE)
+    warning(wmessage, call.=FALSE, immediate.=TRUE)
   }
   result[ , habitat := as.factor(habitat)]
   
   result[ , scheme := as.factor(scheme)]
   
-  # check biometrics for commas rather than decimal points
+  # rudimentary biometric checks for now
+  # check for commas rather than decimal points
   if( is.character(result$wing) )
     result$wing <- suppressWarnings(as.numeric(gsub(",", ".", result$wing, fixed=TRUE)))
+  if( is.numeric(result$wing) ){
+    result[wing == 0, wing := NA]
+    too.long <- unique(result$species[result$wing > 150 & !is.na(result$wing)])
+    if( length(too.long) > 0 ){
+      wmessage <- paste("long (>150mm) wing lengths recorded for species codes:",
+                        paste0(too.long[order(too.long)], collapse=", "), "are you sure?")
+      warning(wmessage, call.=FALSE, immediate.=TRUE)
+    }
+    too.short <- unique(result$species[result$wing < 45 & !is.na(result$wing)])
+    if( length(too.short) > 0 ){
+      wmessage <- paste("short (<45mm) wing lengths recorded for species codes:",
+                        paste0(too.short[order(too.short)], collapse=", "), "are you sure?")
+      warning(wmessage, call.=FALSE, immediate.=TRUE)
+    }  
+  } 
   if( is.character(result$weight) )
     result$weight <- suppressWarnings(as.numeric(gsub(",", ".", result$weight, fixed=TRUE)))
+  if( is.numeric(result$weight) ){
+    result[weight == 0, weight := NA]
+    too.long <- unique(result$species[result$weight > 150 & !is.na(result$weight)])
+    if( length(too.long) > 0 ){
+      wmessage <- paste("heavy (>150g) weights recorded for species codes:",
+                        paste0(too.long[order(too.long)], collapse=", "), "are you sure?")
+      warning(wmessage, call.=FALSE, immediate.=TRUE)
+    }
+    too.short <- unique(result$species[result$wing < 5 & !is.na(result$wing)])
+    if( length(too.short) > 0 ){
+      wmessage <- paste("light (<5g) weights recorded for species codes:",
+                        paste0(too.short[order(too.short)], collapse=", "), "are you sure?")
+      warning(wmessage, call.=FALSE, immediate.=TRUE)
+    }  
+  }
   if( is.character(result$p3) )
     result$p3 <- suppressWarnings(as.numeric(gsub(",", ".", result$p3, fixed=TRUE)))
- 
-  # return dataframe
+
+  # set country attribute
+  country <- unique(result$countryID)
+  if ( length(country) > 1 )
+    country <- substr(country[1], 1, 2)
+  attr(result,'country') <- country
+    
+  if( warning.flag & !verbose ){
+    wmessage <- "Warnings were raised, consider using verbose=TRUE to review these records"
+    message(wmessage)
+  }
+    
+  if( verbose & length(rows2corr) > 0 ){
+    errfile <- paste0(getwd(), '/', country, '_err.csv')
+    wmessage <- paste("Please review records in", sprintf("'%s'", errfile), "for errors")
+    warning(wmessage, call.=FALSE, immediate.=TRUE)
+    report.data <- result[RowNo %in% unique(rows2corr), ..report.cols]
+    setorder(report.data, ring, year, month, day)
+    write.csv(report.data, file=errfile, row.names=FALSE, quote=FALSE)
+  }
+  
+  result[ , ':='(age_in=NULL, sex_in=NULL, RowNo=NULL) ] # tidy up
+  
   result <- as.data.frame(result)
   class(result) <- c('ces', 'data', 'data.frame')
-  country <- unique(result$countryID)
-  if ( length(country) == 1 )
-    attr(result,'country') <- country
-  else
-    warning("more than one country code detected, country attribute not set", call.=FALSE)
-  
   return(result)
 
 }

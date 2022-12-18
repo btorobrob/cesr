@@ -8,8 +8,11 @@ function(x) {   # Done as separate function more for clarity than anything else
 
   # now fill in NaN because no ads or juvs caught
   x$offset[x$jvzero] <- log(x$adexcaps[x$jvzero]/x$adcaps[x$jvzero]) #  no juvs caught, so use adult corr factor
-  x$offset[x$adzero] <- log(x$jvexcaps[x$adzero]/x$jvcaps[x$adzero]) #  no ads caught, so use juv corr factor
+  x$offset[x$adzero] <- log(x$jvcaps[x$adzero]/x$jvexcaps[x$adzero]) #  no ads caught, so use juv corr factor
   x$offset[x$jvzero & x$adzero] <- 0   # no birds caught, should be excluded anyway?
+  
+  x$adzero <- NULL  # tidy-up
+  x$jvzero <- NULL
   
   return(x)
 }

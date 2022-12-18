@@ -21,9 +21,9 @@ function(x, year=-1, offset=TRUE, cl=0.95){
   }
 
   if( length(table(x$site)) > 1 )
-    x.lm <- glm(as.matrix(cbind(x$jvcaps,x$totcaps)) ~ as.factor(site)+year, family=quasibinomial, offset=offset, data=x)
+    x.lm <- glm(as.matrix(cbind(x$jvcaps,x$adcaps)) ~ as.factor(site)+year, family="quasibinomial", offset=offset, data=x)
   else
-    x.lm <- glm(as.matrix(cbind(x$jvcaps,x$totcaps)) ~ year, family=quasibinomial, offset=offset, data=x)
+    x.lm <- glm(as.matrix(cbind(x$jvcaps,x$adcaps)) ~ year, family="quasibinomial", offset=offset, data=x)
   
   years <- names(coef(x.lm))
   parm <- coef(x.lm)
@@ -35,7 +35,7 @@ function(x, year=-1, offset=TRUE, cl=0.95){
   res <- rbind(res, c(year, 0, 0))
   res <- res[do.call(order, list(res$years)), ]
   res$index <- exp(res$parm)           # NOTE: log back-transform rather than logistic!! gives no jv per ad
-                                     #       rather simply ppn jvs
+                                       #       rather simply ppn jvs
   cl.int <- qnorm(1-((1-cl)/2))
   res$lcl <- exp(res$parm - cl.int * res$se) 
   res$ucl <- exp(res$parm + cl.int * res$se)

@@ -5,10 +5,12 @@ function(x, mtype){
   disp <- suppressWarnings(summary(x$model)$dispersion)  # suppress warning about zero weights in binomial glm
   dev <- x$model$deviance
   rdf <- x$model$df.residual
+
   if( is.na(disp) )
     cat('Model Fit: not estimated, did you fit a single site?\n')
   else
-    cat(sprintf("Model Fit: Dispersion parameter is %4.2f (resid. deviance %5.1f on %5.0f d.f.)\n", disp, dev, rdf))
+    cat(sprintf("Model Fit: Dispersion parameter is %4.2f (resid. deviance %5.1f on %4.0f d.f.)\n", disp, dev, rdf))
+
   fyear <- x$parms$years[1]
   if ( year0 == fyear ) {     # check if ref year is first year, so need to reverse comparison
     fyear <- max(x$parms$years)
@@ -19,7 +21,8 @@ function(x, mtype){
       delta_ind <- 100 * (delta_ind-1)
     }
   } else {
-    delta_ind <- 1/x$parms$index[x$parms$years==fyear]
+    # get the actual index value because for gams its not guaranteed to be 1
+    delta_ind <- x$parms$index[which(x$parms$years==year0)]/x$parms$index[x$parms$years==fyear]
     if (delta_ind < 1 ) {
       delta_ind <- -100 * (1-delta_ind)
     } else {
@@ -39,6 +42,14 @@ function(x, mtype){
   else if ( mtype$type == 'constant' ) 
     cat(sprintf("Last year is %3.1f%% that in previous % d years: Estimate=%4.2f \u00B1 %4.2f (t=%4.3f, P=%4.3f) \n",
                 100*exp(x$test$slope), x$test$nyrs, x$test$slope, x$test$slope.se, x$test$tval, x$test$tsig))
+  else if ( mtype$type == 'smooth' ){
+    r2 <- x$test$r2 * 100
+    edf <- x$test$edf
+    if( delta_ind > 1000 )
+      cat(sprintf("Change %d to %d: >1000%%; smooth explains %4.1f%% of variance with %4.2f df\n", fyear, year0, r2, edf))
+    else
+      cat(sprintf("Change %d to %d: %4.1f%%; smooth explains %4.1f%% of variance with %4.2f df\n", fyear, year0, delta_ind, r2, edf))
+  }
   cat('\n')
   return(x$parms)
 }

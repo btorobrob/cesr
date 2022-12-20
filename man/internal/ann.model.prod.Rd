@@ -2,6 +2,7 @@
 \alias{ann.model.prod}
 \alias{annc.model.prod}
 \alias{annt.model.prod}
+\alias{annsm.model.prod}
 \title{
 Calculate indices of productivity caught on CES sites
 }
@@ -12,6 +13,7 @@ These functions use \code{glm()} to model the productivity of birds caught as a 
 ann.model.prod(x, year=-1, offset=TRUE, cl=0.95)
 annc.model.prod(x, compare=1, offset=TRUE, cl=0.95)
 annt.model.prod(x, year=-1, trend=100, offset=TRUE, cl=0.95)
+annt.model.prod(x, offset=TRUE, cl=0.95)
 }
 \arguments{
   \item{x}{

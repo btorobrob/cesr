@@ -2,6 +2,7 @@
 \alias{ann.model.counts}
 \alias{annc.model.counts}
 \alias{annt.model.counts}
+\alias{annsm.model.counts}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 Calculate indices of number of birds caught on CES sites
@@ -13,6 +14,7 @@ These functions use \code{glm()} to model counts of birds caught as a function o
 ann.model.counts(x, year=-1, offset=TRUE, cl=0.95)
 annc.model.counts(x, compare=1, offset=TRUE, cl=0.95)
 annt.model.counts(x, year=-1, trend=100, offset=TRUE, cl=0.95)
+annt.model.counts(x, offset=TRUE, cl=0.95)
 }
 \arguments{
   \item{x}{

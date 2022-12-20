@@ -41,9 +41,17 @@ function(cesdata, year=-1, begin=0, smooth=FALSE, trend=0, compare=0, verbose=FA
     warning('Only one site detected', immediate.=TRUE, call.=FALSE)
   
   if ( smooth == TRUE ) {
-    
-    x=x # placeholder
-    
+    mtype <- list(type='smooth', refyear=year)
+
+    if ( nrow(ad.data) > 0 )
+      ad.res <- annsm.model.counts(ad.data, offset=visit.corr, cl=cl)
+    if ( nrow(jv.data) > 0 ) 
+      jv.res <- annsm.model.counts(jv.data, offset=visit.corr, cl=cl)
+    if ( nrow(jv.data)>0 & nrow(ad.data)>0 ){
+      data <- list(ad.data=ad.data, jv.data=jv.data)
+      pr.res <- annsm.model.prod(data, offset=visit.corr, cl=cl)
+    }  
+
   } else {
     
     if ( trend > 0 & compare > 0 )

@@ -19,10 +19,12 @@ function(cesdata, early=NA,late=NA, min.visits=1, all.visits=0, exclude=list(yea
   last.visit <- max(cesdata$visit, na.rm=TRUE)
   if( all.visits == 0 ){ # if this is not specified bad things can happen if there are some rogue extra visits 
     all.visits <- last.visit
-    warning(paste('all.visits not specified,', last.visit, 'visits found'), call.=FALSE)
+    wmsg <- paste('all.visits not specified,', last.visit, 'visits found')
+    message(wmsg)
   } else if( all.visits > last.visit ){ # are there fewer visits than there are supposed to be?
     all.visits <- last.visit 
-    warning(paste('all.visits is larger than highest visit number, it has been changed to', last.visit), call.=FALSE)
+    wmsg <- paste('all.visits is larger than highest visit number, it has been changed to', last.visit)
+    warning(wmsg, call.=FALSE)
   } else if( last.visit > all.visits ){ # are there more visits than there are supposed to be?
     nr <- nrow(cesdata[cesdata$visit > all.visits])
     ns <- length(table(cesdata$site[cesdata$visit > all.visits]))
@@ -42,7 +44,8 @@ function(cesdata, early=NA,late=NA, min.visits=1, all.visits=0, exclude=list(yea
       early <- rev(early)
     if( late[1] < late[2] )
       late <- rev(late)
-    warning('first elements of early/late should be greater than second, they have been reversed', call.=FALSE)
+    wmsg <- 'first elements of early/late should be greater than second, they have been reversed'
+    message(wmsg)
   }
   
   # just keep the necessary variables
@@ -102,8 +105,10 @@ function(cesdata, early=NA,late=NA, min.visits=1, all.visits=0, exclude=list(yea
                   nrow(visit.cov[nbirds>0]), 'visits, with',
                   nrow(miss.vis), 'visits missing\n')
   cat(sumtxt)
-  if( nrow(miss.vis) > nrow(visit.cov[nbirds>0])/10 )
-    warning('more than 10% of visits are missing, has all.visits been specified correctly?', call.=FALSE)
+  if( nrow(miss.vis) > nrow(visit.cov[nbirds>0])/10 ){
+    wmsg <- 'more than 10% of visits are missing, has all.visits been specified correctly?'
+    warning(wmsg, call.=FALSE)
+  }
 
   cesdata <- as.data.frame(cesdata) # convert back to df to use extract.sites
   class(cesdata) <- c('ces', 'data', 'data.frame')

@@ -21,13 +21,13 @@ function(x, graph='X', ...){
     
     par(mfrow=c(ngraph,2), mar=c(2,4,1,1), oma=c(1,1,2,1)) 
     if( length(x$ad.results)==3 ){
-      plglm1(x=x$ad.results, ylab="Rel. Abundance: Adults", ... )
+      plglm(x=x$ad.results, ylab="Rel. Abundance: Adults", ... )
     }
     if ( length(x$jv.results)==3 ){
-      plglm1(x=x$jv.results, ylab="Rel. Abundance: Juvs", ... )
+      plglm(x=x$jv.results, ylab="Rel. Abundance: Juvs", ... )
     }
     if ( length(x$pr.results)==3 ){
-      plglm1(x=x$pr.results, ylab="Productivity Index", ... )
+      plglm(x=x$pr.results, ylab="Productivity Index", ... )
     }
     title(main=sprintf("Annual indices for %s",x$spp.name), outer=TRUE)
     

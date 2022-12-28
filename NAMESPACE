@@ -14,6 +14,7 @@ importFrom("data.table", "data.table", "setkey", "setnames")
 importFrom("reshape", "cast", "melt")
 importFrom("utils", "write.csv")
 importFrom("mgcv", "gam")
+importFrom("lme4", "glmer")
 
 S3method(summary, ces)
 S3method(plot, ces)
@@ -30,7 +31,7 @@ export(
 	map.ces,
 	mark.ces,
 	plot.ces,
-	plot.trend,
+	plot_trend,
   print.ces,
 	readces,
 	readBTO,
@@ -46,9 +47,10 @@ export(
 )
 
 ## Not exported:
-# ann.model.counts, ann.model.prod, annc.model.counts, annc.model.prod, 
+# ann.model.counts, ann.model.prod, annr.model.counts, annr.model.prod
 # annt.model.counts, annt.model.prod, annsm.model.counts, annsm.model.prod 
-# plot.ces.counts, plot.ces.data, plot.ces.glmfit, plot.ces.markfit, plot.ces.plots, lot.ces.ch
+# annc.model.counts, annc.model.prod 
+# plot.ces.counts, plot.ces.data, plot.ces.glmfit, plot.ces.markfit, plot.ces.plots, plot.ces.ch
 # summary.ces.ch, summary.ces.counts, summary.ces.glmfit, summary.ces.markfit, summary.ces.plots, summary.ces.sites, summary.ces.spp
 # writeces.counts, writeces.glmfit, writeces.plots, writeces.sites, writeces.spp
 # calc.offset, get.estimate, plglm, prsumglm, yrsum 

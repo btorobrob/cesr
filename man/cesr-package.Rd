@@ -13,7 +13,7 @@ Facilities for reading EuroCES data in Euring format to produce annual indices o
 Package: \tab cesr\cr
 Type: \tab Package\cr
 Version: \tab 1.0.0\cr
-Date: \tab 2022-12-20\cr
+Date: \tab 2022-12-28\cr
 License: \tab GPL-2\cr
 LazyLoad: \tab yes\cr
 }
@@ -28,7 +28,7 @@ The key steps are:
 
 (iv) generate the annual abundance/productivity indices (with \code{\link{index}}). 
 
-Adult survival probabilities can be estimated by first using \code{\link{extract.ch}} then \code{\link{mark.ces}}. Results can be plotted using \code{\link{plot.trend}}. More details on how to do each of these can be found in the introductory manual, type  
+Adult survival probabilities can be estimated by first using \code{\link{extract.ch}} then \code{\link{mark.ces}}. Results can be plotted using \code{\link{plot_trend}}. More details on how to do each of these can be found in the introductory manual, type  
 
 vignette('cesr-intro')
 

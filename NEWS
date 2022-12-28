@@ -1,5 +1,8 @@
 Changes in version 1.0.0
 ==============
+- 28122022 - renamed plot.trend() as plot_trend()
+- 28122022 - added fitting of random effects in index()
+- 20122022 - added fitting of smoothed trends in index()
 - 16122022 - major bug fixed in productivity trend
 - 16122022 - add error log to readces() to facilitate review of errors
 

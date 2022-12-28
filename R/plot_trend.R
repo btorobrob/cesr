@@ -1,4 +1,4 @@
-plot.trend <-
+plot_trend <-
 function(x, type='', group=NULL, file=NULL, width=480, height=480, units='px', ylab='', ylim=c(0,0), xlim=c(0,0), lty=c(1,2), lcol='black', line=NA, rlty=3, rcol='black', lwd=1, annual=FALSE, pch=19, pcol='black', ...){  
     
   if( type=='' & class(x)[2]=='markfit' ) 

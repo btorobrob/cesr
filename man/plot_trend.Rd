@@ -1,5 +1,5 @@
-\name{plot.trend}
-\alias{plot.trend}
+\name{plot_trend}
+\alias{plot_trend}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 Plot CES trend
@@ -8,7 +8,7 @@ Plot CES trend
 Plots an estimated trend from CES data either to the screen or to a file.
 }
 \usage{
-plot.trend(x, type, group=NULL, file = NULL, width=480, height=480, units='px', ylab='', ylim=c(0,0), xlim=c(0,0), lty=c(1,2), lcol='black', line=NA, rlty=3, rcol='black', lwd=1, annual=FALSE, pch=19, pcol='black', ...)
+plot_trend(x, type, group=NULL, file = NULL, width=480, height=480, units='px', ylab='', ylim=c(0,0), xlim=c(0,0), lty=c(1,2), lcol='black', line=NA, rlty=3, rcol='black', lwd=1, annual=FALSE, pch=19, pcol='black', ...)
 }
 \arguments{
   \item{x}{

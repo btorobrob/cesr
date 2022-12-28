@@ -5,12 +5,10 @@ function(x, compare=1, offset=TRUE, cl=0.95){
   if ( compare >= nyrs ) 
     stop("Not enough years to compare with\n")
 
-  if (offset) {
+  x$offset <- 0
+  if (offset) 
     x$offset <- ifelse(x$corrcaps > x$totcaps, log(x$totcaps/x$corrcaps), 0)
-  } else {
-    x$offset <- 0
-  }
- 
+
   ybreak <- max(x$year) - compare - 1
   yearf <- ifelse ( x$year > ybreak, 1, x$year )
   yearf[x$year==max(x$year)] <- max(x$year)

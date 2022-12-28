@@ -1,12 +1,10 @@
 annt.model.counts <-
 function(x, year=-1, trend=100, offset=TRUE, cl=0.95){
 
-  if ( offset ) {
-    x$offset <- ifelse ( x$corrcaps > x$totcaps, log(x$totcaps/x$corrcaps), 0 )
-  } else {
-    x$offset <- 0
-  }
-  
+  x$offset <- 0
+  if ( offset ) 
+    x$offset <- ifelse (x$corrcaps > x$totcaps, log(x$totcaps/x$corrcaps), 0)
+
   nyrs <- max(x$year) - min(x$year) + 1
   if ( trend > nyrs )
     trend <- nyrs

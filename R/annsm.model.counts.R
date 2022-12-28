@@ -1,12 +1,10 @@
 annsm.model.counts <-
 function(x, offset=TRUE, cl=0.95){
 
-  if ( offset ) {
-    x$offset <- ifelse ( x$corrcaps > x$totcaps, log(x$totcaps/x$corrcaps), 0 )
-  } else {
-    x$offset <- 0
-  }
-  
+  x$offset <- 0
+  if ( offset ) 
+    x$offset <- ifelse (x$corrcaps > x$totcaps, log(x$totcaps/x$corrcaps), 0)
+
   if( length(table(x$site)) > 1 )
     x.gam <- gam(totcaps ~ as.factor(site) + s(year), family="quasipoisson", offset=offset, data=x)
   else

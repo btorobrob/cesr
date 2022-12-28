@@ -5,12 +5,10 @@ function(x, year=-1, offset=TRUE, cl=0.95){
     year <- max(x$year)
   x$year <- relevel(factor(x$year), which(levels(factor(x$year))==year))
  
-  if ( offset ) {
-    x$offset <- ifelse(x$corrcaps > x$totcaps, log(x$totcaps/x$corrcaps), 0 )
-  } else {
-    x$offset <- 0
-  }
- 
+  x$offset <- 0
+  if ( offset ) 
+    x$offset <- ifelse(x$corrcaps > x$totcaps, log(x$totcaps/x$corrcaps), 0)
+
   if( length(table(x$site)) > 1 ) 
     x.lm <- glm(totcaps ~ as.factor(site) + year, family="quasipoisson", offset=offset, data=x)
   else

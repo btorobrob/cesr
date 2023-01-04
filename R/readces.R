@@ -249,7 +249,7 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, verbose=FALSE){
     
     # first check for decimal degrees
     if( any(as.numeric(substr(coords,4,4)) > 5) ){ # i.e. there are minutes > 50
-      message <- 'Reading in coordinates as decimal degrees'
+      wmessage <- 'Reading in coordinates as decimal degrees'
       message(wmessage)
 
       result [ , lat := as.integer(substr(coords,1,7))/10000]

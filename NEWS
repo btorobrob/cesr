@@ -1,9 +1,11 @@
 Changes in version 1.0.0
 ==============
+- 04012023 - readces() now rounds coordinates to 3 d.p. (~0.1 km)
 - 28122022 - renamed plot.trend() as plot_trend()
 - 28122022 - added fitting of random effects in index()
 - 20122022 - added fitting of smoothed trends in index()
 - 16122022 - major bug fixed in productivity trend
+- 16122022 - add a fix= argument to readces() to correct some errors
 - 16122022 - add error log to readces() to facilitate review of errors
 
 Changes in version 0.51.1

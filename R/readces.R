@@ -284,8 +284,8 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, verbose=FALSE){
         c1 <- suppressWarnings(as.integer(substr(coords,9,11)))
         c2 <- suppressWarnings(as.integer(substr(coords,12,13)))/60
         c3 <- suppressWarnings(as.integer(substr(coords,14,15)))/3600
-        if( max(c2, c3, na.rm=TRUE) > 60 ){
-          wmessage <- "values greater than 60 detected in longtitude minutes/seconds, check coordinate format"
+        if( max(c2, c3, na.rm=TRUE) > 59 ){
+          wmessage <- "values greater than 59 detected in longtitude minutes/seconds, check coordinate format"
           warning(wmessage, call.=FALSE, immediate.=TRUE)
         }
         result [ , long := ew * (c1 + c2 + c3)]
@@ -299,37 +299,39 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, verbose=FALSE){
         c1 <- suppressWarnings(as.integer(substr(coords,9,10)))
         c2 <- suppressWarnings(as.integer(substr(coords,11,12))/60)
         c3 <- suppressWarnings(as.integer(substr(coords,13,14))/3600)
-        if( max(c2, c3, na.rm=TRUE) > 60 ){
-          wmessage <- "values greater than 60 detected in longitude minutes/seconds, check coordinate format"
+        if( max(c2, c3, na.rm=TRUE) > 59 ){
+          wmessage <- "values greater than 59 detected in longitude minutes/seconds, check coordinate format"
           warning(wmessage, call.=FALSE, immediate.=TRUE)
         }
         result [ , long := ew * (c1 + c2 + c3)]
       } else {
         result [ , long := NA]
       }   
-      result[ , coords := NULL ]
-      
     } # end of the Euring format block
 
+    result[ , coords := NULL ] # tidy-up
   } # end of reading in the coordinates 
   
-  # now do a final check
+  # now do a final check and tidy
   if( sum(colnames(result) %in% c("lat","long")) != 2 ) {
     wmessage <- paste('Coordinates not recognised, check you have either a coords or lat & long columns')
     warning(wmessage, call.=FALSE, immediate.=TRUE)
-  }    
-
-  # now check that sites have only one set of coordinates
-  check.sites <- table(unique(result[ , c('sitename', 'lat', 'long')])$sitename)
-  if( length(table(check.sites)) > 1 ){
-    dodgy <- dimnames(check.sites)[[1]][check.sites > 1]
-    if( length(dodgy) == 1 )
-      wmessage <- paste("Site", dodgy, "has multiple coordinates")
-    else
-      wmessage <- paste("Sites:", paste(dodgy, collapse=', '), "have multiple coordinates")
-    warning(wmessage, call.=FALSE, immediate.=TRUE)
+  } else {
+    # check that sites have only one set of coordinates
+    check.sites <- table(unique(result[ , c('sitename', 'lat', 'long')])$sitename)
+    if( length(table(check.sites)) > 1 ){
+      dodgy <- dimnames(check.sites)[[1]][check.sites > 1]
+      if( length(dodgy) == 1 )
+        wmessage <- paste("Site", dodgy, "has multiple coordinates")
+      else
+        wmessage <- paste("Sites:", paste(dodgy, collapse=', '), "have multiple coordinates")
+      warning(wmessage, call.=FALSE, immediate.=TRUE)
+      if( fix ) # averages to give one coordinate per site 
+        result[ , c('lat','long') := lapply(.SD,mean), .SDcols=c('lat','long'), by=list(sitename)]
+     }
+    roundc <- function(x) floor(1000*x)/1000 # so consistently bottom-left
+    result[ , c('lat','long') := lapply(.SD,roundc), .SDcols=c('lat','long')]
   }
-  
   # check NetLengths
   if( !is.integer(result$netlength) ){
     netl <- unique(result$netlength)
@@ -420,8 +422,17 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, verbose=FALSE){
     write.csv(report.data, file=errfile, row.names=FALSE, quote=FALSE)
   }
   
-  result[ , ':='(age_in=NULL, sex_in=NULL, RowNo=NULL) ] # tidy up
+  # tidy up and order nicely
+  result[ , ':='(age_in=NULL, sex_in=NULL, RowNo=NULL) ] 
   
+  col.order=c("countryID", "sitename", "site", "lat", "long", "habitat", "netlength",
+              "visit", "julian", "day", "month", "year", "StartTime", "EndTime", 
+              "scheme", "ring", "species", "age", "sex", "race",
+              "wing", "weight", "p3", "brood", "moult", "fat", "weighTime")
+  setcolorder(result, col.order[which(col.order %in% names(result))])
+  if( fix )
+    setorder(result, sitename, year, visit, species, ring)
+
   result <- as.data.frame(result)
   class(result) <- c('ces', 'data', 'data.frame')
   return(result)

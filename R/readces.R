@@ -177,29 +177,30 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, verbose=FALSE){
   }
   
   # check visits
+  result[ , visit := as.character(visit)]
+  na.visit <- sum(is.na(result$visit))
+  if( na.visit > 0 ){
+    wmessage <- paste(na.visit, "records without a visit number deleted")
+    warning(wmessage, call.=FALSE, immediate.=TRUE)
+    result <- result[!is.na(visit)]
+  }
   if( length(visits) == 1 & visits == 'std' ){
-    if( is.character(result$visit) ){
-      stdv <- c ('1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13')
-      result <- result[visit %in% stdv]
+    stdv <- c ('1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13')
+    n.extra <- length(result$visit[!result$visit%in%stdv])
+    wmessage <- paste(n.extra, ifelse(n.extra==1, "encounter", "encounters"), "on non-standard visits removed")
+    message(wmessage)   
+    result <- result[visit %in% stdv]
+    result[ , visit := as.integer(visit)]
+  } else {
+    if ( length(visits) > 1 )
+      result <- result[visit %in% visits, ]
+    if( any(is.na(suppressWarnings(as.integer(result$visit)))) ){
+      wmessage <- "visit will be treated as character"
+      message(wmessage)
+    } else 
       result[ , visit := as.integer(visit)]
-    }
-    na.visit <- sum(is.na(result$visit))
-    if( na.visit > 0 ){
-      wmessage <- paste(na.visit, "records without a visit number deleted")
-      warning(wmessage, call.=FALSE, immediate.=TRUE)
-      result <- result[!is.na(visit)]
-    }
-    na.visit <- sum(!result$visit %in% seq(1,13))
-    if( na.visit > 0 ){
-      wmessage <- paste(na.visit, "records with a visit number outside the range 1-13 deleted")
-      warning(wmessage, call.=FALSE, immediate.=TRUE)
-      result <- result[result$visit %in% seq(1,13)]
-    }
-    
-  } else if ( length(visits) > 1 )
-    result <- result[visit %in% visits, ]
-    ## Note this means that visit might be either numeric or character!
-
+  }
+  
   # and that dates are numeric
   nmissd <- nmissm <- nmissy <- 0 # just so the if lower down doesn't fail
   if( !is.integer(result$day) ){
@@ -323,6 +324,9 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, verbose=FALSE){
     } # end of the Euring format block
 
     result[ , coords := NULL ] # tidy-up
+    # do the rounding first to minimise effects of very small differences
+    roundc <- function(x) floor(1000*x)/1000 # so consistently bottom-left
+    result[ , c('lat','long') := lapply(.SD,roundc), .SDcols=c('lat','long')]
   } # end of reading in the coordinates 
   
   # now do a final check and tidy
@@ -334,16 +338,18 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, verbose=FALSE){
     check.sites <- table(unique(result[ , c('sitename', 'lat', 'long')])$sitename)
     if( length(table(check.sites)) > 1 ){
       dodgy <- dimnames(check.sites)[[1]][check.sites > 1]
-      if( length(dodgy) == 1 )
-        wmessage <- paste("Site", dodgy, "has multiple coordinates")
-      else
-        wmessage <- paste("Sites:", paste(dodgy, collapse=', '), "have multiple coordinates")
+      wmessage <- paste(length(dodgy), "sites have multiple coordinates")
+      message(wmessage)
+      coordacc <- function(x) max(abs(max(x)-min(x)))
+      result[ , c('lata','lona') := lapply(.SD,coordacc), .SDcols=c('lat','long'), by=list(sitename)]
+      dodgy <- result[!duplicated(result$sitename), c('sitename','lata','lona')]
+      dodgy <- dodgy$sitename[dodgy$lata > 0.1 | dodgy$lona > 0.1]
+      wmessage <- paste("sites:", paste(dodgy, collapse=", "), "have coordinates >10km apart")
       warning(wmessage, call.=FALSE, immediate.=TRUE)
+      
       if( fix ) # averages to give one coordinate per site 
         result[ , c('lat','long') := lapply(.SD,mean), .SDcols=c('lat','long'), by=list(sitename)]
      }
-    roundc <- function(x) floor(1000*x)/1000 # so consistently bottom-left
-    result[ , c('lat','long') := lapply(.SD,roundc), .SDcols=c('lat','long')]
   }
   # check NetLengths
   if( !is.integer(result$netlength) ){

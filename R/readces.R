@@ -187,8 +187,10 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, verbose=FALSE){
   if( length(visits) == 1 & visits == 'std' ){
     stdv <- c ('1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13')
     n.extra <- length(result$visit[!result$visit%in%stdv])
-    wmessage <- paste(n.extra, ifelse(n.extra==1, "encounter", "encounters"), "on non-standard visits removed")
-    message(wmessage)   
+    if( n.extra > 0 ){
+      wmessage <- paste(n.extra, ifelse(n.extra==1, "encounter", "encounters"), "on non-standard visits removed")
+      message(wmessage)
+    }   
     result <- result[visit %in% stdv]
     result[ , visit := as.integer(visit)]
   } else {
@@ -232,7 +234,7 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, verbose=FALSE){
   if( non.summer > 0 ){
     if( verbose )
       rows2corr <- c(rows2corr, result[month < 4 | month > 9, ][ , RowNo])
-    wmessage <- paste(non.summer, 'records outside the period April to September, is this expected?')
+    wmessage <- paste(non.summer, ifelse(non.summer==1,'record','records'), 'outside the period April to September, is this expected?')
     warning(wmessage, call.=FALSE, immediate.=TRUE)
     warning.flag <- 1
   }
@@ -365,7 +367,7 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, verbose=FALSE){
   nzero <- result[netlength == 0, .N]
   if( nzero > 0 ){
     result[netlength == 0, netlength := NA]
-    wmessage <- paste('net length of zero detected in', nzero, 'records; these set to NA')
+    wmessage <- paste('net length of zero detected in', nzero, ifelse(nzero==1,'record','records'), '; these set to NA')
     message(wmessage)
   }
 

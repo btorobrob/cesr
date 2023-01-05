@@ -18,7 +18,7 @@ readBTO(file, species)
 A valid filename
 }
   \item{visits}{
-Either 'std' to include only standard (numbered up to 12) visits, or a (character) vector listing allowed visit identifiers.  
+Either 'std' to include only standard (numbered up to 13) visits, 'all' to do no checking, or a (character) vector listing allowed visit identifiers.  
 }
   \item{group.race}{
 Aggregate records of different races (i.e. those where the last digit of the Euring code is not zero)?
@@ -40,6 +40,7 @@ If fix=TRUE then the function will change records as follows:
 - records aged as 3 in any year other than that of first encounter will be changed to 4.
 where possible the function will indicate how many records have been fixed.
 - sites with multiple coordinates will be be assigned their average location (across rows)
+- rows will be ordered by site, followed by year, visit, species and ring number
 }
 \value{
 A dataframe with (at a minimum) the following columns: countryID (where the scheme is), sitename(as referred by the scheme), site (a sequential numeric identifier), habitat, visit (number), day, month, year, netlength, scheme (of the ring), ring, species, sex, age, race, julian (day), lat, long. Unrecognised columns in the datafile will be removed. 

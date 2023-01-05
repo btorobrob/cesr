@@ -36,6 +36,7 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, verbose=FALSE){
   col.names <- var.names[col.numbers]
   
   result <- suppressWarnings(data.table::fread(file))
+  n.read <- nrow(result)
   # use suppressWarnings to avoid messages about bumping col classes late in the data
   setnames(result, col.names)
   result <- result[ , RowNo:=row.names(.SD)]
@@ -176,17 +177,29 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, verbose=FALSE){
   }
   
   # check visits
-  if( is.character(result$visit) ){
-    setkey(result, visit)
-    if( length(visits) == 1 & visits == 'std' ){
-      stdv <- c ('1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12')
+  if( length(visits) == 1 & visits == 'std' ){
+    if( is.character(result$visit) ){
+      stdv <- c ('1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13')
       result <- result[visit %in% stdv]
       result[ , visit := as.integer(visit)]
-    } else if ( length(visits) > 1 )
-      result <- result[visit %in% visits, ]
-      ## Note this means that visit might be either numeric or character!
-  } 
-  
+    }
+    na.visit <- sum(is.na(result$visit))
+    if( na.visit > 0 ){
+      wmessage <- paste(na.visit, "records without a visit number deleted")
+      warning(wmessage, call.=FALSE, immediate.=TRUE)
+      result <- result[!is.na(visit)]
+    }
+    na.visit <- sum(!result$visit %in% seq(1,13))
+    if( na.visit > 0 ){
+      wmessage <- paste(na.visit, "records with a visit number outside the range 1-13 deleted")
+      warning(wmessage, call.=FALSE, immediate.=TRUE)
+      result <- result[result$visit %in% seq(1,13)]
+    }
+    
+  } else if ( length(visits) > 1 )
+    result <- result[visit %in% visits, ]
+    ## Note this means that visit might be either numeric or character!
+
   # and that dates are numeric
   nmissd <- nmissm <- nmissy <- 0 # just so the if lower down doesn't fail
   if( !is.integer(result$day) ){
@@ -422,6 +435,10 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, verbose=FALSE){
     write.csv(report.data, file=errfile, row.names=FALSE, quote=FALSE)
   }
   
+  n.out <- nrow(result)
+  wmessage <- paste(n.read, "rows were read in,", n.out, "rows were retained")
+  message(wmessage)
+  
   # tidy up and order nicely
   result[ , ':='(age_in=NULL, sex_in=NULL, RowNo=NULL) ] 
   
@@ -432,7 +449,7 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, verbose=FALSE){
   setcolorder(result, col.order[which(col.order %in% names(result))])
   if( fix )
     setorder(result, sitename, year, visit, species, ring)
-
+  
   result <- as.data.frame(result)
   class(result) <- c('ces', 'data', 'data.frame')
   return(result)

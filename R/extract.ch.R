@@ -97,7 +97,7 @@ function(cesdata, species=0, plots=NULL, late=FALSE, group=NA, exclude=NULL, min
     yearsum <- yearsum[!zero.ch]
   }
   # get siteno from ind
-  yearsum[ , site := as.integer(matrix(unlist(strsplit(ind, '_')), ncol=2, byrow=TRUE)[ , 2])]
+  yearsum[ , site := as.integer(matrix(unlist(strsplit(ind, '_')), ncol=3, byrow=TRUE)[ , 3])]
   # and get site coverage for each individual
   yearsum <- merge(yearsum, cov, by='site') # WARNING: code below relies on site being first col then sum20xx columns
  
@@ -111,8 +111,9 @@ function(cesdata, species=0, plots=NULL, late=FALSE, group=NA, exclude=NULL, min
   sitenames <- unique(cesdata$sitename)
   sitenames <- data.frame(site=as.integer(sitenames), sitename=as.character(sitenames))
   yearsum <- merge(yearsum, sitenames, by='site', all.x=TRUE)
-  # ... and the ring number
-  yearsum[ , ring := matrix(unlist(strsplit(as.character(ind),'_')), ncol=2, byrow=TRUE)[ , 1]]
+  # ... and the ring number, need to account for two '_' now
+  yearsum[ , ring := apply(matrix(unlist(strsplit(as.character(ind),'_')), ncol=3, byrow=TRUE),
+                           1, function(x) paste(x[1], x[2], sep="_"))]
   # and tidy up!
   yearsum <- yearsum[ , list(ring, ch, site, sitename)]
   

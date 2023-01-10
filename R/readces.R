@@ -14,6 +14,22 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, verbose=FALSE){
 
   # get column names and work out how many
   coln <- strsplit(readLines(file, n=1), '[,;]')[[1]]
+  
+  # first check whether this is already an output of readces()
+  final.names <- c("countryID", "sitename", "site", "lat", "long", "habitat",
+                   "netlength", "visit", "julian", "day", "month", "year",
+                   "StartTime", "EndTime", "scheme", "ring", "species", "age",
+                   "sex", "race", "wing", "weight", "p3", "brood", "moult", 
+                   "fat", "weighTime")
+  if( sum(coln%in%final.names) == length(coln) ){
+    # names match, so hopefully already in the right format
+    message("Reading in a formatted CES data file")
+    result <- suppressWarnings(data.table::fread(file))
+    result <- as.data.frame(result)
+    class(result) <- c('ces', 'data', 'data.frame')
+    return(result)
+  }
+
   # short form names
   var.names <- c('countryID', 'siteID', 'coords', 'habitat', 'visit',
                  'day', 'month', 'year', 'netlength', 'StartTime', 'EndTime',
@@ -39,17 +55,21 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, verbose=FALSE){
   n.read <- nrow(result)
   # use suppressWarnings to avoid messages about bumping col classes late in the data
   setnames(result, col.names)
-  result <- result[ , RowNo:=row.names(.SD)]
-  setcolorder(result, "RowNo")
 
   # duplicates indicate something is amiss
   duplicated.cols <- which(duplicated(col.names))
   if( any(duplicated.cols) == TRUE ){ 
-    wmsg <- paste('Unrecognised columns', paste(duplicated.cols, collapse=', '), 'removed')
-    warning(wmsg, call.=FALSE, immediate.=TRUE)
+    wmessage <- paste('Unrecognised columns', paste(coln[duplicated.cols], collapse=', '), 'removed')
+    warning(wmessage, call.=FALSE, immediate.=TRUE)
     result <- subset(result, select=col.names[-duplicated.cols])
   }
+
+  result <- result[ , RowNo:=row.names(.SD)]
+  setcolorder(result, "RowNo")
   
+  # combine scheme and ring number to ensure unique identifiers
+  result[ , ring := paste0(result$scheme, "_", gsub('[.]','',result$ring))]
+
   # Check for unknown species
   unknown_spp <- nrow(result[species==0 | species==99999, ])
   if( unknown_spp > 0 ){
@@ -326,9 +346,6 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, verbose=FALSE){
     } # end of the Euring format block
 
     result[ , coords := NULL ] # tidy-up
-    # do the rounding first to minimise effects of very small differences
-    roundc <- function(x) floor(1000*x)/1000 # so consistently bottom-left
-    result[ , c('lat','long') := lapply(.SD,roundc), .SDcols=c('lat','long')]
   } # end of reading in the coordinates 
   
   # now do a final check and tidy
@@ -336,11 +353,15 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, verbose=FALSE){
     wmessage <- paste('Coordinates not recognised, check you have either a coords or lat & long columns')
     warning(wmessage, call.=FALSE, immediate.=TRUE)
   } else {
+    # do the rounding first to minimise effects of very small differences
+    roundc <- function(x) floor(1000*x)/1000 # so consistently bottom-left
+    result[ , c('lat','long') := lapply(.SD,roundc), .SDcols=c('lat','long')]
+
     # check that sites have only one set of coordinates
     check.sites <- table(unique(result[ , c('sitename', 'lat', 'long')])$sitename)
     if( length(table(check.sites)) > 1 ){
       dodgy <- dimnames(check.sites)[[1]][check.sites > 1]
-      wmessage <- paste(length(dodgy), "sites have multiple coordinates")
+      wmessage <- paste(length(dodgy), "site(s) have multiple coordinates")
       message(wmessage)
       coordacc <- function(x) max(abs(max(x)-min(x)))
       result[ , c('lata','lona') := lapply(.SD,coordacc), .SDcols=c('lat','long'), by=list(sitename)]
@@ -348,10 +369,13 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, verbose=FALSE){
       dodgy <- dodgy$sitename[dodgy$lata > 0.1 | dodgy$lona > 0.1]
       wmessage <- paste("sites:", paste(dodgy, collapse=", "), "have coordinates >10km apart")
       warning(wmessage, call.=FALSE, immediate.=TRUE)
+      result[ , ':=' (lata=NULL, lona=NULL) ]
       
-      if( fix ) # averages to give one coordinate per site 
+      if( fix ){ # averages to give one coordinate per site 
         result[ , c('lat','long') := lapply(.SD,mean), .SDcols=c('lat','long'), by=list(sitename)]
-     }
+        result[ , c('lat','long') := lapply(.SD,roundc), .SDcols=c('lat','long')]
+      }
+    }
   }
   # check NetLengths
   if( !is.integer(result$netlength) ){
@@ -381,9 +405,7 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, verbose=FALSE){
     warning(wmessage, call.=FALSE, immediate.=TRUE)
   }
   result[ , habitat := as.factor(habitat)]
-  
-  result[ , scheme := as.factor(scheme)]
-  
+
   # rudimentary biometric checks for now
   # check for commas rather than decimal points
   if( is.character(result$wing) )
@@ -404,7 +426,7 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, verbose=FALSE){
     }  
   } 
   if( is.character(result$weight) )
-    result$weight <- suppressWarnings(as.numeric(gsub(",", ".", result$weight, fixed=TRUE)))
+    result[ , weight := suppressWarnings(as.numeric(gsub(",", ".", weight, fixed=TRUE)))]
   if( is.numeric(result$weight) ){
     result[weight == 0, weight := NA]
     too.long <- unique(result$species[result$weight > 150 & !is.na(result$weight)])
@@ -448,7 +470,7 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, verbose=FALSE){
   message(wmessage)
   
   # tidy up and order nicely
-  result[ , ':='(age_in=NULL, sex_in=NULL, RowNo=NULL) ] 
+  result[ , ':='(scheme=NULL, age_in=NULL, sex_in=NULL, RowNo=NULL) ] 
   
   col.order=c("countryID", "sitename", "site", "lat", "long", "habitat", "netlength",
               "visit", "julian", "day", "month", "year", "StartTime", "EndTime", 

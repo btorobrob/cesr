@@ -1,3 +1,7 @@
+Changes in version 1.0.1
+==============
+- 10012023 - readces() now combines scheme and ring number for unique identifier 
+
 Changes in version 1.0.0
 ==============
 - 04012023 - readces() now rounds coordinates to 3 d.p. (~0.1 km)

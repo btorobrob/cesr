@@ -130,7 +130,7 @@ function(cesobj, species=NA, columns=c("A-0", "P-0", "S-0"), plots=NULL, min.n=1
           class(res[[ctr]]) <- c('ces', 'glmfit')
           table.est[i, j] <- get.estimate(res[[ctr]], mtype='constant', cl=conf.lim, ndigits=ndigits) 
         } else if( mtype == '/' ){ # a trend model  
-          res[[ctr]] <- list(pr.results = annt.model.prod1(pr.data, trend=nyear, offset=visit.corr),
+          res[[ctr]] <- list(pr.results = annt.model.prod(pr.data, trend=nyear, offset=visit.corr),
                              model.type = list(type='trend', refyear=year, nyrs=nyear), limits=0.95,
                              spp = spp.data$spp, spp.name = spp.data$spp.name)
           class(res[[ctr]]) <- c('ces', 'glmfit')

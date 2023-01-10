@@ -58,7 +58,7 @@ In the ch plots, because birds are possibly caught twice in their first year, 'O
 }
 
 \seealso{
-\code{\link{plot.trend}}
+\code{\link{plot_trend}}
 }
 \examples{
 data(ukdata)

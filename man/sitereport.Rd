@@ -39,6 +39,8 @@
   Rob Robinson
 }
 \examples{
-  data(ukdata)
+\dontrun{
+data(ukdata)
   sitereport(ukdata, sitelist=c('656','420'))
+}
 }

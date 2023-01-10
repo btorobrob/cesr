@@ -7,7 +7,7 @@ function(cesobj, type='c', xlim=c(-20,30), ylim=c(35,70), pch=21, col=c('white',
   if( class(cesobj)[1]!='ces' )
        stop("No ces data\n")
   if( class(cesobj)[2]=='data' ){
-    x <- cesobj[!duplicated(cesobj$sitename), ]
+    x <- cesobj[!duplicated(paste0(cesobj$countryID, "_", cesobj$sitename)), ]
   } else if( class(cesobj)[2]=='plots' ){
     x <- cesobj$sites
   } else if( class(cesobj)[2]=='sites' ){

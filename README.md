@@ -12,4 +12,4 @@ The key steps are:
 
 Adult survival probabilities can be estimated by first using extract.ch(), then mark.ces().
 
-More details on how to do each of these can be found in the introductory manual (cesr-intro.pdf) and in the helpfiles to each function.
+More details on how to do each of these can be found in the introductory manual ([cesr-intro.pdf](https://drive.google.com/file/d/17025jOoRnyV0UsyMtEq0LOq8dErhDjFL/view?usp=share_link)) and in the helpfiles to each function.

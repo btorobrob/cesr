@@ -42,7 +42,7 @@ function(x, year=-1, trend=100, offset=TRUE, cl=0.95){
     if( length(table(x$site)) > 1 )
       x.lm <- glm(as.matrix(cbind(jvcaps,adcaps)) ~ as.factor(site) + yeart, family=quasibinomial, offset=offset, data=x)
     else
-      x.lm <- glm(as.matrix(cbind(jvcaps,adaps)) ~ yeart, family=quasibinomial, offset=offset, data=x)
+      x.lm <- glm(as.matrix(cbind(jvcaps,adcaps)) ~ yeart, family=quasibinomial, offset=offset, data=x)
 
     newdata <- as.data.frame(cbind(site=rep(min(x$site),nyrs)))
     newdata$yeart <- c(min(x$yeart):max(x$yeart))

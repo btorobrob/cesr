@@ -1,3 +1,8 @@
+Changes in version 1.0.2
+==============
+- 03052023 - add ces.table() function to automate some of the models
+- 03052023 - add rankings for each year to the output dataframe
+
 Changes in version 1.0.1
 ==============
 - 10012023 - readces() now combines scheme and ring number for unique identifier 

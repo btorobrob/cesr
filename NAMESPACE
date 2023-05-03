@@ -27,6 +27,7 @@ export(
 	extract.coverage,
 	extract.data,
 	extract.sites,
+  get.euring,
 	index,
 	map.ces,
 	mark.ces,

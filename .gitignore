@@ -4,3 +4,5 @@
 .RDataTmp
 .Ruserdata
 inst/doc
+markfiles
+all*.csv

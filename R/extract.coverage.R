@@ -106,8 +106,9 @@ function(cesdata, early=NA,late=NA, min.visits=1, all.visits=0, exclude=list(yea
                   nrow(miss.vis), 'visits missing\n')
   cat(sumtxt)
   if( nrow(miss.vis) > nrow(visit.cov[nbirds>0])/10 ){
-    wmsg <- 'more than 10% of visits are missing, has all.visits been specified correctly?'
-    warning(wmsg, call.=FALSE)
+    ppn.miss <- floor(100*nrow(miss.vis)/nrow(visit.cov[nbirds>0]))
+    wmsg <- paste(ppn.miss, 'more than 10% of visits are missing, has all.visits been specified correctly?')
+    warning(wmsg, call.=FALSE, immediate. = TRUE)
   }
 
   cesdata <- as.data.frame(cesdata) # convert back to df to use extract.sites

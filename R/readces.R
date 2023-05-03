@@ -1,9 +1,11 @@
+# check for duplicate rows on a day - is this a merge problem
+# check for multiple net lengt
 readces <-
 function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, verbose=FALSE){
   
   # create a blank vector for collecting dodgy records, set here so we know it exists
   rows2corr <- numeric()
-  report.cols <- c("RowNo", "ring", "species", "age_in", "sex_in", "day", "month", "year")
+  report.cols <- c("RowNo", "ring", "species", "sitename", "age_in", "sex_in", "day", "month", "year")
   warning.flag <- 0 # if any warnings arise (probable) suggest setting verbose to TRUE
 
   if( is.null(file) )
@@ -41,10 +43,10 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, verbose=FALSE){
                  'total_net_length', 'ring_scheme', 'ring_number', 'brood_patch_score', 
                  'wing_length', 'mass', 'body_mass', 'time_of_weighing', 'length_p3', 
                  'fat_score', 'moult_state', 'habitat_type', 'start', 'end',
-                 'latitude', 'longitude', 'lon')
+                 'latitude', 'longitude', 'lon', 'visitno', 'cessite')
   # map back to the main list
   column_nos <- c(1:25, 1, 2, 2, 3, 3, 5, 10, 11, 9, 12, 13, 17, 19, 20, 20, 21,
-                  22, 23, 18, 4, 10, 11, 24, 25, 25)
+                  22, 23, 18, 4, 10, 11, 24, 25, 25, 5, 2)
   
   match.names <- adist(tolower(coln), tolower(c(var.names, alt.names)))
   which.names <- unlist(apply(match.names, 1, which.min))

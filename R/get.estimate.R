@@ -1,6 +1,7 @@
 get.estimate <- 
-function(x, mtype, ndigits=2, cl=TRUE){
+function(x, mtype, base=0, ndigits=2, cl=TRUE, change=FALSE){
   
+  fmt <- paste0("%.", ndigits, "f")
   if( mtype == 'annual' ){
     
     parms <- x[[1]]$parms
@@ -15,40 +16,59 @@ function(x, mtype, ndigits=2, cl=TRUE){
       delta_ind <- 1 / (parms[parms$years==fyear, c('index', 'lcl', 'ucl')])
       delta_ind <- delta_ind[c(1, 3, 2)] # need to reverse lcl, ucl
     }
-    delta_ind[delta_ind < 1] <- round(-100 * (1-delta_ind[delta_ind < 1]), ndigits)
-    delta_ind[delta_ind >= 1] <- round(100 * (delta_ind[delta_ind >= 1]-1), ndigits)
-    delta_ind[delta_ind > 1000] <- '>1000%'
+    if( base==1 ){
+      delta_ind[delta_ind < 1] <- round(-1 * (1-delta_ind[delta_ind < 1]), ndigits)
+      delta_ind[delta_ind >= 1] <- round(1 * (delta_ind[delta_ind >= 1]-1), ndigits)
+      delta_ind[delta_ind > 1000] <- '>10x'
+    } else if( base==100 ){
+      delta_ind[delta_ind < 1] <- round(-100 * (1-delta_ind[delta_ind < 1]), ndigits)
+      delta_ind[delta_ind >= 1] <- round(100 * (delta_ind[delta_ind >= 1]-1), ndigits)
+      delta_ind[delta_ind > 1000] <- '>1000%'
+    }
     if( cl )
-      entry <- paste0(delta_ind[1], ' (', delta_ind[2], ', ', delta_ind[3], ')')
+      entry <- paste0(sprintf(fmt,delta_ind[1]), ' (', sprintf(fmt,delta_ind[2]), ', ', sprintf(fmt,delta_ind[3]), ')')
     else 
-      entry <- as.character(delta_ind[1])
+      entry <- as.character(sprintf(fmt,delta_ind[1]))
 
   } else if( mtype =="constant" ){
     
     parms <- x[[1]]$test
     
-    est <- round(100 * exp(parms$slope), ndigits)
-    lcl <- round(100 * exp(parms$slope - parms$slope.se), ndigits)
-    ucl <- round(100 * exp(parms$slope + parms$slope.se), ndigits)
-    
+    if( base == 0 ){
+      est <- round(exp(parms$slope)-1, ndigits)
+      lcl <- round(exp(parms$slope - 1.96 * parms$slope.se)-1, ndigits)
+      ucl <- round(exp(parms$slope + 1.96 * parms$slope.se)-1, ndigits)
+    } else if( change ){
+      est <- round(base * parms$slope, ndigits)
+      lcl <- round(base * (parms$slope - 1.96 * parms$slope.se), ndigits)
+      ucl <- round(base * (parms$slope + 1.96 * parms$slope.se), ndigits)
+    } else {
+      est <- round(base * exp(parms$slope), ndigits)
+      lcl <- round(base * exp(parms$slope - 1.96 * parms$slope.se), ndigits)
+      ucl <- round(base * exp(parms$slope + 1.96 * parms$slope.se), ndigits)
+    }
+
     if( cl )
-      entry <- paste0(est, ' (', lcl, ', ', ucl, ')')
+      entry <- paste0(sprintf(fmt,est), ' (', sprintf(fmt,lcl), ', ', sprintf(fmt,ucl), ')')
     else
-      entry <- as.character(est)
-    
+      entry <- as.character(sprintf(fmt,est))
+
   } else if( mtype == "trend" ){
      
     parms <- x[[1]]$test
     est <- round(parms$slope, ndigits)
     
     if( cl ){
-      lcl <- round(parms$slope-1.96*parms$slope.se, ndigits)
-      ucl <- round(parms$slope+1.96*parms$slope.se, ndigits)
-      entry <- paste0(est, ' (', lcl, ', ', ucl, ')')
+      lcl <- round(parms$slope - 1.96 * parms$slope.se, ndigits)
+      ucl <- round(parms$slope + 1.96 * parms$slope.se, ndigits)
+      entry <- paste0(sprintf(fmt,est), ' (', sprintf(fmt,lcl), ', ', sprintf(fmt,ucl), ')')
     } else
-      entry <- as.character(est)
+      entry <- sprintf(fmt,est)
   }            
 
-   return(entry)
+  tt <- parms$tsig
+  sig.star <- ifelse(tt>0.1, "_", ifelse(tt>0.05, ".", ifelse(tt>0.01, "+", "*")))
+
+  return(paste(entry, sig.star))
 }
       

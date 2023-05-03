@@ -48,6 +48,7 @@ export(
 )
 
 ## Not exported:
+# plot_scheme
 # ann.model.counts, ann.model.prod, annr.model.counts, annr.model.prod
 # annt.model.counts, annt.model.prod, annsm.model.counts, annsm.model.prod 
 # annc.model.counts, annc.model.prod 

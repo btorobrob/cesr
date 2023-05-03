@@ -11,10 +11,10 @@ extract.data(cesdata, species=0, plots=NULL, min.yrs=1)
 }
 \arguments{
   \item{cesdata}{
-a CES object created by \code{readces}
+a CES object created by \code{readces}.
 }
   \item{species}{
-Euring species code (including the final zero which would indicate race)  
+Euring species code (including the final zero which would indicate race).  
 }
   \item{plots}{
 an object containing plot coverage data created by \code{extract.coverage}. 

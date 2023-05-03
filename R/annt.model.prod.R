@@ -34,7 +34,7 @@ function(x, year=-1, trend=100, offset=TRUE, cl=0.95){
     
     yearf1 <- c(min(x$yearf[x$yearf>0]):max(x$yearf),rep(0,trend))
     yeart1 <- c(rep(0,length(yearf1)-trend),c(1:trend))
-    newdata <- as.data.frame(cbind(yearf=yearf1,site=rep(min(x$site),nyrs)))
+    newdata <- as.data.frame(cbind(yearf=yearf1,site=rep(min(as.numeric(x.lm$xlevels[[1]])),nyrs)))
     newdata$yeart <- c(rep(0,length(yearf1)-trend),c(1:trend))  # do separately to avoid factor conversion
   }
   else {
@@ -44,7 +44,7 @@ function(x, year=-1, trend=100, offset=TRUE, cl=0.95){
     else
       x.lm <- glm(as.matrix(cbind(jvcaps,adcaps)) ~ yeart, family=quasibinomial, offset=offset, data=x)
 
-    newdata <- as.data.frame(cbind(site=rep(min(x$site),nyrs)))
+    newdata <- as.data.frame(cbind(site=rep(min(as.numeric(x.lm$xlevels[[1]])),nyrs)))
     newdata$yeart <- c(min(x$yeart):max(x$yeart))
   }
 

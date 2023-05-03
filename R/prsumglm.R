@@ -38,6 +38,19 @@ function(x, mtype){
       cat(sprintf("Change between %d and %d: >1000%%\n", fyear, year0))
     else
       cat(sprintf("Change between %d and %d: %4.1f%%\n", fyear, year0, delta_ind))
+    last.rank <- x$parms$rank[length(x$parms$rank)]
+    if( last.rank == 1 )
+      cat(sprintf("%d was the highest ranked year\n", fyear))
+    else if( last.rank == 2 )
+      cat(sprintf("%d was the second highest ranked year\n", fyear))
+    else if( last.rank == 3 )
+      cat(sprintf("%d was the third highest ranked year\n", fyear))
+    else if( last.rank == length(x$parms$rank) )
+      cat(sprintf("%d was the lowest ranked year\n", fyear))
+    else if( last.rank == (length(x$parms$rank)-1) )
+      cat(sprintf("%d was the second lowest ranked year\n", fyear))
+    else if( last.rank == (length(x$parms$rank)-2) )
+      cat(sprintf("%d was the third lowest ranked year\n", fyear))
   }
   else if ( mtype$type == 'trend' )
     cat(sprintf("Slope for past %d years is %5.3f \u00B1 %5.3f (t=%4.3f, P=%4.3f) \n", 

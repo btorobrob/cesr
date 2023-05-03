@@ -36,10 +36,12 @@ function(x, year=-1, offset=TRUE, cl=0.95){
   res <- res[do.call(order, list(res$years)), ]
   res$index <- exp(res$parm)           # NOTE: log back-transform rather than logistic!! gives no jv per ad
                                        #       rather simply ppn jvs
+  
   cl.int <- qnorm(1-((1-cl)/2))
   res$lcl <- exp(res$parm - cl.int * res$se) 
   res$ucl <- exp(res$parm + cl.int * res$se)
-
+  res$rank <- rank(-res$index)
+  
   list(model=x.lm, parms=res, test='none')
 }
 

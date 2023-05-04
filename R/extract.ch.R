@@ -160,6 +160,7 @@ function(cesdata, species=0, plots=NULL, late=FALSE, group=NA, exclude=NULL, min
                   begin.time = min(data$year),
                   years = numyrs-1, 
                   group = list(name=group, levels=gplvls),
+                  spp = species,
                   spp.name = spp.name)
   class(results) <- c('ces', 'ch', 'list')
   results

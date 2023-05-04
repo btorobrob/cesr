@@ -9,7 +9,7 @@
 #long-term change
 
 ces.table <-
-function(cesobj, species=NA, columns=c("A-0", "P-0", "S-0"), base=100, plots=NULL, min.n=100, min.ch=50, ndigits=2, year=-1, change=FALSE, visit.corr=TRUE){
+function(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NULL, min.n=100, min.ch=50, ndigits=2, year=-1, change=FALSE, visit.corr=TRUE){
   
   if( class(cesobj)[1]!='ces' | class(cesobj)[2]!='data' )
     stop('not a CES data object')
@@ -30,6 +30,7 @@ function(cesobj, species=NA, columns=c("A-0", "P-0", "S-0"), base=100, plots=NUL
     species <- species[check.spp]
   }
   sppnames <- cesnames[which(cesnames[,1]%in%species), options()$ceslang]
+  columns <- toupper(columns)
   
   if( !base %in% c(0, 1, 100) ){
     warning("base must be one of 1, 0, or 100, setting to 0", call.=FALSE, immediate.=TRUE)
@@ -60,7 +61,7 @@ function(cesobj, species=NA, columns=c("A-0", "P-0", "S-0"), base=100, plots=NUL
     if( sum(grepl('[AJP]', columns)) > 0 ) # need the count data
       spp.data <- extract.data(cesobj, species=species[i], plots=plots)
     if( sum(grepl('S', columns)) > 0 ) # need the survival data
-      spp.mark <- extract.ch(cesobj, species=species[i], min.n=min.ch, plots=plots)
+      spp.data <- extract.ch(cesobj, species=species[i], min.n=min.ch, plots=plots)
     
     for( j in 1:n.col ){
       
@@ -149,20 +150,35 @@ function(cesobj, species=NA, columns=c("A-0", "P-0", "S-0"), base=100, plots=NUL
         } # End Productivity Models
       } else if( dtype == 'S' ){ ## Survival Models ----
         if( mtype == '-' ){ # a compare model
-          res[[ctr]] <- list(s.results = mark.ces(spp.mark, exclude=NULL, type='+', compare=nyear, cleanup=TRUE),
+          res[[ctr]] <- list(s.results = mark.ces(spp.data, exclude=NULL, type='+', compare=nyear, cleanup=TRUE),
                              model.type = list(type='compare', refyear=year, nyrs=nyear), limits=0.95,
                              spp = spp.data$spp, spp.name = spp.data$spp.name)
           class(res[[ctr]]) <- c('ces', 'markfit')
-          row.est <- res[[ctr]]$s.results$survival[nrow(res[[ctr]]$s.results$survival), ]
-          est <- round(ilogit(row.est[2]), ndigits)
-          if( conf.lim ){
-            lcl <- round(ilogit(row.est[4]), ndigits)
-            ucl <- round(ilogit(row.est[5]), ndigits)
-            table.est[[i, j]] <- paste0(est, ' (', lcl, ', ', ucl, ')')
-          } else
-            table.est[[i, j]] <- as.character(est)
+          parms <- res[[ctr]]$s.results$parms
+          row <- nrow(parms)
+          est <- parms$index[nrow(parms)] / parms$index[(nrow(parms)-1)]
+          
+          ilogit <- function(x) exp(x) / (1+exp(x))
+          mean1 <- parms$estimate[nrow(parms)-1]
+          mean2 <- parms$estimate[nrow(parms)]
+          se1=parms$se[nrow(parms)-1]
+          se2=parms$se[nrow(parms)]
+          
+          xx = ilogit(rnorm(1000, mean1, se1))
+          yy = ilogit(rnorm(1000, mean2, se2))
+         
+          if( change ){
+            est <- round(base * median(yy-xx), ndigits)
+            lcl <- round(base * quantile(yy-xx, 0.025), ndigits)
+            ucl <- round(base * quantile(yy-xx, 0.975), ndigits)
+          } else {
+            est <- round(base * median(yy/xx), ndigits)
+            lcl <- round(base * quantile(yy/xx, 0.025), ndigits)
+            ucl <- round(base * quantile(yy/xx, 0.975), ndigits)
+          }
+          table.est[[i, j]] <- paste0(est, ' (', lcl, ', ', ucl, ')')
         } else if( mtype == '/' ){ # a trend model
-          res[[ctr]] <- list(s.results = mark.ces(spp.mark, exclude=NULL, type='+', trend=nyear, cleanup=TRUE),
+          res[[ctr]] <- list(s.results = mark.ces(spp.data, exclude=NULL, type='+', trend=nyear, cleanup=TRUE),
                              model.type = list(type='trend', refyear=year, nyrs=nyear), limits=0.95,
                              spp = spp.data$spp, spp.name = spp.data$spp.name)
           class(res[[ctr]]) <- c('ces', 'markfit')
@@ -217,6 +233,7 @@ function(cesobj, species=NA, columns=c("A-0", "P-0", "S-0"), base=100, plots=NUL
   
   cat("\nTable of estimates with 95% confidence limits in parentheses\n")
   cat("Significance: '-' N.S.; '.' p < 0.1; '+' p < 0.05; '*' p < 0.01\n")
+
   print(knitr::kable(table.est, col.names=col.headings, align='r', row.names=TRUE, digits=2))
   return(return.list)
 }

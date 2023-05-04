@@ -2,7 +2,7 @@ get.estimate <-
 function(x, mtype, base=0, ndigits=2, cl=TRUE, change=FALSE){
   
   fmt <- paste0("%.", ndigits, "f")
-  if( mtype == 'annual' ){
+  if( mtype == 'annual' | mtype == "compare" ){
     
     parms <- x[[1]]$parms
 

@@ -8,7 +8,7 @@
   Fit CJS-with-transients model to estimate annual adult survival from CES data.
 }
 \usage{
-  mark.ces(cesobj, exclude=NULL, type='+', trend=0, compare=0, cleanup=TRUE)
+  mark.ces(cesobj, exclude=NULL, type='+', trend=0, constant=0, compare=0, cleanup=TRUE)
 }
 \arguments{
   \item{cesobj}{
@@ -23,8 +23,11 @@
   \item{trend}{
   An integer to indicate how many years to calculate a linear trend over. The last year of the trend will always be the last year in the dataset. If trend is greater than the number of years available then a simple linear trend will be fitted.
 }
+  \item{constant}{
+  An integer indicating the last n years over which survival will be modelled as constant.
+}
   \item{compare}{
-  An integer indicating the last n years over which survival will be modelled as constant. Note this is consistent with the trend argument, but different to how index() handles this!
+  An integer indicating the how many n previous years to compare the last year's estimate to.
 }
   \item{cleanup}{
     MARK creates a series of output files for each survival model fitted. If cleanup=FALSE, these will be stored in the sub-directory 'markfiles', if cleanup=TRUE they will be deleted. x$model$output indicates which files are associated with the survival model stored in x.

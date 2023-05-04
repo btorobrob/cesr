@@ -1,5 +1,5 @@
 mark.ces <-
-function(cesobj, exclude=NULL, type='+', trend=0, compare=0, cleanup=TRUE){
+function(cesobj, exclude=NULL, type='+', trend=0, constant=0, compare=0, cleanup=TRUE){
   
   requireNamespace('RMark', quietly=TRUE)
   
@@ -9,8 +9,8 @@ function(cesobj, exclude=NULL, type='+', trend=0, compare=0, cleanup=TRUE){
   if( type != '+' & type != ':' )
     stop('type should be either "+" or ":"')
 
-  if( trend > 0 & compare > 0 )
-    stop('Specify only one of trend or compare')
+  if( sum(trend>0, compare>0, constant>0) > 1 )
+    stop('Specify only one of trend, compare, constant')
 
   # create a directory for the markfiles
   oldwd <- getwd()
@@ -68,9 +68,9 @@ function(cesobj, exclude=NULL, type='+', trend=0, compare=0, cleanup=TRUE){
       phi.ces <- list(formula = as.formula(paste0('~', cesobj$group$name, '+tind:time_var+', cesobj$group$name, ':Tind:Time')))
     model.name <- 'trend'
     model.yrs <- ifelse(trend > cesobj$years, cesobj$years, trend)
-  } else if( compare > 0 ){
-    compare <- floor(compare) # just in case
-    nyrs <- cesobj$years - ifelse(compare > cesobj$years, cesobj$years, compare) + 1 
+  } else if( constant > 0 ){
+    constant <- floor(constant) # just in case
+    nyrs <- cesobj$years - ifelse(constant > cesobj$years, cesobj$years, constant) + 1 
     ddl$Phi$Cind <- ifelse(ddl$Phi$Time >= nyrs, 1, 0) # years within compare period 
     ddl$Phi$tind <- 1 - ddl$Phi$Cind       # years before compare
     ddl$Phi$tind[ddl$Phi$time_var==1] <- 1 # make sure the transient year is picked up
@@ -80,6 +80,20 @@ function(cesobj, exclude=NULL, type='+', trend=0, compare=0, cleanup=TRUE){
     else
       phi.ces <- list(formula = as.formula(paste0('~', cesobj$group$name, '+tind:time_var+', cesobj$group$name, ':Cind')))
     model.name <- 'constant'
+    model.yrs <- ifelse(compare > cesobj$years, cesobj$years, constant)
+  } else if( compare > 0 ){
+    compare <- floor(compare) # just in case
+    nyrs <- cesobj$years - ifelse(compare > cesobj$years, cesobj$years, compare) 
+    ddl$Phi$Cind <- ifelse(ddl$Phi$Time >= nyrs, 1, 0) # years within compare period 
+    ddl$Phi$Cind[ddl$Phi$Time >= cesobj$years] <- 0
+    ddl$Phi$tind <- 1 - ddl$Phi$Cind       # years before compare
+    ddl$Phi$tind[ddl$Phi$time_var==1] <- 1 # make sure the transient year is picked up
+    ddl$Phi$Cind[ddl$Phi$tind==1] <- 0     # but exclude transient period from compare period
+    if( is.na(cesobj$group$name) )
+      phi.ces <- list(formula = as.formula('~tind:time_var+Cind'))
+    else
+      phi.ces <- list(formula = as.formula(paste0('~', cesobj$group$name, '+tind:time_var+', cesobj$group$name, ':Cind')))
+    model.name <- 'compare'
     model.yrs <- ifelse(compare > cesobj$years, cesobj$years, compare)
   } else {
     if( is.na(cesobj$group$name) )
@@ -118,8 +132,12 @@ function(cesobj, exclude=NULL, type='+', trend=0, compare=0, cleanup=TRUE){
     s_res$years <- rep(c(cesobj$begin.time:(cesobj$begin.time+cesobj$years-1)),length(cesobj$group$levels))  
     s_res <- s_res[ , c(5,6,1:4)]
   } else {
-    if( compare > 0 ) # replicate the last row to generate enough annual estimates
+    if( constant > 0 ) # replicate the last row to generate enough annual estimates
       s_res <- s_res[c(1:nrow(s_res), rep(nrow(s_res), model.yrs-1)), ]
+    else if( compare > 0 ){
+      nn <- nyrs 
+      s_res <- s_res[c(1:nn, rep(nn,model.yrs-1), nrow(s_res)), ]
+    }
     s_res$years <- c(cesobj$begin.time:(cesobj$begin.time+cesobj$years-1))  
     s_res <- s_res[ , c(5,1:4)]
   }
@@ -156,6 +174,11 @@ function(cesobj, exclude=NULL, type='+', trend=0, compare=0, cleanup=TRUE){
   if( sum(high.p) > 0 )
     warning(paste("some sites have improbably high recapture probabilities:", paste(p_res$sitename[high.p], collapse=",")), call.=FALSE)
 
+  # for compatability with other outputs
+  parms <- s_res
+  parms$index <- parms$estimate
+  parms$estimate <- log(parms$index/(1-parms$index))
+  
   results <- list(model=model,
        AIC=model$results$AICc, npar=model$results$npar,
        model.name=model.name, model.yrs=model.yrs,
@@ -163,7 +186,9 @@ function(cesobj, exclude=NULL, type='+', trend=0, compare=0, cleanup=TRUE){
        survival=s_res,
        recapture=p_res,
        recap1=p1_res,
-       group=cesobj$group,            
+       parms=parms[ , c('years','estimate','se','index','lcl','ucl')],
+       group=cesobj$group, 
+       spp=cesobj$spp,
        spp.name=cesobj$spp.name)
   class(results) <- c('ces', 'markfit')
   

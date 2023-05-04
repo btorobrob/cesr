@@ -61,7 +61,7 @@ function(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NUL
     if( sum(grepl('[AJP]', columns)) > 0 ) # need the count data
       spp.data <- extract.data(cesobj, species=species[i], plots=plots)
     if( sum(grepl('S', columns)) > 0 ) # need the survival data
-      spp.data <- extract.ch(cesobj, species=species[i], min.n=min.ch, plots=plots)
+      spp.mark <- extract.ch(cesobj, species=species[i], min.n=min.ch, plots=plots)
     
     for( j in 1:n.col ){
       
@@ -150,9 +150,9 @@ function(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NUL
         } # End Productivity Models
       } else if( dtype == 'S' ){ ## Survival Models ----
         if( mtype == '-' ){ # a compare model
-          res[[ctr]] <- list(s.results = mark.ces(spp.data, exclude=NULL, type='+', compare=nyear, cleanup=TRUE),
+          res[[ctr]] <- list(s.results = mark.ces(spp.mark, exclude=NULL, type='+', compare=nyear, cleanup=TRUE),
                              model.type = list(type='compare', refyear=year, nyrs=nyear), limits=0.95,
-                             spp = spp.data$spp, spp.name = spp.data$spp.name)
+                             spp = spp.mark$spp, spp.name = spp.mark$spp.name)
           class(res[[ctr]]) <- c('ces', 'markfit')
           parms <- res[[ctr]]$s.results$parms
           row <- nrow(parms)
@@ -178,9 +178,9 @@ function(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NUL
           }
           table.est[[i, j]] <- paste0(est, ' (', lcl, ', ', ucl, ')')
         } else if( mtype == '/' ){ # a trend model
-          res[[ctr]] <- list(s.results = mark.ces(spp.data, exclude=NULL, type='+', trend=nyear, cleanup=TRUE),
+          res[[ctr]] <- list(s.results = mark.ces(spp.mark, exclude=NULL, type='+', trend=nyear, cleanup=TRUE),
                              model.type = list(type='trend', refyear=year, nyrs=nyear), limits=0.95,
-                             spp = spp.data$spp, spp.name = spp.data$spp.name)
+                             spp = spp.mark$spp, spp.name = spp.mark$spp.name)
           class(res[[ctr]]) <- c('ces', 'markfit')
           row.est <- res[[ctr]]$s.results$model$results$beta[grep('Phi:Tind:Time', rownames(res[[ctr]]$s.results$model$results$beta)), ]
           est <- round(row.est[1], ndigits)

@@ -1,13 +1,3 @@
-# write a plot function!
-# return vals for annual and compare? first is change, second is % IS IT NOW? NEED TO CHECK
-#   --- I think actually this useful, document somewhere?
-# check for NAs in important columns in readces
-# check the se column of the constant model - is this the annual or difference se?
-## Can we collect objects, at least if they have a common name?
-
-#annual values
-#long-term change
-
 ces.table <-
 function(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NULL, min.n=100, min.ch=50, ndigits=2, year=-1, change=FALSE, visit.corr=TRUE){
   
@@ -29,7 +19,7 @@ function(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NUL
     warning(paste('invalid species codes detected:', dodgy), call.=FALSE, immediate.=TRUE)
     species <- species[check.spp]
   }
-  sppnames <- cesnames[which(cesnames[,1]%in%species), options()$ceslang]
+  sppnames <- cesnames[which(cesnames[ , 1] %in% species), options()$ceslang]
   columns <- toupper(columns)
   
   if( !base %in% c(0, 1, 100) ){
@@ -216,7 +206,7 @@ function(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NUL
   estimates <- data.frame()
   for( i in 1:dim(table.est)[1] ){
     for( j in 1:dim(table.est)[2] ){
-      ctr <- (dim(table.est)[1] * (i-1)) + j                    
+      ctr <- (dim(table.est)[2] * (i-1)) + j  
       estimates[ctr, 1] <- dimnames(table.est)[[1]][i]
       estimates[ctr, 2] <- dimnames(table.est)[[2]][j]
       ss <- unlist(strsplit(table.est[i,j],"[(),]"))
@@ -232,7 +222,7 @@ function(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NUL
   class(return.list) <- c('ces', 'res.table')
   
   cat("\nTable of estimates with 95% confidence limits in parentheses\n")
-  cat("Significance: '-' N.S.; '.' p < 0.1; '+' p < 0.05; '*' p < 0.01\n")
+  cat("Significance: '_' N.S.; '.' p < 0.1; '+' p < 0.05; '*' p < 0.01\n")
 
   print(knitr::kable(table.est, col.names=col.headings, align='r', row.names=TRUE, digits=2))
   return(return.list)

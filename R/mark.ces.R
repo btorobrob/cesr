@@ -1,8 +1,6 @@
 mark.ces <-
 function(cesobj, exclude=NULL, type='+', trend=0, constant=0, compare=0, cleanup=TRUE){
   
-  requireNamespace('RMark', quietly=TRUE)
-  
   if( class(cesobj)[1]!="ces" | class(cesobj)[2]!='ch' )
     stop('use extract.ch() to create a Mark data list')
   
@@ -22,6 +20,7 @@ function(cesobj, exclude=NULL, type='+', trend=0, constant=0, compare=0, cleanup
     setwd('~/markfiles')
   } else 
     setwd('./markfiles') # because dir.create() will have been successful
+  on.exit(setwd(oldwd))
 
   chdata <- cesobj$chdata
   chdata$sitename <- as.factor(chdata$sitename)
@@ -124,13 +123,14 @@ function(cesobj, exclude=NULL, type='+', trend=0, constant=0, compare=0, cleanup
   rrows <- grep("a0", rownames(phi_res))
   r_res <- phi_res[rrows, 1:4]
   s_res <- phi_res[-(rrows), 1:4]
+  s_res$rank <- rank(-s_res$estimate)
   
   if( !is.na(cesobj$group$name) ){
     r_res$group <- cesobj$group$levels
     r_res <- r_res[ , c(5,1:4)]
     s_res$group <- rep(cesobj$group$levels, each=cesobj$years)
     s_res$years <- rep(c(cesobj$begin.time:(cesobj$begin.time+cesobj$years-1)),length(cesobj$group$levels))  
-    s_res <- s_res[ , c(5,6,1:4)]
+    s_res <- s_res[ , c(6,1:5)]
   } else {
     if( constant > 0 ) # replicate the last row to generate enough annual estimates
       s_res <- s_res[c(1:nrow(s_res), rep(nrow(s_res), model.yrs-1)), ]
@@ -139,7 +139,7 @@ function(cesobj, exclude=NULL, type='+', trend=0, constant=0, compare=0, cleanup
       s_res <- s_res[c(1:nn, rep(nn,model.yrs-1), nrow(s_res)), ]
     }
     s_res$years <- c(cesobj$begin.time:(cesobj$begin.time+cesobj$years-1))  
-    s_res <- s_res[ , c(5,1:4)]
+    s_res <- s_res[ , c(6,1:5)]
   }
   rownames(r_res) <- NULL
   rownames(s_res) <- NULL
@@ -177,7 +177,8 @@ function(cesobj, exclude=NULL, type='+', trend=0, constant=0, compare=0, cleanup
   # for compatability with other outputs
   parms <- s_res
   parms$index <- parms$estimate
-  parms$estimate <- log(parms$index/(1-parms$index))
+  parms$parm <- log(parms$index/(1-parms$index))
+  parms$estimate <- NULL
   
   results <- list(model=model,
        AIC=model$results$AICc, npar=model$results$npar,
@@ -186,7 +187,7 @@ function(cesobj, exclude=NULL, type='+', trend=0, constant=0, compare=0, cleanup
        survival=s_res,
        recapture=p_res,
        recap1=p1_res,
-       parms=parms[ , c('years','estimate','se','index','lcl','ucl')],
+       parms=parms[ , c('years','parm','se','index','lcl','ucl','rank')],
        group=cesobj$group, 
        spp=cesobj$spp,
        spp.name=cesobj$spp.name)

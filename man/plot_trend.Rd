@@ -8,7 +8,7 @@ Plot CES trend
 Plots an estimated trend from CES data either to the screen or to a file.
 }
 \usage{
-plot_trend(x, type, group=NULL, file = NULL, width=480, height=480, units='px', ylab='', ylim=c(0,0), xlim=c(0,0), lty=c(1,2), lcol='black', line=NA, rlty=3, rcol='black', lwd=1, annual=FALSE, pch=19, pcol='black', ...)
+plot_trend(x, type, group=NULL, file = NULL, width=480, height=480, units='px', main=FALSE, lty=c(1,2), lwd=1, lcol='black', line=NA, rlty=3, rlwd=1, rcol='black', annual=FALSE, pch=19, pcol='black', pcex=1, ...)
 }
 \arguments{
   \item{x}{
@@ -32,35 +32,26 @@ The height of the device.
   \item{units}{
 The units in which height and width are given. Can be px (pixels, the default), in(ches), or mm.
 }
-  \item{ylab}{
-an optional label for the y-axis, if the default is not appropriate.
+  \item{main}{
+should the plot have a title? If a value other than TRUE/FALSE is given then that will be used as the title.
 }
-  \item{ylim}{
-optionally, limits for the y-axis. The default is the minimum value for lower and upper confidence limits, use this to, for example, set the axis for survival probabilities to (0,1).
-}
-  \item{xlim}{
-optionally, limits for the x-axis. If there are more than 10 years a sensible range should be chosen, with major ticks every 5 years, otherwise there will be a tick per year.
-}
-  \item{lty, lcol}{
+  \item{lty, lwd, lcol}{
 a vector of length 1 or 2, if length 2 the first entry will be used for the trend line, the second for the confidence limits.
 }
   \item{line}{
 if required, the value (e.g. 1) at which a horizontal reference line will be drawn.
 }
-  \item{rlty, rcol}{
-if a reference line is specified, the line type and color to use.
-}
-  \item{lwd}{
-a vector of up to length 3 giving line widths for the trend line, the confidence limits and the reference line.
+  \item{rlty, rcol, rlwd}{
+if a reference line is specified, the line type, color and width to use.
 }
   \item{annual}{
 logical, plot the annual estimates too?
 }
-  \item{pch, pcol}{
-if annual=TRUE, symbol and color to use in plotting points.
+  \item{pch, pcol, pcex}{
+if annual=TRUE, symbol, color and size to use in plotting points.
 }
 \item{...}{
-additional arguments passed to plot, such as bty or lwd.
+additional arguments passed to plot, such as bty, ylab or ylim.
 }
 }
 \details{

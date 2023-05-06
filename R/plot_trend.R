@@ -1,5 +1,5 @@
 plot_trend <-
-function(x, type='', group=NULL, file=NULL, width=480, height=480, units='px', ylab='', ylim=c(0,0), xlim=c(0,0), lty=c(1,2), lcol='black', line=NA, rlty=3, rcol='black', lwd=1, annual=FALSE, pch=19, pcol='black', ...){  
+function(x, type='', group=NULL, file=NULL, width=480, height=480, units='px', main=FALSE, lty=c(1,2), lcol='black', lwd=1, line=NA, rlty=3, rlwd=1, rcol='black', annual=FALSE, pch=19, pcol='black', pcex=1, ...){  
     
   if( type=='' & class(x)[2]=='markfit' ) 
     type <- 'Survival' # survival objects should only be one thing, so can get way with assuming
@@ -11,8 +11,8 @@ function(x, type='', group=NULL, file=NULL, width=480, height=480, units='px', y
   
   if( length(lty) == 1 )
     lty <- rep(lty, 2)
-  else if( length(lty) > 2 )
-    lty <- lty[1:2]
+  if( length(lwd) == 1 )
+    lwd <- rep(lwd, 2)
   if( length(lcol) == 1 )
     lcol <- rep(lcol, 2)
   else if( length(lcol) > 2 )
@@ -71,16 +71,13 @@ function(x, type='', group=NULL, file=NULL, width=480, height=480, units='px', y
   ## plot the graph
   if( select == 'a' ) {
     res <- x$ad.results$parms
-    if( ylab == '' )
-      ylab <- "Adult Abundance"
+    ylab <- "Adult Abundance"
   } else if( select == 'j' ) {
     res <- x$jv.results$parms
-    if ( ylab == '' )
-      ylab <- "Juvenile Abundance"
+    ylab <- "Juvenile Abundance"
   } else if( select == 'p' ) {
     res <- x$pr.results$parms
-    if( ylab == '')
-      ylab <- "Productivity"
+    ylab <- "Productivity"
   } else if( select == 's' ) {
     if( is.null(group) ){
       res <- x$survival
@@ -88,17 +85,34 @@ function(x, type='', group=NULL, file=NULL, width=480, height=480, units='px', y
       res <- x$survival[x$survival$group==group, ]
     }
     res$index <- res$estimate
-    if( ylab == '' )
-      ylab <- "Adult Survival"
+    ylab <- "Adult Survival"
   }
 
-  if( sum(ylim) == 0 )
-    ylim <- range(res[ , c('index', 'lcl', 'ucl')], na.rm=TRUE)
+  # check the dots for useful plotting arguments
+  plot.args <- list(...)
+  plot.args$x <- res$years
+  plot.args$y <- res$index
+  if( !any(grep("ylim", names(plot.args))) )
+    plot.args$ylim <- range(res[ , c('index', 'lcl', 'ucl')], na.rm=TRUE)
     # include index in case a single site is fitted (so cl's would be NaN)
+  if( !any(grep("xlim", names(plot.args))) )
+    plot.args$xlim <- c(min(res$years), max(res$years))
+  if( !any(grep("ylab", names(plot.args))) )
+    plot.args$ylab <- ylab
+  if( !any(grep("xlab", names(plot.args))) )
+    plot.args$xlab <- ""
+  if( !any(grep("las", names(plot.args))) )
+    plot.args$las <- 1
+  if ( main == TRUE )
+    plot.args$main <- x$spp.name
+  else if( main != FALSE )
+    plot.args$main <- main
+  plot.args$lwd <- lwd[1]
+  plot.args$type <- 'l'
   
-  if( sum(xlim) == 0 )
-    xlim <- c(min(res$years), max(res$years))
+  do.call(plot, plot.args)
 
+  xlim <- plot.args$xlim
   if( (xlim[2]-xlim[1]) <= 10 ) # if only a few years have a tick per year...
     xtx <- seq(xlim[1], xlim[2], 1)
   else { # ...else major ticks every five years
@@ -109,19 +123,19 @@ function(x, type='', group=NULL, file=NULL, width=480, height=480, units='px', y
     xtx <- seq(xlim[1]-(xlim[1]%%5), xlim[2]+5, 5)
   }
   
-  plot(x=res$years, y=res$index, type='l', xlab="", ylab=ylab, ylim=ylim, xlim=xlim, xaxt='n', lty=lty[1], col=lcol[1], las=1, lwd=lwd[1], ...)
-  axis(1, at=xtx) # add in the major ticks
+  cex.axis <- ifelse(any(grep("cex.axis", names(plot.args))), plot.args$cex.axis, 1)
+  axis(1, at=xtx, cex.axis=cex.axis) # add in the major ticks
   axis(1, at=seq(xlim[1],xlim[2],1), labels=FALSE, tcl=par("tcl")*0.5) # now the minor ones
-  lines(x=res$years, y=res$lcl, lty=lty[2], col=lcol[2], lwd=ifelse(is.na(lwd[2]), 1, lwd[2]))
-  lines(x=res$years, y=res$ucl, lty=lty[2], col=lcol[2], lwd=ifelse(is.na(lwd[2]), 1, lwd[2]))
+  lines(x=res$years, y=res$lcl, lty=lty[2], col=lcol[2], lwd=lwd[2])
+  lines(x=res$years, y=res$ucl, lty=lty[2], col=lcol[2], lwd=lwd[2])
   if( annual == TRUE ){
     if( length(which(names(res)=='annual')) > 0 )
       points(res$years, res$annual, pch=pch, col=pcol)
     else
-      points(res$years, res$index, pch=pch, col=pcol)
+      points(res$years, res$index, pch=pch, col=pcol, cex=pcex)
   }
   if( !is.na(line) )
-    abline(h=line, lty=rlty, col=rcol, lwd=ifelse(is.na(lwd[3]), 1, lwd[3]))
+    abline(h=line, lty=rlty, col=rcol, lwd=rlwd)
   
   ## close the device driver
   if( ftype != 'stdio' )

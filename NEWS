@@ -1,5 +1,7 @@
 Changes in version 1.0.2
 ==============
+- 06052023 - bugfix: mark.ces() should now exit the markfiles folder
+- 06052023 - streamline argument definitions in plot_trend()
 - 03052023 - add ces.table() function to automate some of the models
 - 03052023 - add rankings for each year to the output dataframe
 

@@ -107,7 +107,7 @@ function(cesdata, early=NA,late=NA, min.visits=1, all.visits=0, exclude=list(yea
   cat(sumtxt)
   if( nrow(miss.vis) > nrow(visit.cov[nbirds>0])/10 ){
     ppn.miss <- floor(100*nrow(miss.vis)/nrow(visit.cov[nbirds>0]))
-    wmsg <- paste(ppn.miss, 'more than 10% of visits are missing, has all.visits been specified correctly?')
+    wmsg <- paste(ppn.miss, 'visits missing, this is more than 10% - has all.visits been specified correctly?')
     warning(wmsg, call.=FALSE, immediate. = TRUE)
   }
 

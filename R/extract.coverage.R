@@ -24,7 +24,7 @@ function(cesdata, early=NA,late=NA, min.visits=1, all.visits=0, exclude=list(yea
   } else if( all.visits > last.visit ){ # are there fewer visits than there are supposed to be?
     all.visits <- last.visit 
     wmsg <- paste('all.visits is larger than highest visit number, it has been changed to', last.visit)
-    warning(wmsg, call.=FALSE)
+    warning(wmsg, call.=FALSE, immediate.=TRUE)
   } else if( last.visit > all.visits ){ # are there more visits than there are supposed to be?
     nr <- nrow(cesdata[cesdata$visit > all.visits])
     ns <- length(table(cesdata$site[cesdata$visit > all.visits]))
@@ -34,6 +34,22 @@ function(cesdata, early=NA,late=NA, min.visits=1, all.visits=0, exclude=list(yea
     warning(wmsg, call.=FALSE)
   }
 
+  # exclude site/years with fewer than min.n visits
+  if( !is.na(min.visits) & is.numeric(min.visits) & min.visits > 1 ){
+    if( min.visits > all.visits ){
+      wmsg <- "min.visits cannot be greater than the maximum number of visits"
+      warning(wmsg, call.=FALSE, immediate.=TRUE)
+    } else{
+      numvis <- cesdata[ , uniqueN(visit), by=.(site, year)] 
+      data.table::setnames(numvis, 'V1', 'nvisits')
+      n.remove <- sum(numvis$nvisits < min.visits)
+      numvis <- numvis[nvisits >= min.visits]
+      cesdata <- merge(cesdata, numvis, by=c('site', 'year'), all.y=TRUE)
+      wmsg <- paste(n.remove, "site/years with fewer than", min.visits, "visits removed")
+      message(wmsg)
+    }
+  }
+  
   if( is.na(early[1]) ) # this should effectively mean no selection
     # need to subset to avoid warning when early/late are specified
     early <- c(all.visits, 1)

@@ -82,12 +82,12 @@ function(cesobj, species=0, age=0, plots=NULL){
   complete_sites <- unique(data.complete$site)
   # sites with more than 25 individuals get a specific corr factor
   sites <- merge(sites, data.complete[ , .N, by=site][N >= 25], by='site', all.x=TRUE) 
-  sites[is.na(N), N := 0 ] # sites with no complete visits
   
   data.complete[ , ring:=paste0(site,year,ring)] # ugly, but o/wise duplicated doesnt work when birds move sites!
   ninds <- data.complete[!duplicated(ring) , .N, by=site]
   sites <- merge(sites, ninds, by='site', all.x=TRUE)
   names(sites) <- c('site', 'ncaps', 'N')
+  sites[is.na(N), N := 0 ] # sites with no complete visits
   
   res <- merge(catch.totals, sites, by='site', all.x=TRUE)
   n.small <- data.complete[!duplicated(ring) , .N, ]
@@ -99,7 +99,7 @@ function(cesobj, species=0, age=0, plots=NULL){
                            year = rep(seq(years[1],years[2]), each=uniqueN(sites$site)),
                            nprime = c(n.prime))
   res <- merge(res, n.prime.df, by=c('site', 'year'), all.x=TRUE)
-  res[is.na(res$totcaps), totcaps := 0] # no birds caught, shouldn't happen, but just in case
+  res <- res[!(is.na(res$totcaps) | nprime==0)] # no birds caught ever
   res[(N<25 & ncaps==0), N := n.small] # use global correction for those no complete data
   res[ , corrcaps := totcaps * (N/nprime)]
   

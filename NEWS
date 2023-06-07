@@ -1,5 +1,6 @@
 Changes in version 1.0.2
 ==============
+- 07062023 - bugfix: remove sites with no inds of an age-class caught ever
 - 13052023 - implemented the min.visits argument in extract.coverage()
 - 06052023 - bugfix: mark.ces() should now exit the markfiles folder
 - 06052023 - streamline argument definitions in plot_trend()

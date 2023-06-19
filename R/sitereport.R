@@ -38,8 +38,8 @@ function(cesdata, sitelist=NULL, year=0, template_file=NULL, outdir=getwd(), no.
   
   for( i in 1:length(sitelist) ){
     
-    thissite <- DT$sitename[i]
-    netlen <- DT$netlength[i]
+    thissite <- sitelist[i]
+    netlen <- DT[sitename==thissite]$netlength
     
     if( cesdata[(sitename==thissite & year==thisyr), .N] == 0 ){
       message('no data for site: ', thissite, ' skipped')

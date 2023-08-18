@@ -48,15 +48,15 @@ function(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NUL
   
   for( i in 1:length(species) ){
     
-    if( sum(grepl('[AJP]', columns)) > 0 ) # need the count data
+    if( sum(grepl('[AJPajp]', columns)) > 0 ) # need the count data
       spp.data <- extract.data(cesobj, species=species[i], plots=plots)
-    if( sum(grepl('S', columns)) > 0 ) # need the survival data
+    if( sum(grepl('Ss', columns)) > 0 ) # need the survival data
       spp.mark <- extract.ch(cesobj, species=species[i], min.n=min.ch, plots=plots)
     
     for( j in 1:n.col ){
       
       ctr <- idx$counter[idx$spp==i & idx$cols==j] 
-      dtype <- substr(columns[j], 1, 1)
+      dtype <- toupper(substr(columns[j], 1, 1))
       mtype <- substr(columns[j], 2, 2)
       nyear <- as.numeric(substr(columns[j], 3, nchar(columns[j]))) # just in case > 10 so more than 3 chars
       

@@ -39,9 +39,9 @@ function(x, mtype, base=0, ndigits=2, cl=TRUE, change=FALSE){
       lcl <- round(exp(parms$slope - 1.96 * parms$slope.se)-1, ndigits)
       ucl <- round(exp(parms$slope + 1.96 * parms$slope.se)-1, ndigits)
     } else if( change ){
-      est <- round(base * parms$slope, ndigits)
-      lcl <- round(base * (parms$slope - 1.96 * parms$slope.se), ndigits)
-      ucl <- round(base * (parms$slope + 1.96 * parms$slope.se), ndigits)
+      est <- round(base * exp(parms$slope) - base, ndigits)
+      lcl <- round(base * exp(parms$slope - 1.96 * parms$slope.se) - base, ndigits)
+      ucl <- round(base * exp(parms$slope + 1.96 * parms$slope.se) - base, ndigits)
     } else {
       est <- round(base * exp(parms$slope), ndigits)
       lcl <- round(base * exp(parms$slope - 1.96 * parms$slope.se), ndigits)
@@ -56,11 +56,13 @@ function(x, mtype, base=0, ndigits=2, cl=TRUE, change=FALSE){
   } else if( mtype == "trend" ){
      
     parms <- x[[1]]$test
-    est <- round(parms$slope, ndigits)
+    base <- max(base, 1) # just in case base=0
+    
+    est <- base * round(parms$slope, ndigits)
     
     if( cl ){
-      lcl <- round(parms$slope - 1.96 * parms$slope.se, ndigits)
-      ucl <- round(parms$slope + 1.96 * parms$slope.se, ndigits)
+      lcl <- base * round(parms$slope - 1.96 * parms$slope.se, ndigits)
+      ucl <- base * round(parms$slope + 1.96 * parms$slope.se, ndigits)
       entry <- paste0(sprintf(fmt,est), ' (', sprintf(fmt,lcl), ', ', sprintf(fmt,ucl), ')')
     } else
       entry <- sprintf(fmt,est)

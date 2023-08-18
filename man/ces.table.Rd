@@ -46,7 +46,9 @@ ces.table(cesobj, species=NA, columns=c("A-0", "P-0", "S-0"), base=100, plots=NU
 }
 }
 \details{
-Models are specified using three characters: (i) the parameter ('A'dult and 'J'uvenile numbers, 'P'roductivity and 'S'urvival, (ii) the model type, currently either '-' to compare to previous years or '/' for a trend, and (iii) the number of (previous) years over which the comparison or trend should be calculated. Thus, for example. "A-5" would compare the current year's estimate of adult captures to the previous 5 years, see \code{\link{index}} for more details on this. The default is to compare with the previous year ("-1"). The function will return either a proportional or a percentage change (depending on the base= and change= arguments) or a slope, for the trend models, on either the log (numbers) or logit (survival/productivity) scales.
+Models are specified using three characters: (i) the parameter ('A'dult and 'J'uvenile numbers, 'P'roductivity and 'S'urvival, (ii) the model type, currently either '-' to compare to previous years or '/' for a trend, and (iii) the number of (previous) years over which the comparison or trend should be calculated. Thus, for example. "A-5" would compare the current year's estimate of adult captures to the previous 5 years, see \code{\link{index}} for more details on this. The default is to compare with the previous year ("-1"). 
+
+For change ('-') models the estimates will be either be the index relative to the base value (so -0.15, 0.85, or 85.0 for base = 0, 1, 100 respectively) or the relevant change (if change=TRUE then -0.15, -0.15, 15.0 in those instances). For trend ('/') models the estimate will be a slope (mean annual change), on either the log (abundance) or logit (survival/productivity) scale (and might be expressed as either 0.07 or 7.00, for example, depending on whether or not base=100).
 
 A simple table will be printed with the change/trend estimate (along with confidence limits and an indication of significance) for each model (columns) and species (rows). These numbers are returned as a dataframe, see 'value' below. 
 }

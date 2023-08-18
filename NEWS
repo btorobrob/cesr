@@ -1,3 +1,7 @@
+Changes in version 1.0.3
+==============
+- 18082023 - bugfix: ces.table now prints the estimates on the right scale
+
 Changes in version 1.0.2
 ==============
 - 07062023 - bugfix: remove sites with no inds of an age-class caught ever

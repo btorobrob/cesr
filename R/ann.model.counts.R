@@ -14,7 +14,6 @@ function(x, year=-1, offset=TRUE, cl=0.95){
   else
     x.lm <- glm(totcaps ~ year, family="quasipoisson", offset=offset, data=x)
   
-
   years <- names(coef(x.lm))
   parm <- coef(x.lm)
   se <- sqrt(diag(vcov(x.lm)))

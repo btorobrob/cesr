@@ -55,8 +55,6 @@ A simple table will be printed with the change/trend estimate (along with confid
 \value{
 a list with three components: table - a dataframe that mimics the printed table, so in 'wide' format; estimates - a dataframe in 'long' format, one row per entry; results - a named list of the model objects, in the form "T_xxxxx_mmm", where xxxxx is the Euring code number, mmm the model specification.
 }
-\references{
-}
 \author{
 Rob Robinson
 }

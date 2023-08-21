@@ -15,12 +15,8 @@ get.euring(string)
   A character string containing (part of) a species name, in any language.
 }
 }
-\details{
-}
 \value{
-  A dataframe containg the code an scientific names of species that contain the search string.
-}
-\references{
+  A dataframe containg the code and scientific names of species that contain the search string.
 }
 \author{
 Rob Robinson

@@ -8,7 +8,7 @@ Plot CES trend
 Plots an estimated trend from CES data either to the screen or to a file.
 }
 \usage{
-plot_trend(x, type, group=NULL, file = NULL, width=480, height=480, units='px', main=FALSE, lty=c(1,2), lwd=1, lcol='black', line=NA, rlty=3, rlwd=1, rcol='black', annual=FALSE, pch=19, pcol='black', pcex=1, ...)
+plot_trend(x, type, group=NULL, file = NULL, width=480, height=480, units='px', main=FALSE, lty=c(1,2), lcol='black', lwd=1, line=NA, rlty=3, rlwd=1, rcol='black', annual=FALSE, pch=19, pcol='black', pcex=1, ...)
 }
 \arguments{
   \item{x}{

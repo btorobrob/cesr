@@ -7,7 +7,7 @@ Map CES Sites
 Plot CES sites on a simple outline map
 }
 \usage{
-map.ces(cesobj, type='c', xlim=c(-20,30), ylim=c(35,70), pch=21, col=c('white','red'), file=NULL, width=640, height=480, lwd=1, cex=1, units='px', ...)
+map.ces(cesobj, type='c', xlim=c(-20,30), ylim=c(35,70), pch=21, col=c('white','red'), file=NULL, width=640, height=480, lwd=1, cex=1, units='px', mar = c(1, 1, 1, 1), ...)
 }
 \arguments{
   \item{cesobj}{

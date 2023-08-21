@@ -8,7 +8,7 @@ Create a table of results for a list of species
 Runs a specified set of models (see details) for a list of species and present the results in a table. 
 }
 \usage{
-ces.table(cesobj, species=NA, columns=c("A-0", "P-0", "S-0"), base=100, plots=NULL, min.n=100, min.ch=50, ndigits=2, year=-1, change=FALSE, visit.corr=TRUE)
+ces.table(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NULL, min.n=100, min.ch=50, ndigits=2, year=-1, change=FALSE, visit.corr=TRUE)
 }
 \arguments{
   \item{cesobj}{

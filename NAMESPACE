@@ -5,16 +5,16 @@ importFrom("grDevices", "col2rgb", "dev.off", "jpeg", "pdf", "png",
            "postscript", "svg", "tiff")
 importFrom("graphics", "abline", "arrows", "axis", "barplot",
            "boxplot", "bxp", "image", "legend", "lines", "mtext",
-           "par", "points", "segments", "title")
-importFrom("stats", "as.formula", "coef", "glm", "median", "na.omit",
-           "predict", "pt", "qnorm", "quantile", "quasibinomial",
-           "quasipoisson", "relevel", "reshape", "vcov", "xtabs")
-importFrom("utils", "adist", "capture.output", "head", "write.table")
-importFrom("data.table", "data.table", "setkey", "setnames")
+           "par", "points", "rect", "segments", "title")
+importFrom("stats", "aggregate", "as.formula", "coef", "deviance", "df.residual",
+           "glm", "median", "na.omit", "predict", "pt", "qnorm", "quantile", 
+           "quasibinomial", "quasipoisson", "relevel", "reshape", "rnorm", "vcov", "xtabs")
+importFrom("utils", "adist", "capture.output", "data", "head", "write.table", "write.csv")
+importFrom("data.table", "data.table", "setDT", "setkey", "setnames", "setorder",
+           "setcolorder", "rbindlist", "uniqueN")
 importFrom("reshape", "cast", "melt")
-importFrom("utils", "write.csv")
 importFrom("mgcv", "gam")
-importFrom("lme4", "glmer")
+importFrom("lme4", "glmer", "ranef", "VarCorr", `:=`)
 
 S3method(summary, ces)
 S3method(plot, ces)

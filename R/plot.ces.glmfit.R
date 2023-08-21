@@ -59,7 +59,7 @@ function(x, graph='X', ...){
     }
  
     par(mfrow=c(1,1), mar=c(2,4,1,1), oma=c(1,1,2,1)) 
-    plglm1(dataset, ylab=ylab) 
+    plglm(dataset, ylab=ylab) 
     title(main=title, outer=TRUE)
     
   }

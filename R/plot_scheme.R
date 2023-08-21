@@ -1,13 +1,15 @@
 plot_scheme <-
 function(cesobj, filename="scheme.pdf", main=NULL, height=11.29, width=8.69,
          pch.cex=1, lwd=1, col.site=NULL, legend.pos=0, map.border=1,
-         n.species=20, col.age=NULL, sp.cex=0.7, min.visit=0){
+         n.species=20, col.age=NULL, sp.cex=0.7, min.visit=0, ...){
 
   filetype <- substr(filename, nchar(filename)-2, nchar(filename))
   if( filetype == "pdf" )
-    pdf(file=filename, width=width, height=height)
-  else if (filetype == "png" )
-    png(file=filename, width=width, height=height)
+    pdf(file=filename, width=width, height=height, ...)
+  else if( filetype == "png" )
+    png(filename=filename, width=width, height=height, ...)
+  else if( filetype == "tif" | filetype == "tif" )
+    tiff(filename=filename, width=width, height=height, ...)
   else
     stop(paste("unrecognised file type:", filetype))
   

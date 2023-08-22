@@ -11,7 +11,7 @@ importFrom("stats", "aggregate", "as.formula", "coef", "deviance", "df.residual"
            "quasibinomial", "quasipoisson", "relevel", "reshape", "rnorm", "vcov", "xtabs")
 importFrom("utils", "adist", "capture.output", "data", "head", "write.table", "write.csv")
 importFrom("data.table", "data.table", "setDT", "setkey", "setnames", "setorder",
-           "setcolorder", "rbindlist", "uniqueN", `:=`)
+           "setcolorder", "rbindlist", "uniqueN")
 importFrom("reshape", "cast", "melt")
 importFrom("mgcv", "gam")
 importFrom("lme4", "glmer", "ranef", "VarCorr")

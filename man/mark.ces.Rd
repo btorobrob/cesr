@@ -34,7 +34,11 @@
   }
 }
 \details{
-  Calls MARK to fit a CJS-with-transients model for data extracted by \code{\link{extract.ch}}, see which for details of data inclusion. Currently, fits the a model in which probability of residency id constant across sites and years, survival is year-dependent and recapture rates are site dependent (with that within the first year being a fixed proportion of the annual rate). If a grouping variable was specified when the data were extracted, survivals will be modelled in relation to this variable, either additively or interactively, according to 'type'.
+  Calls MARK to fit a CJS-with-transients model for data extracted by \code{\link{extract.ch}}, see which for details of data inclusion. Currently, fits the a model in which probability of residency id constant across sites and years, survival is year-dependent and recapture rates are site dependent (with that within the first year being a fixed proportion of the annual rate). 
+  
+  If a grouping variable was specified when the data were extracted, survivals will be modelled in relation to this variable, either additively or interactively, according to 'type'.
+  
+  To fit a time-constant model ('phi(.)' in Mark notation) set 'constant' to be a number equal to the number of capture intervals in the data. If a number larger than that is given for 'constant'  or 'compare' then it will be adjusted accordingly (to n or n-1).
 }
 \value{
   A list consisting of model (the output returned by RMark), its AIC and (corrected) number of paramters (npar), and dataframes called residency, survival, recapture and recap1 with the parameter estimate, standard error and upper and lower confidence limits (as ucl, lcl) for each parameter.  

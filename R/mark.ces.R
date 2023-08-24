@@ -68,8 +68,8 @@ function(cesobj, exclude=NULL, type='+', trend=0, constant=0, compare=0, cleanup
     model.name <- 'trend'
     model.yrs <- ifelse(trend > cesobj$years, cesobj$years, trend)
   } else if( constant > 0 ){
-    constant <- floor(constant) # just in case
-    nyrs <- cesobj$years - ifelse(constant > cesobj$years, cesobj$years, constant) + 1 
+    constant <- ifelse(constant>cesobj$years, cesobj$years, floor(constant)) # just in case
+    nyrs <- cesobj$years - constant + 1
     ddl$Phi$Cind <- ifelse(ddl$Phi$Time >= nyrs, 1, 0) # years within compare period 
     ddl$Phi$tind <- 1 - ddl$Phi$Cind       # years before compare
     ddl$Phi$tind[ddl$Phi$time_var==1] <- 1 # make sure the transient year is picked up
@@ -79,9 +79,9 @@ function(cesobj, exclude=NULL, type='+', trend=0, constant=0, compare=0, cleanup
     else
       phi.ces <- list(formula = as.formula(paste0('~', cesobj$group$name, '+tind:time_var+', cesobj$group$name, ':Cind')))
     model.name <- 'constant'
-    model.yrs <- ifelse(compare > cesobj$years, cesobj$years, constant)
+    model.yrs <- ifelse(constant >= cesobj$years, cesobj$years, constant)
   } else if( compare > 0 ){
-    compare <- floor(compare) # just in case
+    compare <- ifelse(compare>=cesobj$years, cesobj$years-1, floor(compare)) # just in case
     nyrs <- cesobj$years - ifelse(compare > cesobj$years, cesobj$years, compare) 
     ddl$Phi$Cind <- ifelse(ddl$Phi$Time >= nyrs, 1, 0) # years within compare period 
     ddl$Phi$Cind[ddl$Phi$Time >= cesobj$years] <- 0
@@ -138,7 +138,7 @@ function(cesobj, exclude=NULL, type='+', trend=0, constant=0, compare=0, cleanup
       nn <- nyrs 
       s_res <- s_res[c(1:nn, rep(nn,model.yrs-1), nrow(s_res)), ]
     }
-    s_res$years <- c(cesobj$begin.time:(cesobj$begin.time+cesobj$years-1))  
+    s_res$years <- c(cesobj$begin.time:(cesobj$begin.time+nrow(s_res)-1))  
     s_res <- s_res[ , c(6,1:5)]
   }
   rownames(r_res) <- NULL

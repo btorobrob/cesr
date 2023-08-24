@@ -193,6 +193,8 @@ function(cesobj, exclude=NULL, type='+', trend=0, constant=0, compare=0, cleanup
        spp.name=cesobj$spp.name)
   class(results) <- c('ces', 'markfit')
   
+  summary(results)
+  
   return(results)
 }
 

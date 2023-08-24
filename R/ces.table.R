@@ -50,7 +50,7 @@ function(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NUL
     
     if( sum(grepl('[AJPajp]', columns)) > 0 ) # need the count data
       spp.data <- extract.data(cesobj, species=species[i], plots=plots)
-    if( sum(grepl('Ss', columns)) > 0 ) # need the survival data
+    if( sum(grepl('[Ss]', columns)) > 0 ) # need the survival data
       spp.mark <- extract.ch(cesobj, species=species[i], min.n=min.ch, plots=plots)
     
     for( j in 1:n.col ){
@@ -148,11 +148,10 @@ function(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NUL
           row <- nrow(parms)
           est <- parms$index[nrow(parms)] / parms$index[(nrow(parms)-1)]
           
-          ilogit <- function(x) exp(x) / (1+exp(x))
-          mean1 <- parms$estimate[nrow(parms)-1]
-          mean2 <- parms$estimate[nrow(parms)]
-          se1=parms$se[nrow(parms)-1]
-          se2=parms$se[nrow(parms)]
+          mean1 <- parms$parm[row - 1]
+          mean2 <- parms$parm[row]
+          se1=parms$se[row - 1]
+          se2=parms$se[row]
           
           xx = ilogit(rnorm(1000, mean1, se1))
           yy = ilogit(rnorm(1000, mean2, se2))
@@ -166,18 +165,24 @@ function(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NUL
             lcl <- round(base * quantile(yy/xx, 0.025), ndigits)
             ucl <- round(base * quantile(yy/xx, 0.975), ndigits)
           }
-          table.est[[i, j]] <- paste0(est, ' (', lcl, ', ', ucl, ')')
+          z <- est / ((ucl-lcl)/3.92)
+          zz <- 2 * (1 - pnorm(z)) # approximate significance
+          sig.star <- ifelse(zz>0.1, "_", ifelse(zz>0.05, ".", ifelse(zz>0.01, "+", "*")))
+          table.est[[i, j]] <- paste0(est, ' (', lcl, ', ', ucl, ') ', sig.star)
         } else if( mtype == '/' ){ # a trend model
           res[[ctr]] <- list(s.results = mark.ces(spp.mark, exclude=NULL, type='+', trend=nyear, cleanup=TRUE),
                              model.type = list(type='trend', refyear=year, nyrs=nyear), limits=0.95,
                              spp = spp.mark$spp, spp.name = spp.mark$spp.name)
           class(res[[ctr]]) <- c('ces', 'markfit')
-          row.est <- res[[ctr]]$s.results$model$results$beta[grep('Phi:Tind:Time', rownames(res[[ctr]]$s.results$model$results$beta)), ]
+          row.est <- as.numeric(res[[ctr]]$s.results$model$results$beta[grep('Phi:Tind:Time', rownames(res[[ctr]]$s.results$model$results$beta)), ])
           est <- round(row.est[1], ndigits)
+          se <- round(row.est[2], ndigits)
           if( conf.lim ){
             lcl <- round(row.est[3], ndigits)
             ucl <- round(row.est[4], ndigits)
-            table.est[[i, j]] <- paste0(est, ' (', lcl, ', ', ucl, ')')
+            zz <- 2 * (1 - pnorm(est/se)) # approximate significance
+            sig.star <- ifelse(zz>0.1, "_", ifelse(zz>0.05, ".", ifelse(zz>0.01, "+", "*")))
+            table.est[[i, j]] <- paste0(est, ' (', lcl, ', ', ucl, ') ', sig.star)
           } else
             table.est[[i, j]] <- as.character(est)
         }

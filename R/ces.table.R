@@ -141,7 +141,7 @@ function(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NUL
       } else if( dtype == 'S' ){ ## Survival Models ----
         if( mtype == '-' ){ # a compare model
           res[[ctr]] <- list(s.results = mark.ces(spp.mark, exclude=NULL, type='+', compare=nyear, cleanup=TRUE),
-                             model.type = list(type='compare', refyear=year, nyrs=nyear), limits=0.95,
+                             model.type = list(type='compare', refyear=year, nyrs=nyear), limits=0.95, min.n=min.ch,
                              spp = spp.mark$spp, spp.name = spp.mark$spp.name)
           class(res[[ctr]]) <- c('ces', 'markfit')
           parms <- res[[ctr]]$s.results$parms
@@ -171,7 +171,7 @@ function(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NUL
           table.est[[i, j]] <- paste0(est, ' (', lcl, ', ', ucl, ') ', sig.star)
         } else if( mtype == '/' ){ # a trend model
           res[[ctr]] <- list(s.results = mark.ces(spp.mark, exclude=NULL, type='+', trend=nyear, cleanup=TRUE),
-                             model.type = list(type='trend', refyear=year, nyrs=nyear), limits=0.95,
+                             model.type = list(type='trend', refyear=year, nyrs=nyear), limits=0.95, min.n=min.ch,
                              spp = spp.mark$spp, spp.name = spp.mark$spp.name)
           class(res[[ctr]]) <- c('ces', 'markfit')
           row.est <- as.numeric(res[[ctr]]$s.results$model$results$beta[grep('Phi:Tind:Time', rownames(res[[ctr]]$s.results$model$results$beta)), ])

@@ -2,8 +2,6 @@ annc.model.counts <-
 function(x, compare=1, offset=TRUE, cl=0.95){
 
   nyrs <- max(x$year) - min(x$year) + 1
-  if ( compare >= nyrs ) 
-    stop("Not enough years to compare with\n")
 
   x$offset <- 0
   if (offset) 

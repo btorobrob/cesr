@@ -13,9 +13,8 @@ function(x, compare=1, offset=TRUE, cl=0.95){
 
   if ( class(x$year) == "factor")
     x$year <- as.numeric(levels(x$year))  
+
   nyrs <- max(x$year) - min(x$year) + 1
-  if ( compare >= nyrs ) 
-    stop("Not enough years to compare with\n")
 
   ybreak <- max(x$year) - compare - 1
   yearf <- ifelse ( x$year > ybreak, 1, x$year )

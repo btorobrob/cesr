@@ -43,6 +43,8 @@ function(cesdata, year=-1, begin=0, smooth=FALSE, random=FALSE, trend=0, compare
   if( (length(table(ad.data$site)) == 1) |  (length(table(jv.data$site)) == 1) )
     warning('Only one site detected', immediate.=TRUE, call.=FALSE)
   
+  n.years <- max(ad.data$year, jv.data$year, na.rm=TRUE) - min(ad.data$year, jv.data$year, na.rm=TRUE) + 1
+  
   if ( smooth ) {
     mtype <- list(type='smooth', refyear=year, nyrs=0)
     if ( nrow(ad.data) > 0 )
@@ -55,6 +57,11 @@ function(cesdata, year=-1, begin=0, smooth=FALSE, random=FALSE, trend=0, compare
     }  
 
   } else if ( trend > 0 ) {
+    if( trend > n.years ){
+      trend <- n.years
+      wmsg <- paste("Not enough years, trend period adjusted to", trend, "years\n")
+      warning(wmsg, call. = FALSE, immediate. = TRUE)
+    }
     mtype <- list(type='trend', refyear=year, nyrs=trend)
     if ( nrow(ad.data) > 0 )
       ad.res <- annt.model.counts(ad.data, year, trend, offset=visit.corr, cl=cl)
@@ -66,6 +73,11 @@ function(cesdata, year=-1, begin=0, smooth=FALSE, random=FALSE, trend=0, compare
     }
 
   } else if ( compare > 0 ) {
+    if ( compare >= n.years ){
+      compare <- n.years -1 
+      wmsg <- paste("Not enough years, compare period adjusted to", compare, "years\n")
+      warning(wmsg, call. = FALSE, immediate. = TRUE)
+    }
     mtype <- list(type='constant', refyear=year, nyrs=compare)
     if ( nrow(ad.data) > 0 )
       ad.res <- annc.model.counts(ad.data, compare, offset=visit.corr, cl=cl)

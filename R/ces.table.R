@@ -19,7 +19,9 @@ function(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NUL
     warning(paste('invalid species codes detected:', dodgy), call.=FALSE, immediate.=TRUE)
     species <- species[check.spp]
   }
-  sppnames <- cesnames[which(cesnames[ , 1] %in% species), options()$ceslang]
+  
+  sppnames <- cesnames[match(species, cesnames[ , 1]), options()$ceslang]
+  
   columns <- toupper(columns)
   
   if( !base %in% c(0, 1, 100) ){
@@ -47,6 +49,8 @@ function(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NUL
   table.est <- matrix("", ncol=n.col, nrow=n.spp, dimnames=list(sppnames,columns)) # a list to hold the table entries
   
   for( i in 1:length(species) ){
+    
+    cat(sprintf("== Analysing species: %6.0f \n", species[i]))
     
     if( sum(grepl('[AJPajp]', columns)) > 0 ) # need the count data
       spp.data <- extract.data(cesobj, species=species[i], plots=plots)
@@ -140,8 +144,8 @@ function(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NUL
         } # End Productivity Models
       } else if( dtype == 'S' ){ ## Survival Models ----
         if( mtype == '-' ){ # a compare model
-          res[[ctr]] <- list(s.results = mark.ces(spp.mark, exclude=NULL, type='+', compare=nyear, cleanup=TRUE),
-                             model.type = list(type='compare', refyear=year, nyrs=nyear), limits=0.95, min.n=min.ch,
+          res[[ctr]] <- list(s.results = suppressWarnings(mark.ces(spp.mark, exclude=NULL, type='+', compare=nyear, cleanup=TRUE)),
+                             model.type = list(type='compare', refyear=year, nyrs=nyear), limits=0.95, 
                              spp = spp.mark$spp, spp.name = spp.mark$spp.name)
           class(res[[ctr]]) <- c('ces', 'markfit')
           parms <- res[[ctr]]$s.results$parms
@@ -150,39 +154,53 @@ function(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NUL
           
           mean1 <- parms$parm[row - 1]
           mean2 <- parms$parm[row]
-          se1=parms$se[row - 1]
-          se2=parms$se[row]
+          se1 <- parms$se[row - 1]
+          se2 <- parms$se[row]
           
-          xx = ilogit(rnorm(1000, mean1, se1))
-          yy = ilogit(rnorm(1000, mean2, se2))
+          xx <- ilogit(rnorm(1000, mean1, se1))
+          yy <- ilogit(rnorm(1000, mean2, se2))
+          if( any(is.na(c(xx, yy))) ){
+            wmsg <- "Errors generating confidence limits, proceed with caution"
+            warning(wmsg, call.=FALSE, immediate.=TRUE)
+          }
          
           if( change ){
-            est <- round(base * median(yy-xx), ndigits)
-            lcl <- round(base * quantile(yy-xx, 0.025), ndigits)
-            ucl <- round(base * quantile(yy-xx, 0.975), ndigits)
+            est <- round(base * median(yy-xx, na.rm=TRUE), ndigits)
+            lcl <- round(base * quantile(yy-xx, na.rm=TRUE, 0.025), ndigits)
+            ucl <- round(base * quantile(yy-xx, na.rm=TRUE, 0.975), ndigits)
           } else {
-            est <- round(base * median(yy/xx), ndigits)
-            lcl <- round(base * quantile(yy/xx, 0.025), ndigits)
-            ucl <- round(base * quantile(yy/xx, 0.975), ndigits)
+            est <- round(base * median(yy/xx, na.rm=TRUE), ndigits)
+            lcl <- round(base * quantile(yy/xx, na.rm=TRUE, 0.025), ndigits)
+            ucl <- round(base * quantile(yy/xx, na.rm=TRUE, 0.975), ndigits)
           }
           z <- est / ((ucl-lcl)/3.92)
           zz <- 2 * (1 - pnorm(z)) # approximate significance
           sig.star <- ifelse(zz>0.1, "_", ifelse(zz>0.05, ".", ifelse(zz>0.01, "+", "*")))
           table.est[[i, j]] <- paste0(est, ' (', lcl, ', ', ucl, ') ', sig.star)
+          check.parms <- sum(abs(est) > 5, na.rm=TRUE) # these are almost certainly rubbish!
+          if( check.parms > 0 ){
+            wmsg <- "some survival estimates appear suspect, check results carefully!"
+            warning(wmsg, call.=FALSE, immediate.=TRUE)
+          }
         } else if( mtype == '/' ){ # a trend model
-          res[[ctr]] <- list(s.results = mark.ces(spp.mark, exclude=NULL, type='+', trend=nyear, cleanup=TRUE),
-                             model.type = list(type='trend', refyear=year, nyrs=nyear), limits=0.95, min.n=min.ch,
+          res[[ctr]] <- list(s.results = suppressWarnings(mark.ces(spp.mark, exclude=NULL, type='+', trend=nyear, cleanup=TRUE)),
+                             model.type = list(type='trend', refyear=year, nyrs=nyear), limits=0.95, 
                              spp = spp.mark$spp, spp.name = spp.mark$spp.name)
           class(res[[ctr]]) <- c('ces', 'markfit')
           row.est <- as.numeric(res[[ctr]]$s.results$model$results$beta[grep('Phi:Tind:Time', rownames(res[[ctr]]$s.results$model$results$beta)), ])
-          est <- round(row.est[1], ndigits)
-          se <- round(row.est[2], ndigits)
+          est <- round(row.est[1], ndigits, na.rm=TRUE)
+          se <- round(row.est[2], ndigits, na.rm=TRUE)
           if( conf.lim ){
-            lcl <- round(row.est[3], ndigits)
-            ucl <- round(row.est[4], ndigits)
+            lcl <- round(row.est[3], ndigits, na.rm=TRUE)
+            ucl <- round(row.est[4], ndigits, na.rm=TRUE)
             zz <- 2 * (1 - pnorm(est/se)) # approximate significance
             sig.star <- ifelse(zz>0.1, "_", ifelse(zz>0.05, ".", ifelse(zz>0.01, "+", "*")))
             table.est[[i, j]] <- paste0(est, ' (', lcl, ', ', ucl, ') ', sig.star)
+            check.parms <- sum(abs(est) > 5, na.rm=TRUE) # these are almost certainly rubbish!
+            if( check.parms > 0 ){
+              wmsg <- "some survival estimates appear suspect, check results carefully!"
+              warning(wmsg, call.=FALSE, immediate.=TRUE)
+            }
           } else
             table.est[[i, j]] <- as.character(est)
         }
@@ -198,7 +216,6 @@ function(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NUL
       names(res)[ctr] <- paste('T', species[i], columns[j], sep='_')
     } # end columns loop
     
-    cat(sprintf("Analysed species: %6.0f \n", species[i]))
   } # end species loop
   
   # get the first character ...
@@ -208,11 +225,12 @@ function(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NUL
   
   # it was easier(?) to pass the whole change when filling table.est
   # now we can unpick them again into 'long' format
+  zz <<- table.est
   estimates <- data.frame()
   for( i in 1:dim(table.est)[1] ){
+    estimates[ctr, 1] <- dimnames(table.est)[[1]][i]
     for( j in 1:dim(table.est)[2] ){
       ctr <- (dim(table.est)[2] * (i-1)) + j  
-      estimates[ctr, 1] <- dimnames(table.est)[[1]][i]
       estimates[ctr, 2] <- dimnames(table.est)[[2]][j]
       ss <- unlist(strsplit(table.est[i,j],"[(),]"))
       estimates[ctr, (3:5)] <- as.numeric(ss[1:3])

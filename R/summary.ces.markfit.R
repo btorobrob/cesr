@@ -52,18 +52,18 @@ function(x){
   } else if ( x$model.name == 'compare' ) {
     if( is.na(x$group$name) ){
       rown <- nrow(x$survival)
-      if( x$model.yrs == rown ) # constant survival
-        cat(paste('Survival over', x$model.yrs, 'years is:', round(x$survival[rown, 2],3), '\u00B1', round(x$survival[rown, 3],3), '\n')) 
-      else { # comparison period
-        tmp <- x$survival[1:(rown-x$model.yrs), ]
+      tmp <- x$survival[1:(rown-x$model.yrs), ]
+      cat(paste0('Survival in last ', x$model.yrs, ' years was: ', round(x$survival[rown-1, 2],3), ' \u00B1 ', round(x$survival[rown-1, 3],3),
+                ', last year it was: ', round(x$survival[rown, 2],3), ' \u00B1 ', round(x$survival[rown, 3],3), '.'))
+      if( rown > (x$model.yrs+1) ){ # check that there are some years before the compare period!    
         minphi <- round(min(tmp[ , 2]), 3)
         maxphi <- round(max(tmp[ , 2]), 3)
-        cat(paste0('Survival in last ', x$model.yrs, ' years was: ', round(x$survival[rown-1, 2],3), ' \u00B1 ', round(x$survival[rown-1, 3],3),
-                  ', last year it was: ', round(x$survival[rown, 2],3), ' \u00B1 ', round(x$survival[rown, 3],3),
-                  '. Previously it varied between ', minphi, ' and ', maxphi, '.\n')) 
-      }      
+        cat(paste0(' Previously it varied between ', minphi, ' and ', maxphi, '.\n')) 
+      } else {
+        cat('\n')
+      }
     } else {
-      # need to do ths
+      # need to do this
     }
   } else {
     if( is.na(x$group$name) ){
@@ -79,6 +79,13 @@ function(x){
       }
     }
   }
-
-  cat(sprintf("%s %5.3f %s %5.3f %s",'Recapture probabilities vary between', min(x$recapture[,2]), 'and', max(x$recapture[,2]),'across sites\n'))
+  check.parms <- sum(abs(x$parms$parm) > 5) # these are almost certainly rubbish!
+  if( check.parms > 0 ){
+    wmsg <- paste(check.parms, "estimates of survival are suspect, check the results carefully!")
+    warning(wmsg, call.=FALSE, immediate.=FALSE)
+  }
+      
+  cat(sprintf("%s %5.3f %s %5.3f %s %d %s",'Recapture probabilities vary between', 
+              min(x$recapture[,2]), 'and', max(x$recapture[,2]),'across ',
+              length(x$recapture[,2]), 'sites\n'))
 }

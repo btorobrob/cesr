@@ -53,17 +53,18 @@ function(cesdata, species=0, plots=NULL, late=FALSE, group=NA, exclude=NULL, min
     ind <- ind[xx][ , nencs := NULL]
   }
   
-  allyrs <- seq(min(years$year), max(years$year)) # check whether any years not represented
-  missyrs <- allyrs[!(allyrs %in% unique(years$year))]
+  allyrs <- seq(min(ind$year), max(ind$year)) # check whether any years not represented
+  missyrs <- unique(years$year)[!(unique(years$year) %in% allyrs)]
   if( length(missyrs) > 0 ){ # if there are missing years, add some rows with a warning
-    warning(paste("some years appear to be missing, check your data:", paste(missyrs, collapse=" ")), call.=FALSE)
+    warning(paste("some years appear to be missing, check your data:", 
+                  paste(missyrs[order(missyrs)], collapse=" ")), call.=FALSE, immediate.=TRUE)
     years <- rbindlist(list(years,as.data.table(cbind(year=missyrs))), use.names=TRUE, fill=TRUE)
   }
   years[ , site := as.numeric(site) ]
   
   data <- merge(ind, years, by=c('site','year'))
   # and remove birds from non-included years or sites when no birds caught
-  numyrs <- length(allyrs)
+  numyrs <- length(unique(years$year))
   # now determine missing years - get years (col 2) as columns
   cov <- data.table::data.table(reshape::cast(reshape::melt(years[ , list(site, year)], id='site'), site~value)) 
   tmp <- cov[ , site] # this is kludgy, to avoid site being overwritten
@@ -157,7 +158,7 @@ function(cesdata, species=0, plots=NULL, late=FALSE, group=NA, exclude=NULL, min
   spp.name <- as.character(cesnames[cesnames$spp==species, which(colnames(cesnames)==lang) ])
   
   results <- list(chdata = as.data.frame(res),
-                  begin.time = min(data$year),
+                  begin.time = first.year,
                   years = numyrs-1, 
                   group = list(name=group, levels=gplvls),
                   spp = species,

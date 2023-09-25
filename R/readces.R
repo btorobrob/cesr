@@ -1,5 +1,4 @@
 # check for duplicate rows on a day - is this a merge problem
-# check for multiple net lengt
 readces <-
 function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, winter=FALSE, verbose=FALSE){
   
@@ -417,6 +416,14 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, winter=FALSE, verb
     wmessage <- paste('net length of zero detected in', nzero, ifelse(nzero==1,'record','records'), '; these set to NA')
     message(wmessage)
   }
+  count.lengths <- result[ , .(count=uniqueN(netlength)), by=sitename]
+  if( nrow(count.lengths) > 0 ){
+    wmessage <- paste('multiple net lengths detected sites:', 
+                      paste(count.lengths$sitename[count.lengths$count>0], collapse=','))
+    warning(wmessage, call.=FALSE, immediate.=TRUE)
+  }
+    
+  
 
   # habitats
   result[ , habitat := toupper(habitat)]

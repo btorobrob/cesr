@@ -9,7 +9,7 @@ Read in CES data
 Reads in CES data from a text file in EuroCES format
 }
 \usage{
-readces(file, visits='std', group.race=TRUE, fix=FALSE, verbose=FALSE)
+readces(file, visits='std', group.race=TRUE, fix=FALSE, winter=FALSE, verbose=FALSE)
 readBTO(file, species)
 }
 %- maybe also 'usage' for other objects documented here.
@@ -25,6 +25,9 @@ Aggregate records of different races (i.e. those where the last digit of the Eur
 }
   \item{fix}{
 Logical, should presumed errors be fixed? See details.
+}
+  \item{winter}{
+Logical, if TRUE days will be numbered from July 1, and year will be adjusted downwards by 1 for visits in January to June, so Jan 1 1985 will become day 185 of 1984.
 }
   \item{verbose}{
 Logical, produce a file listing records with (currently species/age/sex) errors to be fixed? }

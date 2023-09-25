@@ -1,7 +1,7 @@
 # check for duplicate rows on a day - is this a merge problem
 # check for multiple net lengt
 readces <-
-function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, verbose=FALSE){
+function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, winter=FALSE, verbose=FALSE){
   
   # create a blank vector for collecting dodgy records, set here so we know it exists
   rows2corr <- numeric()
@@ -252,18 +252,39 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, verbose=FALSE){
     warning(wmessage, call.=FALSE, immediate.=TRUE)
     warning.flag <- 1
   }
-  non.summer <- nrow(result[month < 4 | month > 9])
-  if( non.summer > 0 ){
-    if( verbose )
-      rows2corr <- c(rows2corr, result[month < 4 | month > 9, ][ , RowNo])
-    wmessage <- paste(non.summer, ifelse(non.summer==1,'record','records'), 'outside the period April to September, is this expected?')
-    warning(wmessage, call.=FALSE, immediate.=TRUE)
-    warning.flag <- 1
+  # are dates in the (typical) CES period?
+  if( !winter ){
+    non.summer <- nrow(result[month < 4 | month > 9])
+    if( non.summer > 0 ){
+      if( verbose )
+        rows2corr <- c(rows2corr, result[month < 4 | month > 9, ][ , RowNo])
+      wmessage <- paste(non.summer, ifelse(non.summer==1,'record','records'), 'outside the period April to September, is this expected?')
+      warning(wmessage, call.=FALSE, immediate.=TRUE)
+      warning.flag <- 1
+    }
   }
   # now create a Julian day column for doing phenology things
   # create jday first to avoid an error about using $ with atomic vectors
   jday <- function(d, m, y){ strptime(paste0(m, '/', d, '/', y), format="%m/%d/%Y")$yday }
   result[ , julian := jday(day, month, year)]
+  # and reset days if a winter CES
+  if( winter ){ # set start dates to be July and change year Julian date accordingly
+    if( month < 7 ){
+      result[ , year := year-1]
+      result[ , julian := julian + 184]
+    }  
+    else
+      result[ , julian := julian - 181]
+    # are dates in the (typical) winter CES period?
+    non.winter <- nrow(result[month > 3 & month < 10])
+    if( non.summer > 0 ){
+      if( verbose )
+        rows2corr <- c(rows2corr, result[month > 3 & month < 10, ][ , RowNo])
+      wmessage <- paste(non.winter, ifelse(non.winter==1,'record','records'), 'outside the period October to March, is this expected?')
+      warning(wmessage, call.=FALSE, immediate.=TRUE)
+      warning.flag <- 1
+    }
+  }
 
   # convert co-ordinates if necessary
   if( any(colnames(result)=="coords") ){

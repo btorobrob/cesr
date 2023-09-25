@@ -1,5 +1,6 @@
 Changes in version 1.0.3
 ==============
+- 25092023 - add winter= argument to readces()
 - 18082023 - bugfix: ces.table now prints the estimates on the right scale
 
 Changes in version 1.0.2

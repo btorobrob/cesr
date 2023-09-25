@@ -30,7 +30,7 @@ ces.table(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NU
   if species is not specified, include all species with more than this number of captures.
 }
   \item{min.ch}{
-  for survival models, how many individuals need to be captured for a site to be included, see \code{\link{extract.ch}}.
+  for survival models, how many individuals need to be captured for a site to be included, see \code{\link{extract.ch}}. Can be either an integer, or a vector the same length as species.
 }
   \item{ndigits}{
   numeric, how many decimal places to round the results to, see note.

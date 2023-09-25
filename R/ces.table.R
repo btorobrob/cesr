@@ -35,6 +35,11 @@ function(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NUL
     plots <- extract.coverage(cesobj)
   }
 
+  if( length(min.ch) < length(species) ){
+    if( length(min.ch) != 1 )
+      warning("length of min.ch does not match that of species", call.=FALSE)
+    min.ch <- rep(min.ch, length.out=length(species))
+  }
   n.spp <- length(species)
   n.col <- length(columns)
   year <- ifelse(year==-1, max(cesobj$year, na.rm=TRUE), year)
@@ -55,7 +60,7 @@ function(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NUL
     if( sum(grepl('[AJPajp]', columns)) > 0 ) # need the count data
       spp.data <- extract.data(cesobj, species=species[i], plots=plots)
     if( sum(grepl('[Ss]', columns)) > 0 ) # need the survival data
-      spp.mark <- extract.ch(cesobj, species=species[i], min.n=min.ch, plots=plots)
+      spp.mark <- extract.ch(cesobj, species=species[i], min.n=min.ch[i], plots=plots)
     
     for( j in 1:n.col ){
       

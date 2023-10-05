@@ -1,3 +1,4 @@
+# label all 3 species results
 ces.table <-
 function(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NULL, min.n=100, min.ch=50, ndigits=2, year=-1, change=FALSE, visit.corr=TRUE){
   
@@ -233,9 +234,9 @@ function(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NUL
   zz <<- table.est
   estimates <- data.frame()
   for( i in 1:dim(table.est)[1] ){
-    estimates[ctr, 1] <- dimnames(table.est)[[1]][i]
     for( j in 1:dim(table.est)[2] ){
       ctr <- (dim(table.est)[2] * (i-1)) + j  
+      estimates[ctr, 1] <- dimnames(table.est)[[1]][i]
       estimates[ctr, 2] <- dimnames(table.est)[[2]][j]
       ss <- unlist(strsplit(table.est[i,j],"[(),]"))
       estimates[ctr, (3:5)] <- as.numeric(ss[1:3])

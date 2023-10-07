@@ -16,7 +16,7 @@ function(cesobj, ads=FALSE, jvs=FALSE, prod=FALSE){
     cat(sprintf('Juvenile Abundance (%s)\n',cesobj$spp.name))
     res$juveniles <- prsumglm(cesobj$jv.results, cesobj$model.type)
   }
-  if ( prod==TRUE & length(cesobj$ad.results) & length(cesobj$jv.results) > 0 ){ 
+  if ( prod==TRUE & length(cesobj$pr.results) > 0 ){ 
     cat(sprintf('Productivity (%s)\n',cesobj$spp.name))
     res$productvity <- prsumglm(cesobj$pr.results, cesobj$model.type)
   }

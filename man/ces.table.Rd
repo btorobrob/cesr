@@ -8,7 +8,7 @@ Create a table of results for a list of species
 Runs a specified set of models (see details) for a list of species and present the results in a table. 
 }
 \usage{
-ces.table(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NULL, min.n=100, min.ch=50, ndigits=2, year=-1, change=FALSE, visit.corr=TRUE)
+ces.table(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NULL, min.n=100, min.ch=50, ndigits=2, year=-1, change=FALSE, visit.corr=TRUE, save.results=FALSE)
 }
 \arguments{
   \item{cesobj}{
@@ -43,6 +43,9 @@ ces.table(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NU
 }
   \item{visit.corr}{
   logical, include an offset for missed visits in the models, see \code{\link{index}}.
+}
+  \item{save.results}{
+  logical, save the full model results, or only the annual values. Setting this to TRUE can result in a quite a large object, so it may be helpful to skip these.
 }
 }
 \details{

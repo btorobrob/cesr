@@ -68,9 +68,22 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, winter=FALSE, verb
   result <- result[ , RowNo:=row.names(.SD)]
   setcolorder(result, "RowNo")
   
+  ## Ring Number ----
   # combine scheme and ring number to ensure unique identifiers
   result[ , ring := paste0(result$scheme, "_", gsub('[.]','',result$ring))]
 
+  # check for duplicated rings on different species (yes, really!)
+  dup_spp <- unique(result[ , c('species','ring')], by=c('species', 'ring')) 
+  dup_ndx <- duplicated(dup_spp, by=c('ring'))
+  n.duplicated <- sum(dup_ndx)
+  if( n.duplicated > 0 ){
+    if( verbose )
+      rows2corr <- c(rows2corr, result[ring %in% unique(dup_spp$ring[dup_ndx]), ][ , RowNo])
+    wmessage <- paste(n.duplicated, 'ring numbers are associated with more than one species code')
+    warning(wmessage, call.=FALSE, immediate.=TRUE)
+  }
+  
+  ## Species ----
   # Check for unknown species
   unknown_spp <- nrow(result[species==0 | species==99999, ])
   if( unknown_spp > 0 ){
@@ -107,6 +120,7 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, winter=FALSE, verb
   }
   result[ , species := as.factor(species)]
   
+  ## Age ----
   # check that ages are all 3/4 for simplicity later on...
   result[ , age_in := age] # keep a copy of the original for error reports
   if( length(result$age[!result$age %in% c(2, 3, 4)]) > 0 ){
@@ -114,10 +128,23 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, winter=FALSE, verb
     result[ , age := NULL] # sometimes it is character, so start from scratch
     setkey(result, 'age1')
     ages <- sort(unique(result$age1))
-    adult <- c('4','5','6','7','8','9','A','B','C','D','E','F','G','H','J','K','L','M','P','N','Q','R','S','T')
-    result[age1 %in% adult, age := 4] 
-    result[age1 %in% c('3','3J'), age := 3] 
-    result[age1 == 2, age := 2] 
+    adult_s <- c('4','5','6','7','8','9','A','B','C','D','E','F','G','H','J','K','L','M','P','N','Q','R','S','T')
+    adult_w <- c('6','7','8','9','A','B','C','D','E','F','G','H','J','K','L','M','P','N','Q','R','S','T')
+    if( winter ){
+      if( month > 6){
+        result[age1 %in% adult_s, age := 4] 
+        result[age1 %in% c('3','3J'), age := 3] 
+        result[age1 == 2, age := 2] 
+      } else {
+        result[age1 %in% adult_w, age := 4] 
+        result[age1 %in% c('3','5'), age := 3] 
+        result[age1 == 4, age := 2] 
+      }
+    } else {
+      result[age1 %in% adult_s, age := 4] 
+      result[age1 %in% c('3','3J'), age := 3] 
+      result[age1 == 2, age := 2] 
+    }
     result <- result[ age %in% c(2, 3, 4) ] # anything else we just delete, note should keep 2s 
     result[ , age1 := NULL]
     ages <- ages[!ages %in% c('2','3','3J','4','5','6')] # check for non 3/4 age codes
@@ -148,7 +175,7 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, winter=FALSE, verb
   }
   result[ , ':='(min=NULL, minj=NULL)] # no longer needed
   
-  # tidy up sex
+  ## Sex ----
   result[ , sex_in := sex] # keep a copy of the original for error reports
   result[sex %in% c('1','3','5','8','m','M'), sex := 'M'] 
   result[sex %in% c('2','4','6','9','f','F'), sex := 'F'] 
@@ -177,7 +204,7 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, winter=FALSE, verb
   result[ , sex := as.factor(sex)]
   result[ , sex_t := NULL]    
   
-  # set site names
+  # Site Names ----
   if( length(grep("[#]", as.character(result$siteID))) > 0 ){ # yes, really - thanks to Arizaga
     wmessage <- "Using the '#' sign in sitenames confuses Mark, rename your sites!"
     warning(wmessage, call.=FALSE, immediate.=TRUE)
@@ -186,18 +213,7 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, winter=FALSE, verb
   result[ , site := as.numeric(as.factor(siteID))]
   result[ , siteID := NULL] # no longer needed
   
-  # check for duplicated rings on different species (yes, really!)
-  dup_spp <- unique(result[ , c('species','ring')], by=c('species', 'ring')) 
-  dup_ndx <- duplicated(dup_spp, by=c('ring'))
-  n.duplicated <- sum(dup_ndx)
-  if( n.duplicated > 0 ){
-    if( verbose )
-      rows2corr <- c(rows2corr, result[ring %in% unique(dup_spp$ring[dup_ndx]), ][ , RowNo])
-    wmessage <- paste(n.duplicated, 'ring numbers are associated with more than one species code')
-    warning(wmessage, call.=FALSE, immediate.=TRUE)
-  }
-  
-  # check visits
+  ## Visits ----
   result[ , visit := as.character(visit)]
   na.visit <- sum(is.na(result$visit))
   if( na.visit > 0 ){
@@ -224,7 +240,7 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, winter=FALSE, verb
       result[ , visit := as.integer(visit)]
   }
   
-  # and that dates are numeric
+  ## Dates ----
   nmissd <- nmissm <- nmissy <- 0 # just so the if lower down doesn't fail
   if( !is.integer(result$day) ){
     suppressWarnings(result[ , day := as.integer(day) ])
@@ -251,6 +267,7 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, winter=FALSE, verb
     warning(wmessage, call.=FALSE, immediate.=TRUE)
     warning.flag <- 1
   }
+  
   # are dates in the (typical) CES period?
   if( !winter ){
     non.summer <- nrow(result[month < 4 | month > 9])
@@ -262,6 +279,7 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, winter=FALSE, verb
       warning.flag <- 1
     }
   }
+  
   # now create a Julian day column for doing phenology things
   # create jday first to avoid an error about using $ with atomic vectors
   jday <- function(d, m, y){ strptime(paste0(m, '/', d, '/', y), format="%m/%d/%Y")$yday }
@@ -285,7 +303,7 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, winter=FALSE, verb
     }
   }
 
-  # convert co-ordinates if necessary
+  ## Coordinates ----
   if( any(colnames(result)=="coords") ){
 
     if( !is.character(result$coords) ){
@@ -399,7 +417,8 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, winter=FALSE, verb
       }
     }
   }
-  # check NetLengths
+  
+  ## Net Length ----
   if( !is.integer(result$netlength) ){
     netl <- unique(result$netlength)
     suppressWarnings(result[ , netlength := as.integer(netlength) ])
@@ -417,15 +436,13 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, winter=FALSE, verb
     message(wmessage)
   }
   count.lengths <- result[ , .(count=uniqueN(netlength)), by=sitename]
-  if( nrow(count.lengths) > 0 ){
+  if( nrow(count.lengths[count>1]) > 0 ){
     wmessage <- paste('multiple net lengths detected sites:', 
                       paste(count.lengths$sitename[count.lengths$count>0], collapse=','))
     warning(wmessage, call.=FALSE, immediate.=TRUE)
   }
-    
   
-
-  # habitats
+  ## Habitat ----
   result[ , habitat := toupper(habitat)]
   result[habitat %in% c('RD','RE'), habitat := 'RB']
 
@@ -436,6 +453,7 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, winter=FALSE, verb
   }
   result[ , habitat := as.factor(habitat)]
 
+  ## Biometrics ----
   # rudimentary biometric checks for now
   # check for commas rather than decimal points
   if( is.character(result$wing) )
@@ -475,6 +493,7 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, winter=FALSE, verb
   if( is.character(result$p3) )
     result$p3 <- suppressWarnings(as.numeric(gsub(",", ".", result$p3, fixed=TRUE)))
 
+  ## Prepare Result ----
   # set country attribute
   country <- unique(result$countryID)
   if ( length(country) > 1 )

@@ -1,3 +1,7 @@
+Changes in version 1.0.4
+==============
+- 09102023 - some small bugfixes and improvements to ces.table()
+
 Changes in version 1.0.3
 ==============
 - 25092023 - add winter= argument to readces()

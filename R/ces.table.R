@@ -218,11 +218,11 @@ function(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NUL
 
           class(res[[ctr]]) <- c('ces', 'markfit')
           row.est <- as.numeric(res[[ctr]]$s.results$model$results$beta[grep('Phi:Tind:Time', rownames(res[[ctr]]$s.results$model$results$beta)), ])
-          est <- round(row.est[1], ndigits, na.rm=TRUE)
-          se <- round(row.est[2], ndigits, na.rm=TRUE)
+          est <- round(row.est[1], ndigits)
+          se <- round(row.est[2], ndigits)
           if( conf.lim ){
-            lcl <- round(row.est[3], ndigits, na.rm=TRUE)
-            ucl <- round(row.est[4], ndigits, na.rm=TRUE)
+            lcl <- round(row.est[3], ndigits)
+            ucl <- round(row.est[4], ndigits)
             zz <- 2 * (1 - pnorm(est/se)) # approximate significance
             sig.star <- ifelse(zz>0.1, "_", ifelse(zz>0.05, ".", ifelse(zz>0.01, "+", "*")))
             table.est[[i, j]] <- paste0(est, ' (', lcl, ', ', ucl, ') ', sig.star)
@@ -261,7 +261,6 @@ function(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NUL
   
   # it was easier(?) to pass the whole change when filling table.est
   # now we can unpick them again into 'long' format
-  zz <<- table.est
   estimates <- data.frame()
   for( i in 1:dim(table.est)[1] ){
     for( j in 1:dim(table.est)[2] ){

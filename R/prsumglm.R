@@ -18,23 +18,31 @@ function(x, mtype){
   if ( year0 == fyear ) {     # check if ref year is first year, so need to reverse comparison
     fyear <- max(x$parms$years)
     delta_ind <- x$parms$index[x$parms$years==fyear]
-    if (delta_ind < 1 ) {
-      delta_ind <- -100 * (1-delta_ind )
-    } else {
-      delta_ind <- 100 * (delta_ind-1)
+    if( length(delta_ind) == 1){
+      if (delta_ind < 1 ) {
+        delta_ind <- -100 * (1-delta_ind )
+      } else {
+        delta_ind <- 100 * (delta_ind-1)
+      }
+    } else{
+      delta_ind <- NA
     }
   } else {
     # get the actual index value because for gams its not guaranteed to be 1
     delta_ind <- x$parms$index[which(x$parms$years==year0)]/x$parms$index[x$parms$years==fyear]
-    if (delta_ind < 1 ) {
-      delta_ind <- -100 * (1-delta_ind)
+    if( length(delta_ind) == 1 ){
+      if (delta_ind < 1 ) {
+        delta_ind <- -100 * (1-delta_ind)
+      } else {
+        delta_ind <- 100 * (delta_ind-1)                                                             
+      }
     } else {
-      delta_ind <- 100 * (delta_ind-1)                                                             
+      delta_ind <- NA
     }
   }
   
   if ( mtype$type == 'annual' ){
-    if( delta_ind > 1000 )
+    if( !is.na(delta_ind) & delta_ind > 1000 )
       cat(sprintf("Change between %d and %d: >1000%%\n", fyear, year0))
     else
       cat(sprintf("Change between %d and %d: %4.1f%%\n", fyear, year0, delta_ind))
@@ -62,7 +70,7 @@ function(x, mtype){
   else if ( mtype$type == 'smooth' ){
     r2 <- x$test$r2 * 100
     edf <- x$test$edf
-    if( delta_ind > 1000 )
+    if( !is.na(delta_ind) & delta_ind > 1000 )
       cat(sprintf("Change %d to %d: >1000%%; smooth explains %4.1f%% of variance with %4.2f df\n", fyear, year0, r2, edf))
     else
       cat(sprintf("Change %d to %d: %4.1f%%; smooth explains %4.1f%% of variance with %4.2f df\n", fyear, year0, delta_ind, r2, edf))

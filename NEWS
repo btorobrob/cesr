@@ -1,6 +1,7 @@
 Changes in version 1.0.4
 ==============
 - 09102023 - some small bugfixes and improvements to ces.table()
+- 14102023 - can now get overall change for trend models from ces.table()
 
 Changes in version 1.0.3
 ==============

@@ -39,7 +39,7 @@ ces.table(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NU
   the reference year for the comparisons if not the last.
 }
   \item{change}{
-  logical, for comparison models return the change or the relative value (e.g. +0.2 or 1.2)?
+  logical, for comparison models return the change or the relative value (e.g. +0.2 or 1.2); for trend models TRUE gives the overall change, FALSE the (annual) slope.
 }
   \item{visit.corr}{
   logical, include an offset for missed visits in the models, see \code{\link{index}}.

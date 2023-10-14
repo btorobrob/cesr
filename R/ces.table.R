@@ -3,7 +3,7 @@ function(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NUL
   
   if( class(cesobj)[1]!='ces' | class(cesobj)[2]!='data' )
     stop('not a CES data object')
-  
+
   if( is.na(species[1]) ){
       species <- table(cesobj$species)
       species <- as.numeric(names(species[species > min.n]))
@@ -43,6 +43,7 @@ function(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NUL
   n.spp <- length(species)
   n.col <- length(columns)
   year <- ifelse(year==-1, max(cesobj$year, na.rm=TRUE), year)
+  logit <- function(x) log(x / (1-x))
   ilogit <- function(x) exp(x) / (1+exp(x))  # a useful function to get the results
   
   # easy to create a lookup table, but is there a more elegant way of doing this?
@@ -69,13 +70,16 @@ function(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NUL
       mtype <- substr(columns[j], 2, 2)
       nyear <- as.numeric(substr(columns[j], 3, nchar(columns[j]))) # just in case > 10 so more than 3 chars
       
-      if( dtype == 'A' ){ ## Adult Models ----
+      ## Adult Models ----
+      if( dtype == 'A' ){ 
         if( nyear == 0 ){ # annual model irrespective
           res[[ctr]] <- list(ad.results = ann.model.counts(spp.data$ad.data, offset=visit.corr),
                              model.type = list(type='annual', refyear=year, nyrs=0), limits=0.95,
                              spp = spp.data$spp, spp.name = spp.data$spp.name)
           class(res[[ctr]]) <- c('ces', 'glmfit')
+          # get the estimates
           table.est[i, j] <- get.estimate(res[[ctr]], mtype='annual', cl=conf.lim, ndigits=ndigits) 
+          # save the results?
           if( !save.results )
             capture.output(res[[ctr]] <- summary(res[[ctr]]))
         }
@@ -84,7 +88,9 @@ function(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NUL
                              model.type = list(type='constant', refyear=year, nyrs=nyear), limits=0.95,
                              spp = spp.data$spp, spp.name = spp.data$spp.name)
           class(res[[ctr]]) <- c('ces', 'glmfit')
+          # get the estimates
           table.est[i, j] <- get.estimate(res[[ctr]], mtype='constant', cl=conf.lim, base=base, ndigits=ndigits, change=change) 
+          # save the results?
           if( !save.results )
             capture.output(res[[ctr]] <- summary(res[[ctr]]))
         }
@@ -93,7 +99,14 @@ function(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NUL
                              model.type = list(type='trend', refyear=year, nyrs=nyear), limits=0.95,
                              spp = spp.data$spp, spp.name = spp.data$spp.name)
           class(res[[ctr]]) <- c('ces', 'glmfit')
-          table.est[i, j] <- get.estimate(res[[ctr]], mtype='trend', cl=conf.lim, base=base, ndigits=ndigits) 
+          # get the estimates
+          if( change ){  ## get total change
+            res[[ctr]]$model.type$refyear <- min(res[[ctr]]$ad.results$parms$years)
+            table.est[i, j] <- get.estimate(res[[ctr]], mtype='compare', cl=conf.lim, base=base, ndigits=ndigits, change=TRUE) 
+          }
+          else  ## otherwise the slope (mean annual change)
+            table.est[i, j] <- get.estimate(res[[ctr]], mtype='trend', cl=conf.lim, base=base, ndigits=ndigits, change=FALSE) 
+          # save the results?
           if( !save.results )
             capture.output(res[[ctr]] <- summary(res[[ctr]]))
         }
@@ -101,13 +114,17 @@ function(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NUL
           warning("unrecognised model type: please use '-' or '/' only", call. = FALSE)
           next
         } # End Adult Models
-      } else if( dtype == 'J' ){ ## Juvenile Models ----
+      
+      ## Juvenile Models ----  
+      } else if( dtype == 'J' ) { 
         if( nyear == 0 ){ # annual model irrespective
           res[[ctr]] <- list(jv.results = ann.model.counts(spp.data$jv.data, offset=visit.corr),
                              model.type = list(type='annual', refyear=year, nyrs=0), limits=0.95,
                              spp = spp.data$spp, spp.name = spp.data$spp.name)
           class(res[[ctr]]) <- c('ces', 'glmfit')
+          # get the estimates
           table.est[i, j] <- get.estimate(res[[ctr]], mtype='annual', cl=conf.lim, base=base, ndigits=ndigits) 
+          # save the results?
           if( !save.results )
             capture.output(res[[ctr]] <- summary(res[[ctr]]))
         }
@@ -116,7 +133,9 @@ function(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NUL
                              model.type = list(type='constant', refyear=year, nyrs=nyear), limits=0.95,
                              spp = spp.data$spp, spp.name = spp.data$spp.name)
           class(res[[ctr]]) <- c('ces', 'glmfit')
+          # get the estimates
           table.est[i, j] <- get.estimate(res[[ctr]], mtype='constant', cl=conf.lim, base=base, ndigits=ndigits, change=change) 
+          # save the results?
           if( !save.results )
             capture.output(res[[ctr]] <- summary(res[[ctr]]))
         }
@@ -125,7 +144,14 @@ function(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NUL
                              model.type = list(type='trend', refyear=year, nyrs=nyear), limits=0.95,
                              spp = spp.data$spp, spp.name = spp.data$spp.name)
           class(res[[ctr]]) <- c('ces', 'glmfit')
-          table.est[i, j] <- get.estimate(res[[ctr]], mtype='trend', cl=conf.lim, base=base, ndigits=ndigits) 
+          # get the estimates
+          if( change ){  ## get total change
+            res[[ctr]]$model.type$refyear <- min(res[[ctr]]$jv.results$parms$years)
+            table.est[i, j] <- get.estimate(res[[ctr]], mtype='compare', cl=conf.lim, base=base, ndigits=ndigits) 
+          }
+          else  ## otherwise the slope (mean annual change)
+            table.est[i, j] <- get.estimate(res[[ctr]], mtype='trend', cl=conf.lim, base=base, ndigits=ndigits) 
+          # save the results?
           if( !save.results )
             capture.output(res[[ctr]] <- summary(res[[ctr]]))
         }
@@ -133,7 +159,9 @@ function(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NUL
           warning("unrecognised model type: please use '-' or '/' only", call. = FALSE)
           next
         } # End Juvenile Models
-      } else if( dtype == 'P' ){ ## Productivity Models ----
+      
+      ## Productivity Models ----      
+      } else if( dtype == 'P' ) { 
         
         pr.data <- list(ad.data=spp.data$ad.data, jv.data=spp.data$jv.data)
         
@@ -142,7 +170,9 @@ function(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NUL
                              model.type = list(type='annual', refyear=year, nyrs=0), limits=0.95,
                              spp = spp.data$spp, spp.name = spp.data$spp.name)
           class(res[[ctr]]) <- c('ces', 'glmfit')
+          # get the estimates
           table.est[i, j] <- get.estimate(res[[ctr]], mtype='annual', cl=conf.lim, base=base, ndigits=ndigits) 
+          # save the results?
           if( !save.results )
             capture.output(res[[ctr]] <- summary(res[[ctr]]))
         } else if( mtype == '-' ){ # a compare model  
@@ -150,7 +180,9 @@ function(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NUL
                              model.type = list(type='constant', refyear=year, nyrs=nyear), limits=0.95,
                              spp = spp.data$spp, spp.name = spp.data$spp.name)
           class(res[[ctr]]) <- c('ces', 'glmfit')
+          # get the estimates
           table.est[i, j] <- get.estimate(res[[ctr]], mtype='constant', cl=conf.lim, base=base, ndigits=ndigits, change=change) 
+          # save the results?
           if( !save.results )
             capture.output(res[[ctr]] <- summary(res[[ctr]]))
         } else if( mtype == '/' ){ # a trend model  
@@ -158,14 +190,23 @@ function(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NUL
                              model.type = list(type='trend', refyear=year, nyrs=nyear), limits=0.95,
                              spp = spp.data$spp, spp.name = spp.data$spp.name)
           class(res[[ctr]]) <- c('ces', 'glmfit')
-          table.est[i, j] <- get.estimate(res[[ctr]], mtype='trend', cl=conf.lim, base=base, ndigits=ndigits) 
+          # get the estimates
+          if( change ){  ## get total change
+            res[[ctr]]$model.type$refyear <- min(res[[ctr]]$pr.results$parms$years)
+            table.est[i, j] <- get.estimate(res[[ctr]], mtype='compare', cl=conf.lim, base=base, ndigits=ndigits) 
+          }
+          else  ## otherwise the slope (mean annual change)
+            table.est[i, j] <- get.estimate(res[[ctr]], mtype='trend', cl=conf.lim, base=base, ndigits=ndigits) 
+          # save the results?
           if( !save.results )
             capture.output(res[[ctr]] <- summary(res[[ctr]]))
         } else {
           warning("unrecognised model type: please use '-' or '/' only", call. = FALSE)
           next
         } # End Productivity Models
-      } else if( dtype == 'S' ){ ## Survival Models ----
+        
+      ## Survival Models ----
+      } else if( dtype == 'S' ) { 
         if( mtype == '-' ){ # a compare model
           sink(file="temp.out") # ugly workaround to avoid printing a summary
           res[[ctr]] <- list(s.results = suppressWarnings(mark.ces(spp.mark, exclude=NULL, type='+', compare=nyear, cleanup=TRUE)),
@@ -173,6 +214,7 @@ function(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NUL
                              spp = spp.mark$spp, spp.name = spp.mark$spp.name)
           sink()
           file.remove("temp.out")
+          
           class(res[[ctr]]) <- c('ces', 'markfit')
           parms <- res[[ctr]]$s.results$parms
           row <- nrow(parms)
@@ -217,24 +259,36 @@ function(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NUL
           file.remove("temp.out")
 
           class(res[[ctr]]) <- c('ces', 'markfit')
-          row.est <- as.numeric(res[[ctr]]$s.results$model$results$beta[grep('Phi:Tind:Time', rownames(res[[ctr]]$s.results$model$results$beta)), ])
-          est <- round(row.est[1], ndigits)
-          se <- round(row.est[2], ndigits)
-          if( conf.lim ){
-            lcl <- round(row.est[3], ndigits)
-            ucl <- round(row.est[4], ndigits)
+          if( change ){
+            row.n <- max(grep("Phi", rownames(res[[ctr]]$s.results$model$results$real), fixed=TRUE))
+            est1 <- res[[ctr]]$s.results$model$results$real$estimate[2]
+            est2 <- res[[ctr]]$s.results$model$results$real$estimate[row.n]
+            est <- base * (est2 - est1)
+            se1 <- res[[ctr]]$s.results$model$results$real$se[2]
+            se2 <- res[[ctr]]$s.results$model$results$real$se[row.n]
+            se <- sqrt(se1^2 + se2^2)
             zz <- 2 * (1 - pnorm(est/se)) # approximate significance
             sig.star <- ifelse(zz>0.1, "_", ifelse(zz>0.05, ".", ifelse(zz>0.01, "+", "*")))
-            table.est[[i, j]] <- paste0(est, ' (', lcl, ', ', ucl, ') ', sig.star)
-            check.parms <- sum(abs(est) > 5, na.rm=TRUE) # these are almost certainly rubbish!
-            if( check.parms > 0 ){
-              wmsg <- "some survival estimates appear suspect, check results carefully!"
-              warning(wmsg, call.=FALSE, immediate.=TRUE)
-            }
-          } else
-            table.est[[i, j]] <- as.character(est)
-        }
-        else {
+            table.est[[i, j]] <- paste0(round(est, ndigits), " ", sig.star)
+          } else {
+            row.est <- as.numeric(res[[ctr]]$s.results$model$results$beta[grep('Phi:Tind:Time', rownames(res[[ctr]]$s.results$model$results$beta)), ])
+            est <- round(row.est[1], ndigits)
+            se <- round(row.est[2], ndigits)
+            if( conf.lim ){
+              lcl <- round(row.est[3], ndigits)
+              ucl <- round(row.est[4], ndigits)
+              zz <- 2 * (1 - pnorm(est/se)) # approximate significance
+              sig.star <- ifelse(zz>0.1, "_", ifelse(zz>0.05, ".", ifelse(zz>0.01, "+", "*")))
+              table.est[[i, j]] <- paste0(est, ' (', lcl, ', ', ucl, ') ', sig.star)
+              check.parms <- sum(abs(est) > 5, na.rm=TRUE) # these are almost certainly rubbish!
+              if( check.parms > 0 ){
+                wmsg <- "some survival estimates appear suspect, check results carefully!"
+                warning(wmsg, call.=FALSE, immediate.=TRUE)
+              }
+            } else
+              table.est[[i, j]] <- as.character(est)
+          }
+        } else {
           warning("unrecognised model type: please use '-' or '/' only", call. = FALSE)
           next
         }
@@ -285,7 +339,3 @@ function(cesobj, species=NA, columns=c("A-1", "P-1", "S-1"), base=100, plots=NUL
   print(knitr::kable(table.est, col.names=col.headings, align='r', row.names=TRUE, digits=2))
   return(return.list)
 }
-
-
-
-

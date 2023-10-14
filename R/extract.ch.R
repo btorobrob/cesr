@@ -56,7 +56,7 @@ function(cesdata, species=0, plots=NULL, late=FALSE, group=NA, exclude=NULL, min
   allyrs <- seq(min(ind$year), max(ind$year)) # check whether any years not represented
   missyrs <- unique(years$year)[!(unique(years$year) %in% allyrs)]
   if( length(missyrs) > 0 ){ # if there are missing years, add some rows with a warning
-    warning(paste("some years appear to be missing, check your data:", 
+    warning(paste("some years appear to be missing, maybe check your survival data:", 
                   paste(missyrs[order(missyrs)], collapse=" ")), call.=FALSE, immediate.=TRUE)
     years <- rbindlist(list(years,as.data.table(cbind(year=missyrs))), use.names=TRUE, fill=TRUE)
   }

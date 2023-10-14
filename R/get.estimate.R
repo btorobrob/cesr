@@ -5,11 +5,16 @@ function(x, mtype, base=0, ndigits=2, cl=TRUE, change=FALSE){
   if( mtype == 'annual' | mtype == "compare" ){
     
     parms <- x[[1]]$parms
+    tt <- x[[1]]$test$tsig
 
     year0 <- x$model.type$refyear
     fyear <- parms$years[1]
     
-    if( year0 == fyear ) {     # check if ref year is first year, so need to reverse comparison
+    if( parms$index[parms$years==year0] != 1 )
+      parms[ , c('index', 'lcl', 'ucl')] <- parms[ , c('index', 'lcl', 'ucl')] / parms$index[parms$years==year0]
+      
+    cat(paste(mtype, ';', year0, ';', fyear))
+    if( year0 == fyear ) { ## check if ref year is first year, so need to reverse comparison
       fyear <- max(parms$years, na.rm=TRUE)
       delta_ind <- parms[parms$years==fyear, c('index', 'lcl', 'ucl')]
     } else {
@@ -33,6 +38,7 @@ function(x, mtype, base=0, ndigits=2, cl=TRUE, change=FALSE){
   } else if( mtype =="constant" ){
     
     parms <- x[[1]]$test
+    tt <- parms$tsig
     
     if( base == 0 ){
       est <- round(exp(parms$slope)-1, ndigits)
@@ -51,7 +57,7 @@ function(x, mtype, base=0, ndigits=2, cl=TRUE, change=FALSE){
     if( cl )
       entry <- paste0(sprintf(fmt,est), ' (', sprintf(fmt,lcl), ', ', sprintf(fmt,ucl), ')')
     else
-      entry <- as.character(sprintf(fmt,est))
+      entry <- as.character(sprintf(fmt, est))
 
   } else if( mtype == "trend" ){
      
@@ -59,16 +65,16 @@ function(x, mtype, base=0, ndigits=2, cl=TRUE, change=FALSE){
     base <- max(base, 1) # just in case base=0
     
     est <- base * round(parms$slope, ndigits)
-    
+    tt <- parms$tsig
+
     if( cl ){
       lcl <- base * round(parms$slope - 1.96 * parms$slope.se, ndigits)
       ucl <- base * round(parms$slope + 1.96 * parms$slope.se, ndigits)
       entry <- paste0(sprintf(fmt,est), ' (', sprintf(fmt,lcl), ', ', sprintf(fmt,ucl), ')')
     } else
-      entry <- sprintf(fmt,est)
+      entry <- sprintf(fmt, est)
   }            
 
-  tt <- parms$tsig
   sig.star <- ifelse(tt>0.1, "_", ifelse(tt>0.05, ".", ifelse(tt>0.01, "+", "*")))
 
   return(paste(entry, sig.star))

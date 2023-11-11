@@ -11,7 +11,7 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, winter=FALSE, verb
     file <- file.choose()
   
   if( !file.exists(file) )
-    stop(paste("cannot find the file:", file, "please check typing and that are you in the right directory"))
+    stop(paste("cannot find the file:", file, "- please check typing and that are you in the right directory"))
 
   # get column names and work out how many
   coln <- strsplit(readLines(file, n=1), '[,;]')[[1]]
@@ -29,7 +29,8 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, winter=FALSE, verb
     result <- as.data.frame(result)
     class(result) <- c('ces', 'data', 'data.frame')
     return(result)
-  }
+  } else if( sum(coln%in%final.names) < 3 ) # an arbitrary no, just in case of random matches?
+    stop(paste(file, "does not appear to contain CES data, check your typing?"))
 
   # short form names
   var.names <- c('countryID', 'siteID', 'coords', 'habitat', 'visit',

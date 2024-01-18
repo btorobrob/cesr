@@ -11,7 +11,7 @@ function(x, offset=TRUE, cl=0.95){
     x.gam <- gam(totcaps ~ s(year), family="quasipoisson", offset=offset, data=x)
   
   nyrs <- max(x$year) - min(x$year) + 1
-  newdata <- as.data.frame(cbind(site=rep(min(as.numeric(x.lm$xlevels[[1]])), nyrs)))
+  newdata <- as.data.frame(cbind(site=rep(min(as.numeric(x.gam$xlevels[[1]])), nyrs)))
   newdata$year <- c(min(x$year):max(x$year))
   
   ann.vals <- ann.model.counts(x, year)$parms$parm

@@ -1,3 +1,7 @@
+Changes in version 1.0.5
+==============
+- 19012021 - bugfix in productivity models to include sites where ads were caught but no juvs (if no ads caught no info on productivity)
+
 Changes in version 1.0.4
 ==============
 - 09102023 - some small bugfixes and improvements to ces.table()

@@ -1,20 +1,20 @@
 annsm.model.prod <-
-function(x, offset=TRUE, cl=0.95){
+function(x, offset=TRUE, year=-1, cl=0.95){
 
   cesdata <- x  # we're going to need this later, annoyingly
-  year <- ifelse(year==-1, min(x[[1]]$year, na.rm=TRUE), year)
+  year <- ifelse(year==-1, max(x[[1]]$year, na.rm=TRUE), year)
   
   ad <- x$ad.data[ , c('site','year','totcaps','corrcaps') ]
-  names(ad)<-c('site','year','adcaps','adexcaps')
+  names(ad) <- c('site','year','adcaps','adexcaps')
   jv <- x$jv.data[ , c('site','year','totcaps','corrcaps') ]
-  names(jv)<-c('site','year','jvcaps','jvexcaps')
+  names(jv) <- c('site','year','jvcaps','jvexcaps')
   # merge - sites with no ads caught provide no info on productivity
   x <- merge(ad, jv, by=c('site', 'year'), all.x=TRUE)
   x[is.na(x)] <- 0 # for sites where no ads or jvs caught in a year
   x$totcaps <- x$adcaps + x$jvcaps
-  x <- x[x$totcaps>0, ]     # no birds caught so doesn't contribute to model fit
+  x <- x[x$totcaps > 0, ]     # no birds caught so doesn't contribute to model fit
 
-  if (offset) {
+  if(offset) {
     x <- calc.offset(x)
   } else {
     x$offset <- 0
@@ -45,7 +45,11 @@ function(x, offset=TRUE, cl=0.95){
   
   params <- summary(x.gam)
   
-  list(model=x.gam, parms=res,
-       test=list(type='smooth',edf=params$edf,scale=params$scale,r2=params$dev.expl))
+  list(model = x.gam, 
+       parms = res,
+       test = list(type = 'smooth',
+                   edf = params$edf,
+                   scale = params$scale,
+                   r2 = params$dev.expl))
 }
 

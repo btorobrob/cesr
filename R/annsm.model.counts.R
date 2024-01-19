@@ -1,9 +1,13 @@
 annsm.model.counts <-
-function(x, offset=TRUE, cl=0.95){
+function(x, offset=TRUE, year=-1, cl=0.95){
 
+  if( year == -1 )
+    year <- max(x$year)
+  x$year <- relevel(factor(x$year), which(levels(factor(x$year))==year))
+  
   x$offset <- 0
   if ( offset ) 
-    x$offset <- ifelse (x$corrcaps > x$totcaps, log(x$totcaps/x$corrcaps), 0)
+    x$offset <- ifelse(x$corrcaps > x$totcaps, log(x$totcaps/x$corrcaps), 0)
 
   if( length(table(x$site)) > 1 )
     x.gam <- gam(totcaps ~ as.factor(site) + s(year), family="quasipoisson", offset=offset, data=x)
@@ -30,8 +34,12 @@ function(x, offset=TRUE, cl=0.95){
   
   params <- summary(x.gam)
   
-  list(model=x.gam, parms=res,
-       test=list(type='smooth',edf=params$edf,scale=params$scale,r2=params$dev.expl))
+  list(model = x.gam, 
+       parms = res,
+       test = list(type = 'smooth',
+                   edf = params$edf,
+                   scale = params$scale,
+                   r2 = params$dev.expl))
   
 }
 

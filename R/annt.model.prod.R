@@ -8,7 +8,8 @@ function(x, year=-1, trend=100, offset=TRUE, cl=0.95){
   names(ad)<-c('site','year','adcaps','adexcaps')
   jv <- x$jv.data[ , c('site','year','totcaps','corrcaps') ]
   names(jv)<-c('site','year','jvcaps','jvexcaps')
-  x <- merge(ad, jv, by=c('site', 'year'))
+  x <- merge(ad, jv, by=c('site', 'year'), all.x=TRUE)
+  x[is.na(x)] <- 0
   x$totcaps <- x$adcaps + x$jvcaps
   x$totexcaps <- x$adexcaps + x$jvexcaps
   x <- x[x$totcaps>0, ]     # no birds caught so doesn't contribute to model fit

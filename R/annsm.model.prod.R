@@ -8,7 +8,9 @@ function(x, offset=TRUE, cl=0.95){
   names(ad)<-c('site','year','adcaps','adexcaps')
   jv <- x$jv.data[ , c('site','year','totcaps','corrcaps') ]
   names(jv)<-c('site','year','jvcaps','jvexcaps')
-  x <- merge(ad, jv, by=c('site', 'year'))
+  # merge - sites with no ads caught provide no info on productivity
+  x <- merge(ad, jv, by=c('site', 'year'), all.x=TRUE)
+  x[is.na(x)] <- 0 # for sites where no ads or jvs caught in a year
   x$totcaps <- x$adcaps + x$jvcaps
   x <- x[x$totcaps>0, ]     # no birds caught so doesn't contribute to model fit
 

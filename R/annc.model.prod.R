@@ -6,7 +6,8 @@ function(x, compare=1, offset=TRUE, cl=0.95){
   names(ad.new) <- c('site', 'year', 'adcaps', 'adexcaps')
   jv.new <- x$jv.data[ , c('site', 'year', 'totcaps', 'corrcaps') ]
   names(jv.new) <- c('site', 'year', 'jvcaps', 'jvexcaps')
-  x <- merge(ad.new, jv.new)
+  x <- merge(ad.new, jv.new, by=c('site','year'), all.x=TRUE)
+  x[is.na(x)] <- 0
   x$totcaps <- x$adcaps + x$jvcaps
   x$totexcaps <- x$adexcaps + x$jvexcaps
   x <- x[x$totcaps>0, ]     # no birds caught so doesn't contribute to model fit

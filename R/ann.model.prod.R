@@ -5,7 +5,8 @@ function(x, year=-1, offset=TRUE, cl=0.95){
   names(ad) <- c('site','year','adcaps','adexcaps')
   jv <- x$jv.data[ , c('site','year','totcaps','corrcaps') ]
   names(jv) <- c('site','year','jvcaps','jvexcaps')
-  x <- merge(ad, jv, by=c('site','year')) # exclude sites with no ad/jv coverage, so no all=
+  x <- merge(ad, jv, by=c('site','year'), all.x=TRUE) # exclude sites with no ad coverage
+  x[is.na(x)] <- 0 # for sites where no ads or jvs caught in a year
   x$totcaps <- x$adcaps + x$jvcaps
   x$totexcaps <- x$adexcaps + x$jvexcaps
   x <- x[x$totcaps>0, ]     # no birds caught so doesn't contribute to model fit

@@ -29,9 +29,8 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, winter=FALSE, verb
     result <- as.data.frame(result)
     class(result) <- c('ces', 'data', 'data.frame')
     return(result)
-  } else if( sum(coln%in%final.names) < 3 ) # an arbitrary no, just in case of random matches?
-    stop(paste(file, "does not appear to contain CES data, check your typing?"))
-
+  } 
+  
   # short form names
   var.names <- c('countryID', 'siteID', 'coords', 'habitat', 'visit',
                  'day', 'month', 'year', 'netlength', 'StartTime', 'EndTime',
@@ -52,6 +51,8 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, winter=FALSE, verb
   which.names <- unlist(apply(match.names, 1, which.min))
   col.numbers <- column_nos[which.names]
   col.names <- var.names[col.numbers]
+  
+  
   
   result <- suppressWarnings(data.table::fread(file))
   n.read <- nrow(result)

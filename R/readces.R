@@ -3,8 +3,7 @@ readces <-
 function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, winter=FALSE, verbose=FALSE){
   
   # create a blank vector for collecting dodgy records, set here so we know it exists
-  rows2corr <- numeric()
-  report.cols <- c("RowNo", "ring", "species", "sitename", "age_in", "sex_in", "day", "month", "year")
+  report.cols <- c("error", "RowNo", "ring", "species", "sitename", "age_in", "sex_in", "day", "month", "year")
   warning.flag <- 0 # if any warnings arise (probable) suggest setting verbose to TRUE
 
   if( is.null(file) )
@@ -51,9 +50,7 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, winter=FALSE, verb
   which.names <- unlist(apply(match.names, 1, which.min))
   col.numbers <- column_nos[which.names]
   col.names <- var.names[col.numbers]
-  
-  
-  
+
   result <- suppressWarnings(data.table::fread(file))
   n.read <- nrow(result)
   # use suppressWarnings to avoid messages about bumping col classes late in the data
@@ -67,7 +64,8 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, winter=FALSE, verb
     result <- subset(result, select=col.names[-duplicated.cols])
   }
 
-  result <- result[ , RowNo:=row.names(.SD)]
+  result[ , RowNo := row.names(.SD)]
+  result[ , error := NA]
   setcolorder(result, "RowNo")
   
   ## Ring Number ----
@@ -80,9 +78,10 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, winter=FALSE, verb
   n.duplicated <- sum(dup_ndx)
   if( n.duplicated > 0 ){
     if( verbose )
-      rows2corr <- c(rows2corr, result[ring %in% unique(dup_spp$ring[dup_ndx]), ][ , RowNo])
+      result$error[result$ring %in% dup_spp$ring[dup_ndx]] <- "Mult Spp:"
     wmessage <- paste(n.duplicated, 'ring numbers are associated with more than one species code')
     warning(wmessage, call.=FALSE, immediate.=TRUE)
+    warning.flag <- 1
   }
   
   ## Species ----
@@ -108,7 +107,7 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, winter=FALSE, verb
   char_spp <- unique(as.character(result$species[is.na(int_spp)])) # select the rejected records
   if( length(char_spp) > 0 ){
     if( verbose )
-      rows2corr <- c(rows2corr, result$RowNo[result$species %in% char_spp])
+      result$error[result$species %in% char_spp] <- "Spp Code:"
     wmessage <- paste('Non-numeric species codes:', paste(char_spp,collapse=', '), 'will be deleted')
     warning(wmessage, call.=FALSE, immediate.=TRUE)
     warning.flag <- 1
@@ -163,9 +162,9 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, winter=FALSE, verb
   dodgy <- dodgy[minj > min, ]
   if( nrow(dodgy) > 0 ){
     rings <- unique(dodgy$ring)
-    if (verbose )
-      rows2corr <- c(rows2corr, result$RowNo[result$ring %in% rings])
-    if ( fix ){
+    if(verbose )
+      result$error[result$ring %in% rings] <- "Age corr:"
+    if( fix ){
       result[(age==3 & year>min), age := 4]
       wmessage <- paste(nrow(dodgy), "age records of impossible 3's corrected")
       warning(wmessage, call.=FALSE, immediate.=TRUE)
@@ -175,7 +174,7 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, winter=FALSE, verb
     }
     warning.flag <- 1
   }
-  result[ , ':='(min=NULL, minj=NULL)] # no longer needed
+  result[ , ':=' (min=NULL, minj=NULL)] # no longer needed
   
   ## Sex ----
   result[ , sex_in := sex] # keep a copy of the original for error reports
@@ -195,7 +194,8 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, winter=FALSE, verb
     # this construction saves having to use result$ on every variable - neat!
     wmessage <- paste(nch2, 'records changed sex')
     warning(wmessage, call.=FALSE, immediate.=TRUE)
-    rows2corr <- c(rows2corr, result[ring %in% dodgy][ , RowNo])
+    if( verbose )
+      result$error[result$ring %in% dodgy] <- "Sex corr:"
   }
   if( nch1 > 0 & fix ){
     # fill in M/F (according to which is most commonly recorded)
@@ -233,7 +233,7 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, winter=FALSE, verb
     result <- result[visit %in% stdv]
     result[ , visit := as.integer(visit)]
   } else {
-    if ( length(visits) > 1 )
+    if( length(visits) > 1 )
       result <- result[visit %in% visits, ]
     if( any(is.na(suppressWarnings(as.integer(result$visit)))) ){
       wmessage <- "visit will be treated as character"
@@ -261,11 +261,11 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, winter=FALSE, verb
     wmessage <- paste('Non-numeric dates detected in', count, 'records')
     warning(wmessage, call.=FALSE, immediate.=TRUE)
   }
-  inv.days <- nrow(result[day < 1 | day > 31])
-  if( inv.days > 0 ){
+  invalid.days <- nrow(result[day < 1 | day > 31])
+  if( invalid.days > 0 ){
     if( verbose )
-      rows2corr <- c(rows2corr, result[day < 1 | day > 31, ][ , RowNo])
-    wmessage <- paste(inv.days, 'day values outside the range 1-31 detected')
+      result$error[result$day < 1 | result$day > 31] <- "Day val :"
+    wmessage <- paste(invalid.days, 'day values outside the range 1-31 detected')
     warning(wmessage, call.=FALSE, immediate.=TRUE)
     warning.flag <- 1
   }
@@ -275,7 +275,7 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, winter=FALSE, verb
     non.summer <- nrow(result[month < 4 | month > 9])
     if( non.summer > 0 ){
       if( verbose )
-        rows2corr <- c(rows2corr, result[month < 4 | month > 9, ][ , RowNo])
+        result$error[result$month < 4 | result$month > 9] <- "Mon val :"
       wmessage <- paste(non.summer, ifelse(non.summer==1,'record','records'), 'outside the period April to September, is this expected?')
       warning(wmessage, call.=FALSE, immediate.=TRUE)
       warning.flag <- 1
@@ -298,7 +298,7 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, winter=FALSE, verb
     non.winter <- nrow(result[month > 3 & month < 10])
     if( non.summer > 0 ){
       if( verbose )
-        rows2corr <- c(rows2corr, result[month > 3 & month < 10, ][ , RowNo])
+        result$error[result$month > 3 & result$month < 10] <- "Mon val :"
       wmessage <- paste(non.winter, ifelse(non.winter==1,'record','records'), 'outside the period October to March, is this expected?')
       warning(wmessage, call.=FALSE, immediate.=TRUE)
       warning.flag <- 1
@@ -352,7 +352,7 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, winter=FALSE, verb
       
       # now the longitudes
       ew <- ifelse(substr(coords,8,8) == '-', -1 , 1) # hemisphere
-      if ( llfmt == 15 ){   # Euring code specifies 15 chars, but just in case long deg is 2 digits rather than 3
+      if( llfmt == 15 ){   # Euring code specifies 15 chars, but just in case long deg is 2 digits rather than 3
         if( anyNA(as.integer(substr(coords,9,11))) | 
             anyNA(as.integer(substr(coords,12,13))) | 
             anyNA(as.integer(substr(coords,14,15))) ){
@@ -367,7 +367,7 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, winter=FALSE, verb
           warning(wmessage, call.=FALSE, immediate.=TRUE)
         }
         result [ , long := ew * (c1 + c2 + c3)]
-      } else if ( llfmt == 14 ){
+      } else if( llfmt == 14 ){
         if( anyNA(as.integer(substr(coords,9,10))) | 
             anyNA(as.integer(substr(coords,11,12))) | 
             anyNA(as.integer(substr(coords,13,14))) ){
@@ -498,22 +498,20 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, winter=FALSE, verb
   ## Prepare Result ----
   # set country attribute
   country <- unique(result$countryID)
-  if ( length(country) > 1 )
+  if( length(country) > 1 )
     country <- substr(country[1], 1, 2)
   attr(result,'country') <- country
     
-  if( warning.flag & !verbose ){
-    wmessage <- "Warnings were raised, consider using verbose=TRUE to review these records"
-    message(wmessage)
-  }
-    
-  if( verbose & length(rows2corr) > 0 ){
+  if( warning.flag & verbose ){
     errfile <- paste0(getwd(), '/', country, '_err.csv')
     wmessage <- paste("Please review records in", sprintf("'%s'", errfile), "for errors")
     warning(wmessage, call.=FALSE, immediate.=TRUE)
-    report.data <- result[RowNo %in% unique(rows2corr), ..report.cols]
+    report.data <- result[!is.na(error), ..report.cols]
     setorder(report.data, ring, year, month, day)
     write.csv(report.data, file=errfile, row.names=FALSE, quote=FALSE)
+  } else if( warning.flag & !verbose ){
+    wmessage <- "Warnings were raised, consider using verbose=TRUE to review these records"
+    message(wmessage)
   }
   
   n.out <- nrow(result)
@@ -521,15 +519,15 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, winter=FALSE, verb
   message(wmessage)
   
   # tidy up and order nicely
-  result[ , ':='(scheme=NULL, age_in=NULL, sex_in=NULL, RowNo=NULL) ] 
+  result[ , ':=' (scheme=NULL, age_in=NULL, sex_in=NULL, RowNo=NULL, error=NULL) ] 
   
-  col.order=c("countryID", "sitename", "site", "lat", "long", "habitat", "netlength",
-              "visit", "julian", "day", "month", "year", "StartTime", "EndTime", 
-              "scheme", "ring", "species", "age", "sex", "race",
-              "wing", "weight", "p3", "brood", "moult", "fat", "weighTime")
-  setcolorder(result, col.order[which(col.order %in% names(result))])
+  col.order <- c("countryID", "sitename", "site", "lat", "long", "habitat", "netlength",
+                 "visit", "julian", "day", "month", "year", "StartTime", "EndTime", 
+                 "scheme", "ring", "species", "age", "sex", "race",
+                 "wing", "weight", "p3", "brood", "moult", "fat", "weighTime")
+  data.table::setcolorder(result, col.order[which(col.order %in% names(result))])
   if( fix )
-    setorder(result, sitename, year, visit, species, ring)
+    data.table::setorder(result, sitename, year, visit, species, ring)
   
   result <- as.data.frame(result)
   class(result) <- c('ces', 'data', 'data.frame')

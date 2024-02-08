@@ -57,7 +57,7 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, winter=FALSE, verb
   result <- suppressWarnings(data.table::fread(file))
   n.read <- nrow(result)
   # use suppressWarnings to avoid messages about bumping col classes late in the data
-  setnames(result, col.names)
+  data.table::setnames(result, col.names)
 
   # duplicates indicate something is amiss
   duplicated.cols <- which(duplicated(col.names))
@@ -440,7 +440,7 @@ function(file=NULL, visits='std', group.race=TRUE, fix=FALSE, winter=FALSE, verb
   count.lengths <- result[ , .(count=uniqueN(netlength)), by=sitename]
   if( nrow(count.lengths[count>1]) > 0 ){
     wmessage <- paste('multiple net lengths detected sites:', 
-                      paste(count.lengths$sitename[count.lengths$count>0], collapse=','))
+                      paste(count.lengths$sitename[count.lengths$count>1], collapse=','))
     warning(wmessage, call.=FALSE, immediate.=TRUE)
   }
   

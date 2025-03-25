@@ -25,6 +25,8 @@ function(cesobj, type='c', xlim=c(-20,30), ylim=c(35,70), pch=21, col=c('white',
     col <- rep(col, length.out=2)
     x$col <- ifelse(x$current==0,col[1],col[2])
   } else if( tolower(substr(type,1,1) == 'n') ) {  # Colour by number of years
+    if( class(cesobj)[2]=='data' )
+      stop("need to suppy CES sites information\n")
     lq <- as.numeric(quantile(x$nyears,0.25))
     mq <- median(x$nyears)
     hq <- as.numeric(quantile(x$nyears,0.75))

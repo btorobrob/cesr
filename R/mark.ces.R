@@ -1,5 +1,5 @@
 mark.ces <-
-function(cesobj, exclude=NULL, type='+', trend=0, constant=0, compare=0, cleanup=TRUE){
+function(cesobj, exclude=NULL, include=NULL, type='+', trend=0, constant=0, compare=0, cleanup=TRUE){
   
   if( class(cesobj)[1]!="ces" | class(cesobj)[2]!='ch' )
     stop('use extract.ch() to create a Mark data list')
@@ -29,7 +29,12 @@ function(cesobj, exclude=NULL, type='+', trend=0, constant=0, compare=0, cleanup
     excl.rows <- which(as.character(chdata$sitename) %in% as.character(exclude))
     chdata <- chdata[-excl.rows, ]
     chdata$sitename <- droplevels(chdata$sitename)
+  } else if ( !is.null(include) ){
+    incl.rows <- which(as.character(chdata$sitename) %in% as.character(include))
+    chdata <- chdata[incl.rows, ]
+    chdata$sitename <- droplevels(chdata$sitename)
   }
+  
   if( length(levels(chdata$sitename)) == 1 ) # check if only 1 site
     groups <- cesobj$group$name
   else 
@@ -77,6 +82,7 @@ function(cesobj, exclude=NULL, type='+', trend=0, constant=0, compare=0, cleanup
     if( is.na(cesobj$group$name) )
       phi.ces <- list(formula = as.formula('~tind:time_var+Cind'))
     else
+      
       phi.ces <- list(formula = as.formula(paste0('~', cesobj$group$name, '+tind:time_var+', cesobj$group$name, ':Cind')))
     model.name <- 'constant'
     model.yrs <- ifelse(constant >= cesobj$years, cesobj$years, constant)

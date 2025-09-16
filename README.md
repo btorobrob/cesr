@@ -14,4 +14,4 @@ Adult survival probabilities can be estimated by first using extract.ch(), then 
 
 More details on how to do each of these can be found in the introductory manual ([cesr-intro.pdf](https://drive.google.com/file/d/17025jOoRnyV0UsyMtEq0LOq8dErhDjFL/view?usp=share_link)) and in the helpfiles to each function.
 
-To cite the package, ([this paper]https://doi.org/10.1080/03078698.2024.2311771) provides an overview of what it does.
+To cite the package, [this paper](https://doi.org/10.1080/03078698.2024.2311771) provides an overview of what it does.
